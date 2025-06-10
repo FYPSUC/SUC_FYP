@@ -8,7 +8,7 @@ class UserOrderPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Order Page')),
       body: const Center(
-        child: Text('Welcome to Order Page'),
+        child: Text('Welcome to UserOrder Page'),
       ),
     );
   }

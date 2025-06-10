@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "121429162458",
+    "project_id": "sucfyp-eefcc",
+    "storage_bucket": "sucfyp-eefcc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:121429162458:android:b7ca365b4fe5b4c681e8e3",
+        "android_client_info": {
+          "package_name": "com.example.suc_fyp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAAQiOqaMyybD6Eqi01whg758Jb7bwobt4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

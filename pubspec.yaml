@@ -64,21 +64,7 @@ flutter:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
   assets:
-    - assets/image/sucE-wallet_icon.png
-    - assets/image/background.jpg
-    - assets/image/BackButton.jpg
-    - assets/image/UserMainBackground.jpg
-    - assets/image/QR_icon.png
-    - assets/image/Profile_icon.png
-    - assets/image/Voucher_icon.png
-    - assets/image/Order_icon.png
-    - assets/image/Clinic_icon.png
-    - assets/image/Transaction_Graph.png
-    - assets/image/QRReceive_icon.png
-    - assets/image/QRScan_icon.png
-    - assets/image/QRReceive.png
-    - assets/image/QRScan.png
-    - assets/image/cash.png
+    - assets/image/
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

@@ -3,7 +3,7 @@ import 'login.dart';
 import 'register.dart';
 import 'Reset_Password.dart';
 import 'package:suc_fyp/main.dart';
-import 'package:suc_fyp/E-wallet_User/UserMain.dart';
+import '../E-wallet_Vendor/VendorMain.dart';
 
 class VendorLoginPage extends StatelessWidget {
   const VendorLoginPage({super.key});
@@ -26,9 +26,9 @@ class VendorLoginPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // backbutton
                 Padding(
-                  padding: const EdgeInsets.only(left: 19, top: 20),
-                  // 控制距離螢幕左上角的位置
+                  padding: const EdgeInsets.only(left: 19, top: 20), // 控制距離螢幕左上角的位置
                   child: GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -47,6 +47,7 @@ class VendorLoginPage extends StatelessWidget {
                   ),
                 ),
 
+
                 // suc logo
                 Center(
                   child: Image.asset(
@@ -56,26 +57,24 @@ class VendorLoginPage extends StatelessWidget {
                     fit: BoxFit.contain,
                   ),
                 ),
-                const SizedBox(height: 10),
 
-                //User Login text
                 Center(
                   child: Text(
                     'Vendor Login',
-                    style: const TextStyle(
-                      fontSize: 30,
-                      color: Colors.black,
+                    style: TextStyle(
+                      fontSize: 28,
                       fontWeight: FontWeight.bold,
+                      color: Colors.black87,
                     ),
                   ),
                 ),
-                const SizedBox(height: 15),
 
+
+
+                const SizedBox(height: 30),
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20.0,
-                    vertical: 10,
-                  ),
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
                   child: Column(
                     children: [
                       // Username
@@ -95,26 +94,21 @@ class VendorLoginPage extends StatelessWidget {
                             hintStyle: const TextStyle(color: Colors.black54),
                             filled: true,
                             fillColor: Colors.transparent,
-                            contentPadding: const EdgeInsets.symmetric(
-                              vertical: 12,
-                            ),
+                            contentPadding:
+                            const EdgeInsets.symmetric(vertical: 12),
                             prefixIcon: const Padding(
                               padding: EdgeInsets.only(left: 15, right: 10),
                               child: Icon(Icons.person, color: Colors.black),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(25),
-                              borderSide: const BorderSide(
-                                color: Colors.black,
-                                width: 2,
-                              ),
+                              borderSide:
+                              const BorderSide(color: Colors.black, width: 2),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(25),
-                              borderSide: const BorderSide(
-                                color: Colors.black,
-                                width: 2,
-                              ),
+                              borderSide:
+                              const BorderSide(color: Colors.black, width: 2),
                             ),
                           ),
                         ),
@@ -138,26 +132,21 @@ class VendorLoginPage extends StatelessWidget {
                             hintStyle: const TextStyle(color: Colors.black54),
                             filled: true,
                             fillColor: Colors.transparent,
-                            contentPadding: const EdgeInsets.symmetric(
-                              vertical: 12,
-                            ),
+                            contentPadding:
+                            const EdgeInsets.symmetric(vertical: 12),
                             prefixIcon: const Padding(
                               padding: EdgeInsets.only(left: 15, right: 10),
                               child: Icon(Icons.lock, color: Colors.black),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(25),
-                              borderSide: const BorderSide(
-                                color: Colors.black,
-                                width: 2,
-                              ),
+                              borderSide:
+                              const BorderSide(color: Colors.black, width: 2),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(25),
-                              borderSide: const BorderSide(
-                                color: Colors.black,
-                                width: 2,
-                              ),
+                              borderSide:
+                              const BorderSide(color: Colors.black, width: 2),
                             ),
                           ),
                         ),
@@ -171,9 +160,7 @@ class VendorLoginPage extends StatelessWidget {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                builder: (context) => const LoginPage(),
-                              ),
+                              MaterialPageRoute(builder: (context) => const LoginPage()),
                             );
                           },
                           child: const Text(
@@ -195,21 +182,15 @@ class VendorLoginPage extends StatelessWidget {
                         height: 80,
                         child: ElevatedButton(
                           onPressed: () {
-                            print("New button tapped");
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                builder: (context) => const UserMainPage(),//之前要改vendor page
-                              ),
+                              MaterialPageRoute(builder: (context) => const VendorMainPage()),
                             );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.transparent,
                             elevation: 0,
-                            side: const BorderSide(
-                              color: Colors.black,
-                              width: 3,
-                            ),
+                            side: const BorderSide(color: Colors.black, width: 3),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -234,11 +215,8 @@ class VendorLoginPage extends StatelessWidget {
                           GestureDetector(
                             onTap: () {
                               // Navigate to create account page
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const RegisterPage(),
-                                ),
+                              Navigator.push(context,
+                                MaterialPageRoute(builder: (context) => const RegisterPage()),
                               );
                             },
                             child: const Text(
@@ -255,23 +233,17 @@ class VendorLoginPage extends StatelessWidget {
 
                           const Text(
                             '|',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.black54,
-                            ),
+                            style: TextStyle(fontSize: 16, color: Colors.black54),
                           ),
 
                           const SizedBox(width: 8), // spacing
+
                           // "Forget Password?" link
                           GestureDetector(
                             onTap: () {
                               // Navigate to forget password page
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder:
-                                      (context) => const ResetPasswordPage(),
-                                ),
+                              Navigator.push(context,
+                                MaterialPageRoute(builder: (context) => const ResetPasswordPage()),
                               );
                             },
                             child: const Text(
@@ -283,6 +255,7 @@ class VendorLoginPage extends StatelessWidget {
                               ),
                             ),
                           ),
+
                         ],
                       ),
                     ],

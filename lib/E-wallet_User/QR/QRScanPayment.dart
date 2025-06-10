@@ -308,7 +308,7 @@ class PaymentSuccessPage extends StatelessWidget {
                           height: 40,
                           fit: BoxFit.cover,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 9),
                         const Text(
                           'Back',
                           style: TextStyle(

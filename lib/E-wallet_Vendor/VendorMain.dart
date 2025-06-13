@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:suc_fyp/main.dart';
-import 'VendorQR.dart';
+import 'VendorQR/VendorQR.dart';
 import 'VendorProfile.dart';
 import 'VendorTopUp.dart';
 import 'VendorTransactionHistory.dart';

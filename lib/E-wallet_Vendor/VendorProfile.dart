@@ -88,10 +88,6 @@ class VendorProfilePage extends StatelessWidget {
                                           'assets/image/Profile_icon.png'),
                                       fit: BoxFit.cover,
                                     ),
-                                    border: Border.all(
-                                      color: Colors.grey,
-                                      width: 2,
-                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 20),
@@ -155,7 +151,7 @@ class VendorProfilePage extends StatelessWidget {
 
                             const Divider(height: 40, thickness: 1, color: Colors.black),
 
-                            // 6-Digit PIN (editable)
+                            // 6-Digit PIN (editable) - 修正标题拼写错误
                             _buildPinRow(),
 
                             // 添加底部间距
@@ -214,50 +210,30 @@ class VendorProfilePage extends StatelessWidget {
   }
 
   Widget _buildPasswordRow() {
+    bool obscureText = true;
+
     return StatefulBuilder(
       builder: (context, setState) {
-        bool obscureText = true;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Password',
-              style: TextStyle(
-                fontSize: 20,
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            const Text('Password', style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.bold)),
             const SizedBox(height: 15),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(25),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        child: Text(
-                          obscureText ? '••••••••' : 'actualpassword',
-                          style: const TextStyle(
-                            fontSize: 17,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        obscureText ? Icons.visibility : Icons.visibility_off,
-                        color: Colors.blue,
-                      ),
-                      onPressed: () => setState(() => obscureText = !obscureText),
-                    ),
-                  ],
+            TextField(
+              readOnly: true,
+              obscureText: obscureText,
+              controller: TextEditingController(text: "actualpassword"),
+              decoration: InputDecoration(
+                suffixIcon: IconButton(
+                  icon: Icon(obscureText ? Icons.visibility : Icons.visibility_off),
+                  onPressed: () => setState(() => obscureText = !obscureText),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                filled: true,
+                fillColor: Colors.grey[200],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(25),
+                  borderSide: BorderSide.none,
                 ),
               ),
             ),
@@ -268,17 +244,18 @@ class VendorProfilePage extends StatelessWidget {
   }
 
   Widget _buildPinRow() {
+    String pin = '';
+    bool obscureText = true;
+    bool isEditing = false;
+
     return StatefulBuilder(
       builder: (context, setState) {
-        String pin = '';
-        bool obscureText = true;
-        bool isEditing = false;
-
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // 修正拼写错误：6-Digit pin (原为6-Dinit nin)
             const Text(
-              '6-Digit pin',
+              '6-Digit PIN', // 修正后的标题
               style: TextStyle(
                 fontSize: 20,
                 color: Colors.black,
@@ -287,120 +264,78 @@ class VendorProfilePage extends StatelessWidget {
             ),
             const SizedBox(height: 15),
             if (!isEditing && pin.isEmpty)
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    setState(() => isEditing = true);
-                    _showPinDialog(context, (enteredPin) {
-                      setState(() {
-                        pin = enteredPin;
-                        isEditing = false;
-                      });
+              ElevatedButton(
+                onPressed: () {
+                  setState(() => isEditing = true);
+                  _showPinDialog(context, (enteredPin) {
+                    setState(() {
+                      pin = enteredPin;
+                      isEditing = false;
                     });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue[700],
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 30, vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  child: const Text(
-                    'Set PIN',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
+                  });
+                },
+                child: const Text('Set PIN'),
               )
             else if (!isEditing)
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
+              TextField(
+                readOnly: true,
+                obscureText: obscureText,
+                controller: TextEditingController(text: pin),
+                decoration: InputDecoration(
+                  suffixIcon: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          child: Text(
-                            obscureText ? '••••••' : pin,
-                            style: const TextStyle(
-                              fontSize: 17,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
+                      // 眼睛图标 - 点击切换显示/隐藏PIN
+                      IconButton(
+                        icon: Icon(obscureText ? Icons.visibility : Icons.visibility_off),
+                        onPressed: () => setState(() => obscureText = !obscureText),
                       ),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(
-                              obscureText
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
-                              color: Colors.blue,
-                            ),
-                            onPressed: () =>
-                                setState(() => obscureText = !obscureText),
-                          ),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.edit,
-                              color: Colors.blue,
-                            ),
-                            onPressed: () {
-                              setState(() => isEditing = true);
-                              _showPinDialog(context, (enteredPin) {
-                                setState(() {
-                                  pin = enteredPin;
-                                  isEditing = false;
-                                });
-                              });
-                            },
-                          ),
-                        ],
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () {
+                          setState(() => isEditing = true);
+                          _showPinDialog(context, (enteredPin) {
+                            setState(() {
+                              pin = enteredPin;
+                              isEditing = false;
+                            });
+                          });
+                        },
                       ),
                     ],
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  filled: true,
+                  fillColor: Colors.grey[200],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25),
+                    borderSide: BorderSide.none,
                   ),
                 ),
               )
             else
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: TextField(
-                    keyboardType: TextInputType.number,
-                    maxLength: 6,
-                    obscureText: true,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 18),
-                    decoration: const InputDecoration(
-                      hintText: 'Enter 6-digit PIN',
-                      border: InputBorder.none,
-                      counterText: '',
-                    ),
-                    onSubmitted: (value) {
-                      if (value.length == 6) {
-                        setState(() {
-                          pin = value;
-                          isEditing = false;
-                        });
-                      }
-                    },
+              TextField(
+                keyboardType: TextInputType.number,
+                maxLength: 6,
+                obscureText: true,
+                decoration: InputDecoration(
+                  hintText: 'Enter 6-digit PIN',
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  filled: true,
+                  fillColor: Colors.grey[200],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25),
+                    borderSide: BorderSide.none,
                   ),
                 ),
+                onSubmitted: (value) {
+                  if (value.length == 6) {
+                    setState(() {
+                      pin = value;
+                      isEditing = false;
+                    });
+                  }
+                },
               ),
           ],
         );
@@ -415,56 +350,32 @@ class VendorProfilePage extends StatelessWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text(
-            'Enter 6-Digit PIN',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          content: SizedBox(
-            height: 100,
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-                TextField(
-                  keyboardType: TextInputType.number,
-                  maxLength: 6,
-                  obscureText: true,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 24),
-                  decoration: const InputDecoration(
-                    hintText: '000000',
-                    counterText: '',
-                    border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 20),
-                  ),
-                  onChanged: (value) {
-                    enteredPin = value;
-                  },
-                ),
-              ],
+          title: const Text('Enter 6-Digit PIN'),
+          content: TextField(
+            keyboardType: TextInputType.number,
+            maxLength: 6,
+            obscureText: true,
+            onChanged: (value) {
+              enteredPin = value;
+            },
+            decoration: const InputDecoration(
+              hintText: '000000',
             ),
           ),
-          actionsAlignment: MainAxisAlignment.center,
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.grey[700],
-              ),
+              onPressed: () {
+                Navigator.pop(context);
+              },
               child: const Text('Cancel'),
             ),
-            const SizedBox(width: 20),
-            ElevatedButton(
+            TextButton(
               onPressed: () {
                 if (enteredPin.length == 6) {
                   onPinEntered(enteredPin);
                   Navigator.pop(context);
                 }
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue[700],
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-              ),
               child: const Text('Confirm'),
             ),
           ],

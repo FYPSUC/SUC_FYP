@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'MoreStore.dart';
+import 'package:suc_fyp/E-wallet_User/UserMain.dart';
 
 class UserOrderPage extends StatelessWidget {
+  const UserOrderPage({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,7 +27,10 @@ class UserOrderPage extends StatelessWidget {
                 // 返回按钮
                 GestureDetector(
                   onTap: () {
-                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => UserMainPage()), // 或者 OrderPage()
+                    );
                   },
                   child: Row(
                     children: [
@@ -32,6 +38,7 @@ class UserOrderPage extends StatelessWidget {
                         'assets/image/BackButton.jpg',
                         width: 40,
                         height: 40,
+                        fit: BoxFit.cover,
                       ),
                       const SizedBox(width: 8),
                       const Text(
@@ -71,7 +78,7 @@ class UserOrderPage extends StatelessWidget {
                           alignment: Alignment.centerRight,
                           child: GestureDetector(
                             onTap: () {
-                              Navigator.push(
+                              Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(builder: (context) => MoreStorePage()),
                               );
@@ -203,17 +210,6 @@ class RankingItem extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-// 示例页面（需要创建其他页面）
-class MoreStorePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('More Stores')),
-      body: const Center(child: Text('More store content here')),
     );
   }
 }

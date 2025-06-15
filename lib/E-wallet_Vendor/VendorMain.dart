@@ -4,8 +4,8 @@ import 'VendorQR/VendorQR.dart';
 import 'VendorProfile.dart';
 import 'VendorTopUp.dart';
 import 'VendorTransactionHistory.dart';
-import 'CreateVoucher.dart';
-import 'Product.dart';
+import 'VendorVoucher/VendorVoucher.dart';
+import 'VendorProduct/Product.dart';
 import 'ViewOrder.dart';
 
 class VendorMainPage extends StatefulWidget {

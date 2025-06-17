@@ -4,8 +4,8 @@ import 'VendorQR/VendorQR.dart';
 import 'VendorProfile.dart';
 import 'VendorTopUp.dart';
 import 'VendorTransactionHistory.dart';
-import 'CreateVoucher.dart';
-import 'Product.dart';
+import 'VendorVoucher/VendorVoucher.dart';
+import 'VendorProduct/Product.dart';
 import 'ViewOrder.dart';
 
 class VendorMainPage extends StatefulWidget {
@@ -222,7 +222,7 @@ class _VendorMainPageState extends State<VendorMainPage> {
                         _buildMenuButton(
                             'Create Voucher', 'assets/image/Voucher_icon.png', () {
                           Navigator.push(context, MaterialPageRoute(
-                              builder: (context) => VendorCreateVoucherPage()));
+                              builder: (context) => VendorVoucherPage()));
                         }),
                         _buildMenuButton(
                             'View Order', 'assets/image/Order_icon.png', () {

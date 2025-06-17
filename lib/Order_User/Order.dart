@@ -1,9 +1,48 @@
 import 'package:flutter/material.dart';
 import 'MoreStore.dart';
 import 'package:suc_fyp/E-wallet_User/UserMain.dart';
+import 'models.dart';
+import 'MainStorePage.dart';
 
 class UserOrderPage extends StatelessWidget {
-  const UserOrderPage({Key? key}) : super(key: key);
+  UserOrderPage({Key? key}) : super(key: key);
+
+  final List<Store> stores = [
+    Store(
+      name: 'The Alley',
+      location: 'IEB',
+      image: 'assets/image/TheAlley.png',
+      menu: [
+        MenuItem(
+          name: 'Pearl milk tea',
+          price: 8.00,
+          image: 'assets/image/pearl_milk_tea.png',
+        ),
+        MenuItem(
+          name: 'Garden milk tea',
+          price: 10.00,
+          image: 'assets/image/garden_milk_tea.png',
+        ),
+      ],
+    ),
+    Store(
+      name: 'Chicken Rice Store',
+      location: 'Canteen',
+      image: 'assets/image/ChickenRise.png',
+      menu: [
+        MenuItem(
+          name: 'Roasted Chicken Rice',
+          price: 7.00,
+          image: 'assets/image/Chicken_rise.jpg',
+        ),
+      ],
+    ),
+  ];
+
+  Store getStoreByName(String name) {
+    return stores.firstWhere((store) => store.name == name);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,13 +62,11 @@ class UserOrderPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 20),
-
-                // 返回按钮
                 GestureDetector(
                   onTap: () {
-                    Navigator.push(
+                    Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => UserMainPage()), // 或者 OrderPage()
+                      MaterialPageRoute(builder: (context) => UserMainPage()),
                     );
                   },
                   child: Row(
@@ -52,7 +89,6 @@ class UserOrderPage extends StatelessWidget {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 40),
 
                 Expanded(
@@ -60,25 +96,42 @@ class UserOrderPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // 轮播图
                         SizedBox(
                           height: 180,
                           child: PageView(
                             children: [
-                              Image.asset('assets/image/TheAlley_LongPicture.png', fit: BoxFit.cover),
-                              Image.asset('assets/image/ChickenRise_LongPicture.png', fit: BoxFit.cover),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => StoreMenuPage(store: getStoreByName('The Alley')),
+                                    ),
+                                  );
+                                },
+                                child: Image.asset('assets/image/TheAlley_LongPicture.png', fit: BoxFit.cover),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => StoreMenuPage(store: getStoreByName('Chicken Rice Store')),
+                                    ),
+                                  );
+                                },
+                                child: Image.asset('assets/image/ChickenRise_LongPicture.png', fit: BoxFit.cover),
+                              ),
                             ],
                           ),
                         ),
-
                         const SizedBox(height: 10),
 
-                        // More store 按钮
                         Align(
                           alignment: Alignment.centerRight,
                           child: GestureDetector(
                             onTap: () {
-                              Navigator.pushReplacement(
+                              Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) => MoreStorePage()),
                               );
@@ -94,7 +147,6 @@ class UserOrderPage extends StatelessWidget {
                             ),
                           ),
                         ),
-
                         const SizedBox(height: 30),
 
                         const Text(
@@ -114,11 +166,13 @@ class UserOrderPage extends StatelessWidget {
                           rank: 'Top 1',
                           imagePath: 'assets/image/pearl_milk_tea.png',
                           title: 'Boba tea',
-                          price: 'RM 6',
+                          price: 'RM 8',
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => BobaTeaPage()), // 需要创建页面
+                              MaterialPageRoute(
+                                builder: (context) => StoreMenuPage(store: getStoreByName('The Alley')),
+                              ),
                             );
                           },
                         ),
@@ -126,11 +180,13 @@ class UserOrderPage extends StatelessWidget {
                           rank: 'Top 2',
                           imagePath: 'assets/image/ChickenRise.png',
                           title: 'Chicken rise',
-                          price: 'RM 5',
+                          price: 'RM 7',
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => ChickenRicePage()), // 需要创建页面
+                              MaterialPageRoute(
+                                builder: (context) => StoreMenuPage(store: getStoreByName('Chicken Rice Store')),
+                              ),
                             );
                           },
                         ),
@@ -142,7 +198,9 @@ class UserOrderPage extends StatelessWidget {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => GardenMilkTeaPage()), // 需要创建页面
+                              MaterialPageRoute(
+                                builder: (context) => StoreMenuPage(store: getStoreByName('The Alley')),
+                              ),
                             );
                           },
                         ),
@@ -210,36 +268,6 @@ class RankingItem extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class BobaTeaPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Boba Tea')),
-      body: const Center(child: Text('Boba Tea Page')),
-    );
-  }
-}
-
-class ChickenRicePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Chicken Rice')),
-      body: const Center(child: Text('Chicken Rice Page')),
-    );
-  }
-}
-
-class GardenMilkTeaPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Garden Milk Tea')),
-      body: const Center(child: Text('Garden Milk Tea Page')),
     );
   }
 }

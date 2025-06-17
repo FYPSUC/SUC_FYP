@@ -7,7 +7,8 @@ import 'TransactionHistory.dart';
 import '../Clinic_User/Clinic.dart';
 import '../Order_User/Order.dart';
 import 'Voucher.dart';
-
+import '../Order_User/OrderPurchase.dart'; // 导入 OrderPurchase 页面（**新增**）
+import 'package:suc_fyp/Order_User/models.dart' as models; // 导入模型（**新增**）
 
 class UserMainPage extends StatefulWidget {
   const UserMainPage({super.key});
@@ -42,14 +43,12 @@ class _UserMainPageState extends State<UserMainPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 顶部 Log Out + 余额 + 头像
                   const SizedBox(height: 30),
 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // 左侧 Log Out + Balance
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -57,9 +56,7 @@ class _UserMainPageState extends State<UserMainPage> {
                             onTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(
-                                  builder: (context) => const HomePage(),
-                                ),
+                                MaterialPageRoute(builder: (context) => const HomePage()),
                               );
                             },
                             child: Column(
@@ -73,11 +70,7 @@ class _UserMainPageState extends State<UserMainPage> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                Container(
-                                  width: 108,
-                                  height: 2,
-                                  color: Colors.black,
-                                ),
+                                Container(width: 108, height: 2, color: Colors.black),
                               ],
                             ),
                           ),
@@ -85,9 +78,7 @@ class _UserMainPageState extends State<UserMainPage> {
                           Row(
                             children: [
                               Text(
-                                showBalance
-                                    ? 'RM ${balance.toStringAsFixed(2)}'
-                                    : 'RM ****',
+                                showBalance ? 'RM ${balance.toStringAsFixed(2)}' : 'RM ****',
                                 style: const TextStyle(
                                   fontSize: 40,
                                   color: Colors.black,
@@ -96,8 +87,7 @@ class _UserMainPageState extends State<UserMainPage> {
                               ),
                               IconButton(
                                 icon: Icon(
-                                  showBalance ? Icons.visibility : Icons
-                                      .visibility_off,
+                                  showBalance ? Icons.visibility : Icons.visibility_off,
                                   color: Colors.black,
                                 ),
                                 onPressed: () {
@@ -110,95 +100,67 @@ class _UserMainPageState extends State<UserMainPage> {
                           ),
                         ],
                       ),
-
-                      // 右侧用户头像图标按钮
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           padding: EdgeInsets.zero,
-                          // Remove default padding
                           backgroundColor: Colors.transparent,
-                          // Make button background transparent
                           shadowColor: Colors.transparent,
-                          // Remove shadow
-                          shape: CircleBorder(),
-                          // Circular shape
-                          elevation: 0, // Remove elevation
+                          shape: const CircleBorder(),
+                          elevation: 0,
                         ),
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) => const UserProfilePage(),
-                            ),
+                            MaterialPageRoute(builder: (context) => const UserProfilePage()),
                           );
                         },
                         child: Container(
                           width: 110,
-                            height: 110,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              image: DecorationImage(
-                                image: AssetImage(
-                                    'assets/image/Profile_icon.png'),
-                                fit: BoxFit.cover,
-                              ),
+                          height: 110,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            image: const DecorationImage(
+                              image: AssetImage('assets/image/Profile_icon.png'),
+                              fit: BoxFit.cover,
                             ),
                           ),
-                        )
-                      ],
-                    ),
+                        ),
+                      )
+                    ],
+                  ),
+                  const SizedBox(height: 30),
 
-                    const SizedBox(height: 30),
-
-                  // Top up & Transaction history 行
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Top up button with white border
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                                25), // Elliptical shape
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           elevation: 2,
                         ),
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                                builder: (context) => const UserTopUpPage()),
+                            MaterialPageRoute(builder: (context) => const UserTopUpPage()),
                           );
                         },
                         child: const Text(
                           '+ Top up',
-                          style: TextStyle(
-                            fontSize: 25,
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: TextStyle(fontSize: 25, color: Colors.black, fontWeight: FontWeight.bold),
                         ),
                       ),
-
-                      // Transaction history text button
                       TextButton(
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (
-                                context) => const UserTransactionHistoryPage()),
+                            MaterialPageRoute(builder: (context) => const UserTransactionHistoryPage()),
                           );
                         },
                         child: const Text(
                           'Transaction history >',
-                          style: TextStyle(
-                            fontSize: 20,
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -206,7 +168,6 @@ class _UserMainPageState extends State<UserMainPage> {
                   const Divider(height: 40, thickness: 2, color: Colors.black),
                   const SizedBox(height: 30),
 
-                  // 主菜单图标 Grid
                   Expanded(
                     child: GridView.count(
                       crossAxisCount: 2,
@@ -215,25 +176,36 @@ class _UserMainPageState extends State<UserMainPage> {
                       mainAxisSpacing: 20,
                       crossAxisSpacing: 20,
                       children: [
-                        _buildMenuButton(
-                            'QR code', 'assets/image/QR_icon.png', () {
-                          Navigator.push(context, MaterialPageRoute(
-                              builder: (context) => QRPage()));
+                        _buildMenuButton('QR code', 'assets/image/QR_icon.png', () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => QRPage()));
                         }),
-                        _buildMenuButton(
-                            'Voucher', 'assets/image/Voucher_icon.png', () {
-                          Navigator.push(context, MaterialPageRoute(
-                              builder: (context) => UserVoucherPage()));
+                        _buildMenuButton('Voucher', 'assets/image/Voucher_icon.png', () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => UserVoucherPage(
+                                onVoucherSelected: (voucher) {
+                                  // ⚠️ 示例用途: 选择优惠券后跳转到订单页面
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => OrderSummaryPage(
+                                        selectedItems: {
+                                          models.MenuItem(name: 'Example Item', price: 6.0, image: 'assets/image/example.png',): 1
+                                        },
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          );
                         }),
-                        _buildMenuButton(
-                            'Order', 'assets/image/Order_icon.png', () {
-                          Navigator.push(context, MaterialPageRoute(
-                              builder: (context) => UserOrderPage()));
+                        _buildMenuButton('Order', 'assets/image/Order_icon.png', () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => UserOrderPage()));
                         }),
-                        _buildMenuButton(
-                            'Clinic', 'assets/image/Clinic_icon.png', () {
-                          Navigator.push(context, MaterialPageRoute(
-                              builder: (context) => UserClinicPage()));
+                        _buildMenuButton('Clinic', 'assets/image/Clinic_icon.png', () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => UserClinicPage()));
                         }),
                       ],
                     ),
@@ -253,24 +225,15 @@ class _UserMainPageState extends State<UserMainPage> {
       borderRadius: BorderRadius.circular(15),
       child: Card(
         elevation: 5,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(
-              imagePath,
-              width: 110,
-              height: 110,
-            ),
+            Image.asset(imagePath, width: 110, height: 110),
             const SizedBox(height: 10),
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
           ],
         ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'MainStorePage.dart';
 import 'package:suc_fyp/Order_User/Order.dart';
+import 'models.dart';
 
 class MoreStorePage extends StatefulWidget {
   @override
@@ -10,25 +12,43 @@ class _MoreStorePageState extends State<MoreStorePage> {
   final TextEditingController _searchController = TextEditingController();
   String searchQuery = '';
 
-  final List<Map<String, String>> stores = [
-    {
-      'name': 'The Alley\n - IEB',
-      'image': 'assets/image/TheAlley.png',
-      'location': 'IEB',
-    },
-    {
-      'name': 'Chicken rice store\n - Canteen',
-      'image': 'assets/image/ChickenRise.png',
-      'location': 'Canteen',
-    },
-    // 这里可以继续添加更多store
+  final List<Store> stores = [
+    Store(
+      name: 'The Alley',
+      location: 'IEB',
+      image: 'assets/image/TheAlley.png',
+      menu: [
+        MenuItem(
+          name: 'Pearl milk tea',
+          price: 8.00,
+          image: 'assets/image/pearl_milk_tea.png',
+        ),
+        MenuItem(
+          name: 'Garden milk tea',
+          price: 10.00,
+          image: 'assets/image/garden_milk_tea.png',
+        ),
+      ],
+    ),
+    Store(
+      name: 'Chicken Rice Store',
+      location: 'Canteen',
+      image: 'assets/image/ChickenRise.png',
+      menu: [
+        MenuItem(
+          name: 'Roasted Chicken Rice',
+          price: 7.00,
+          image: 'assets/image/Chicken_rise.jpg',
+        ),
+      ],
+    ),
   ];
 
   @override
   Widget build(BuildContext context) {
     // 根据搜索过滤store
     final filteredStores = stores.where((store) {
-      return store['name']!.toLowerCase().contains(searchQuery.toLowerCase());
+      return store.name.toLowerCase().contains(searchQuery.toLowerCase());
     }).toList();
 
     return Scaffold(
@@ -120,14 +140,19 @@ class _MoreStorePageState extends State<MoreStorePage> {
 
                             GestureDetector(
                               onTap: () {
-                                // 点击后跳转到对应store页面
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => StoreMenuPage(store: store),
+                                  ),
+                                );
                               },
                               child: Row(
                                 children: [
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(10),
                                     child: Image.asset(
-                                      store['image']!,
+                                      store.image,
                                       width: 130,
                                       height: 130,
                                       fit: BoxFit.cover,
@@ -136,7 +161,7 @@ class _MoreStorePageState extends State<MoreStorePage> {
                                   const SizedBox(width: 14),
                                   Expanded(
                                     child: Text(
-                                      store['name']!,
+                                      store.name,
                                       style: const TextStyle(
                                         fontSize: 22,
                                         fontWeight: FontWeight.bold,

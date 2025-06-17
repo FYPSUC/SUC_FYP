@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import '../VendorMain.dart';
+import 'VendorVoucherDetail.dart';
+import 'VendorCreateVoucher.dart';
 
-class VendorCreateVoucherPage extends StatefulWidget {
-  const VendorCreateVoucherPage({super.key});
+class VendorVoucherPage extends StatefulWidget {
+  const VendorVoucherPage({super.key});
 
   @override
-  _VendorCreateVoucherPageState createState() => _VendorCreateVoucherPageState();
+  _VendorVoucherPageState createState() => _VendorVoucherPageState();
 }
 
-class _VendorCreateVoucherPageState extends State<VendorCreateVoucherPage> {
+class _VendorVoucherPageState extends State<VendorVoucherPage> {
   final List<Map<String, dynamic>> vouchers = [
     {
       'id': '1',
@@ -17,6 +19,9 @@ class _VendorCreateVoucherPageState extends State<VendorCreateVoucherPage> {
       'claimed': 18,
       'used': 8,
       'unused': 10,
+      'name': 'RM 5 Off',
+      'discount': '5.0',
+      'date': '30/12',
     },
     {
       'id': '2',
@@ -25,6 +30,9 @@ class _VendorCreateVoucherPageState extends State<VendorCreateVoucherPage> {
       'claimed': 12,
       'used': 5,
       'unused': 7,
+      'name': 'RM 10 Off',
+      'discount': '10.0',
+      'date': '15/11',
     },
   ];
 
@@ -35,6 +43,28 @@ class _VendorCreateVoucherPageState extends State<VendorCreateVoucherPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Voucher deleted successfully'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _updateVoucher(Map<String, dynamic> updatedVoucher) {
+    setState(() {
+      final index = vouchers.indexWhere((v) => v['id'] == updatedVoucher['id']);
+      if (index != -1) {
+        vouchers[index] = {
+          ...vouchers[index],
+          'name': updatedVoucher['name'],
+          'discount': updatedVoucher['discount'],
+          'date': updatedVoucher['date'],
+          'amount': 'RM ${updatedVoucher['discount']} Off',
+          'expiry': 'Use before ${updatedVoucher['date']}',
+        };
+      }
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Voucher updated successfully'),
         duration: Duration(seconds: 2),
       ),
     );
@@ -116,11 +146,7 @@ class _VendorCreateVoucherPageState extends State<VendorCreateVoucherPage> {
                       itemBuilder: (context, index) {
                         final voucher = vouchers[index];
                         return _buildVoucherCard(
-                          amount: voucher['amount'],
-                          expiry: voucher['expiry'],
-                          claimed: voucher['claimed'],
-                          used: voucher['used'],
-                          unused: voucher['unused'],
+                          voucher: voucher,
                           onDelete: () => _deleteVoucher(voucher['id']),
                         );
                       },
@@ -147,7 +173,29 @@ class _VendorCreateVoucherPageState extends State<VendorCreateVoucherPage> {
                         height: 60,
                         child: ElevatedButton(
                           onPressed: () {
-                            // 创建新优惠券逻辑
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const VendorCreateVoucherPage(),
+                              ),
+                            ).then((voucherData) {
+                              if (voucherData != null) {
+                                // 处理创建的优惠券数据
+                                setState(() {
+                                  vouchers.add({
+                                    'id': DateTime.now().millisecondsSinceEpoch.toString(),
+                                    'amount': voucherData['name'],
+                                    'expiry': 'Use before ${voucherData['date']}',
+                                    'claimed': 0,
+                                    'used': 0,
+                                    'unused': 0,
+                                    'name': voucherData['name'],
+                                    'discount': voucherData['amount'],
+                                    'date': voucherData['date'],
+                                  });
+                                });
+                              }
+                            });
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue[700],
@@ -178,11 +226,7 @@ class _VendorCreateVoucherPageState extends State<VendorCreateVoucherPage> {
 
   // 美观的优惠券卡片组件
   Widget _buildVoucherCard({
-    required String amount,
-    required String expiry,
-    required int claimed,
-    required int used,
-    required int unused,
+    required Map<String, dynamic> voucher,
     required VoidCallback onDelete,
   }) {
     return Container(
@@ -228,7 +272,7 @@ class _VendorCreateVoucherPageState extends State<VendorCreateVoucherPage> {
                 children: [
                   // 优惠券金额
                   Text(
-                    amount,
+                    voucher['amount'],
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -239,7 +283,7 @@ class _VendorCreateVoucherPageState extends State<VendorCreateVoucherPage> {
 
                   // 有效期
                   Text(
-                    expiry,
+                    voucher['expiry'],
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey[700],
@@ -252,26 +296,32 @@ class _VendorCreateVoucherPageState extends State<VendorCreateVoucherPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildStatBadge('Claimed', claimed, Colors.blue),
-                      _buildStatBadge('Used', used, Colors.green),
-                      _buildStatBadge('Unused', unused, Colors.orange),
+                      _buildStatBadge('Claimed', voucher['claimed'], Colors.blue),
+                      _buildStatBadge('Used', voucher['used'], Colors.green),
+                      _buildStatBadge('Unused', voucher['unused'], Colors.orange),
                     ],
                   ),
                   const SizedBox(height: 15),
 
-                  // 操作按钮 - 修改文字颜色为黑色
+                  // 操作按钮
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      // 编辑按钮 - 文字颜色改为黑色
+                      // 编辑按钮
                       ElevatedButton(
                         onPressed: () {
-                          // Navigator.push(
-                          //   context,
-                          //   MaterialPageRoute(
-                          //     builder: (context) => const VendorVoucherDetailPage(),
-                          //   ),
-                          // );
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => VendorVoucherDetailPage(
+                                voucherId: voucher['id'],
+                                voucherName: voucher['name'],
+                                discountAmount: voucher['discount'],
+                                expiredDate: voucher['date'],
+                                onUpdate: _updateVoucher,
+                              ),
+                            ),
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue[700],
@@ -285,21 +335,21 @@ class _VendorCreateVoucherPageState extends State<VendorCreateVoucherPage> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.edit, size: 18, color: Colors.black), // 图标颜色改为黑色
+                            Icon(Icons.edit, size: 18, color: Colors.black),
                             const SizedBox(width: 5),
                             Text(
                               'Edit',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black, // 文字颜色改为黑色
+                                color: Colors.black,
                               ),
                             ),
                           ],
                         ),
                       ),
 
-                      // 删除按钮 - 文字颜色改为黑色
+                      // 删除按钮
                       ElevatedButton(
                         onPressed: onDelete,
                         style: ElevatedButton.styleFrom(
@@ -314,14 +364,14 @@ class _VendorCreateVoucherPageState extends State<VendorCreateVoucherPage> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.delete, size: 18, color: Colors.black), // 图标颜色改为黑色
+                            Icon(Icons.delete, size: 18, color: Colors.black),
                             const SizedBox(width: 5),
                             Text(
                               'Delete',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black, // 文字颜色改为黑色
+                                color: Colors.black,
                               ),
                             ),
                           ],

@@ -222,7 +222,7 @@ class _VendorMainPageState extends State<VendorMainPage> {
                         _buildMenuButton(
                             'Create Voucher', 'assets/image/Voucher_icon.png', () {
                           Navigator.push(context, MaterialPageRoute(
-                              builder: (context) => VendorCreateVoucherPage()));
+                              builder: (context) => VendorVoucherPage()));
                         }),
                         _buildMenuButton(
                             'View Order', 'assets/image/Order_icon.png', () {

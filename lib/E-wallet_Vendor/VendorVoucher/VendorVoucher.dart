@@ -20,7 +20,7 @@ class _VendorVoucherPageState extends State<VendorVoucherPage> {
       'used': 8,
       'unused': 10,
       'name': 'RM 5 Off',
-      'discount': '5.0',
+      'discount': '5.',
       'date': '30/12',
     },
     {

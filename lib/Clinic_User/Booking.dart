@@ -234,12 +234,12 @@ class _ClinicCalendarPageState extends State<ClinicCalendarPage> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Successful booking')),
             );
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const UserMainPage(),
-              ),
-            );
+            Future.delayed(const Duration(seconds: 1), () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const UserMainPage()),
+              );
+            });
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.white,

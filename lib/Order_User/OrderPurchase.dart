@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:suc_fyp/E-wallet_User/Voucher.dart'; // 导入Voucher页面
+import 'package:suc_fyp/Order_User/OrderStatusPage.dart';
 import 'models.dart' as models; // 使用别名导入，避免冲突
 import 'package:suc_fyp/Order_User/models.dart' show Voucher; // 直接导入Voucher类
 
@@ -207,7 +208,10 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
                   height: 60,
                   child: ElevatedButton(
                     onPressed: () {
-                      // 下单逻辑
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const OrderStatusPage()),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,

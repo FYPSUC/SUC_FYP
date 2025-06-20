@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'VendorMain.dart';
-import 'VendorSetShop.dart';
+import 'VendorSetSho.dart';
 
 class VendorProfilePage extends StatelessWidget {
   const VendorProfilePage({super.key});

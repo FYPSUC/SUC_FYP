@@ -2,23 +2,17 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ApiService {
-  static const String baseUrl = 'http://10.0.2.2/flutter_api';
+  static const String baseUrl = 'http://192.168.0.85/flutter_api';
 
   static Future<Map<String, dynamic>> registerUser(
     String username,
     String password,
     String email,
-    String role,
   ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/register.php'),
-        body: {
-          'username': username,
-          'password': password,
-          'email': email,
-          'role': role,
-        },
+        body: {'username': username, 'password': password, 'email': email},
       );
 
       if (response.statusCode == 200) {

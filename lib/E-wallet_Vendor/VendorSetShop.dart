@@ -98,6 +98,32 @@ class _SetShopPageState extends State<VendorSetShopPage> {
 
                   const SizedBox(height: 40),
 
+                  // 新增的广告图片部分
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Advertise Pictures',
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(25),
+                        child: Image.asset(
+                          'assets/image/TheAlley_LongPicture.png',
+                          width: double.infinity,
+                          height: 200,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 30),
+
                   // Shop Name 输入框
                   _buildInputField('Shop Name', _shopNameController),
                   const SizedBox(height: 30),

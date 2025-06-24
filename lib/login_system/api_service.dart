@@ -2,7 +2,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ApiService {
-  static const String baseUrl = 'http://192.168.0.85/flutter_api';
+  static const String baseUrl = 'http://192.168.97.141/flutter_api';
 
   static Future<Map<String, dynamic>> registerUser(
     String username,

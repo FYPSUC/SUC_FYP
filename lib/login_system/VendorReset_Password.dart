@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:suc_fyp/main.dart';
 
-class ResetPasswordPage extends StatefulWidget {
-  const ResetPasswordPage({super.key});
+class VendorResetPasswordPage extends StatefulWidget {
+  const VendorResetPasswordPage({super.key});
 
   @override
-  State<ResetPasswordPage> createState() => _ResetPasswordPageState();
+  State<VendorResetPasswordPage> createState() => _VendorResetPasswordPageState();
 }
 
-class _ResetPasswordPageState extends State<ResetPasswordPage> {
+class _VendorResetPasswordPageState extends State<VendorResetPasswordPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _gmailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -166,90 +166,90 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        resizeToAvoidBottomInset: false,
-        body: Container(
-            width: double.infinity,
-            height: double.infinity,
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/image/background.jpg'),
-                fit: BoxFit.cover,
-              ),
-            ),
-            child: SafeArea(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // 🔙 Back Button
-                    Padding(
-                      padding: const EdgeInsets.only(left: 19, top: 20),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const HomePage()),
-                            );
-                          },
-                          child: Image.asset(
-                            'assets/image/BackButton.jpg',
-                            width: 40,
-                            height: 40,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
+      resizeToAvoidBottomInset: false,
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/image/background.jpg'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // 🔙 Back Button
+                Padding(
+                  padding: const EdgeInsets.only(left: 19, top: 20),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const HomePage()),
+                        );
+                      },
+                      child: Image.asset(
+                        'assets/image/BackButton.jpg',
+                        width: 40,
+                        height: 40,
+                        fit: BoxFit.cover,
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    Image.asset(
-                      'assets/image/sucE-wallet_icon.png',
-                      width: 300,
-                      height: 300,
-                      fit: BoxFit.contain,
-                    ),
-                    const SizedBox(height: 30),
-                    _buildInputField(_usernameController, "Username", Icons.person, errorText: _usernameError),
-                    const SizedBox(height: 30),
-                    _buildInputField(_gmailController, "Gmail", Icons.email,
-                        keyboard: TextInputType.emailAddress, errorText: _gmailError),
-                    const SizedBox(height: 30),
-                    _buildInputField(_passwordController, "Password", Icons.lock,
-                        obscure: true, errorText: _passwordError),
-                    const SizedBox(height: 30),
-                    _buildInputField(_rePasswordController, "Re-Enter Password", Icons.lock_outline,
-                        obscure: true, errorText: _rePasswordError),
-                    const SizedBox(height: 30),
-                    SizedBox(
-                      width: 330,
-                      height: 80,
-                      child: ElevatedButton(
-                        onPressed: _handleResetPassword,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          elevation: 0,
-                          side: const BorderSide(color: Colors.black, width: 3),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: const Text(
-                          'User Reset Password',
-                          style: TextStyle(
-                            fontSize: 25,
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                  ],
+                  ),
                 ),
-              ),
+                const SizedBox(height: 20),
+                Image.asset(
+                  'assets/image/sucE-wallet_icon.png',
+                  width: 300,
+                  height: 300,
+                  fit: BoxFit.contain,
+                ),
+                const SizedBox(height: 30),
+                _buildInputField(_usernameController, "Username", Icons.person, errorText: _usernameError),
+                const SizedBox(height: 30),
+                _buildInputField(_gmailController, "Gmail", Icons.email,
+                    keyboard: TextInputType.emailAddress, errorText: _gmailError),
+                const SizedBox(height: 30),
+                _buildInputField(_passwordController, "Password", Icons.lock,
+                    obscure: true, errorText: _passwordError),
+                const SizedBox(height: 30),
+                _buildInputField(_rePasswordController, "Re-Enter Password", Icons.lock_outline,
+                    obscure: true, errorText: _rePasswordError),
+                const SizedBox(height: 30),
+                SizedBox(
+                  width: 330,
+                  height: 80,
+                  child: ElevatedButton(
+                    onPressed: _handleResetPassword,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      elevation: 0,
+                      side: const BorderSide(color: Colors.black, width: 3),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text(
+                      'Vendor Reset Password',
+                      style: TextStyle(
+                        fontSize: 25,
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 30),
+              ],
             ),
-            ),
-        );
-    }
+          ),
+        ),
+      ),
+    );
+  }
 }

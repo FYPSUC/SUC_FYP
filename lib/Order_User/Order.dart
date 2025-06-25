@@ -13,16 +13,8 @@ class UserOrderPage extends StatelessWidget {
       location: 'IEB',
       image: 'assets/image/TheAlley.png',
       menu: [
-        MenuItem(
-          name: 'Pearl milk tea',
-          price: 8.00,
-          image: 'assets/image/pearl_milk_tea.png',
-        ),
-        MenuItem(
-          name: 'Garden milk tea',
-          price: 10.00,
-          image: 'assets/image/garden_milk_tea.png',
-        ),
+        MenuItem(name: 'Pearl milk tea', price: 8.00, image: 'assets/image/pearl_milk_tea.png'),
+        MenuItem(name: 'Garden milk tea', price: 10.00, image: 'assets/image/garden_milk_tea.png'),
       ],
     ),
     Store(
@@ -30,11 +22,7 @@ class UserOrderPage extends StatelessWidget {
       location: 'Canteen',
       image: 'assets/image/ChickenRise.png',
       menu: [
-        MenuItem(
-          name: 'Roasted Chicken Rice',
-          price: 7.00,
-          image: 'assets/image/Chicken_rise.jpg',
-        ),
+        MenuItem(name: 'Roasted Chicken Rice', price: 7.00, image: 'assets/image/Chicken_rise.jpg'),
       ],
     ),
   ];
@@ -45,6 +33,9 @@ class UserOrderPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -57,39 +48,22 @@ class UserOrderPage extends StatelessWidget {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 20),
+                SizedBox(height: screenHeight * 0.02),
                 GestureDetector(
-                  onTap: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => UserMainPage()),
-                    );
-                  },
+                  onTap: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => UserMainPage())),
                   child: Row(
                     children: [
-                      Image.asset(
-                        'assets/image/BackButton.jpg',
-                        width: 40,
-                        height: 40,
-                        fit: BoxFit.cover,
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Back',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
+                      Image.asset('assets/image/BackButton.jpg', width: screenWidth * 0.1, height: screenWidth * 0.1),
+                      SizedBox(width: screenWidth * 0.02),
+                      Text('Back', style: TextStyle(fontSize: screenWidth * 0.06, fontWeight: FontWeight.bold, color: Colors.black)),
                     ],
                   ),
                 ),
-                const SizedBox(height: 40),
+                SizedBox(height: screenHeight * 0.03),
 
                 Expanded(
                   child: SingleChildScrollView(
@@ -97,112 +71,90 @@ class UserOrderPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(
-                          height: 180,
+                          height: screenHeight * 0.2, // 你可以根据需要调整这个比例
                           child: PageView(
                             children: [
                               GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => StoreMenuPage(store: getStoreByName('The Alley')),
-                                    ),
-                                  );
-                                },
-                                child: Image.asset('assets/image/TheAlley_LongPicture.png', fit: BoxFit.cover),
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => StoreMenuPage(store: getStoreByName('The Alley')),
+                                  ),
+                                ),
+                                child: SizedBox(
+                                  height: screenHeight * 0.2, // 或者写固定高度 e.g., 180
+                                  child: Image.asset(
+                                    'assets/image/TheAlley_LongPicture.png',
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
                               ),
                               GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => StoreMenuPage(store: getStoreByName('Chicken Rice Store')),
-                                    ),
-                                  );
-                                },
-                                child: Image.asset('assets/image/ChickenRise_LongPicture.png', fit: BoxFit.cover),
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => StoreMenuPage(store: getStoreByName('Chicken Rice Store')),
+                                  ),
+                                ),
+                                child: SizedBox(
+                                  height: screenHeight * 0.25,
+                                  child: Image.asset(
+                                    'assets/image/ChickenRise_LongPicture.png',
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        SizedBox(height: screenHeight * 0.015),
 
                         Align(
                           alignment: Alignment.centerRight,
                           child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => MoreStorePage()),
-                              );
-                            },
-                            child: const Text(
+                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => MoreStorePage())),
+                            child: Text(
                               'More store',
                               style: TextStyle(
                                 color: Colors.black,
-                                fontSize: 18,
+                                fontSize: screenWidth * 0.045,
                                 decoration: TextDecoration.underline,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 30),
+                        SizedBox(height: screenHeight * 0.03),
 
-                        const Text(
+                        Text(
                           'Today ranking',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: TextStyle(fontSize: screenWidth * 0.06, fontWeight: FontWeight.bold),
                         ),
-                        const Divider(
-                          color: Colors.black,
-                          thickness: 1,
-                        ),
+                        const Divider(color: Colors.black, thickness: 1),
 
-                        // 排名列表
                         RankingItem(
                           rank: 'Top 1',
                           imagePath: 'assets/image/pearl_milk_tea.png',
                           title: 'Boba tea',
                           price: 'RM 8',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => StoreMenuPage(store: getStoreByName('The Alley')),
-                              ),
-                            );
-                          },
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => StoreMenuPage(store: getStoreByName('The Alley')))),
+                          screenWidth: screenWidth,
                         ),
                         RankingItem(
                           rank: 'Top 2',
                           imagePath: 'assets/image/ChickenRise.png',
-                          title: 'Chicken rise',
+                          title: 'Chicken rice',
                           price: 'RM 7',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => StoreMenuPage(store: getStoreByName('Chicken Rice Store')),
-                              ),
-                            );
-                          },
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => StoreMenuPage(store: getStoreByName('Chicken Rice Store')))),
+                          screenWidth: screenWidth,
                         ),
                         RankingItem(
                           rank: 'Top 3',
                           imagePath: 'assets/image/garden_milk_tea.png',
                           title: 'Garden milk tea',
                           price: 'RM 10',
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => StoreMenuPage(store: getStoreByName('The Alley')),
-                              ),
-                            );
-                          },
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => StoreMenuPage(store: getStoreByName('The Alley')))),
+                          screenWidth: screenWidth,
                         ),
                       ],
                     ),
@@ -223,13 +175,16 @@ class RankingItem extends StatelessWidget {
   final String title;
   final String price;
   final VoidCallback onTap;
+  final double screenWidth;
 
   const RankingItem({
+    super.key,
     required this.rank,
     required this.imagePath,
     required this.title,
     required this.price,
     required this.onTap,
+    required this.screenWidth,
   });
 
   @override
@@ -237,31 +192,33 @@ class RankingItem extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: EdgeInsets.symmetric(vertical: screenWidth * 0.03),
         child: Row(
           children: [
             Text(
               rank,
-              style: const TextStyle(
-                fontSize: 20,
+              style: TextStyle(
+                fontSize: screenWidth * 0.05,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: screenWidth * 0.03),
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.asset(imagePath, width: 100, height: 100, fit: BoxFit.cover),
+              child: Image.asset(
+                imagePath,
+                width: screenWidth * 0.25,
+                height: screenWidth * 0.25,
+                fit: BoxFit.cover,
+              ),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: screenWidth * 0.03),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  Text(price, style: const TextStyle(fontSize: 16)),
+                  Text(title, style: TextStyle(fontSize: screenWidth * 0.05, fontWeight: FontWeight.bold)),
+                  Text(price, style: TextStyle(fontSize: screenWidth * 0.04)),
                 ],
               ),
             ),

@@ -46,7 +46,9 @@ class _MoreStorePageState extends State<MoreStorePage> {
 
   @override
   Widget build(BuildContext context) {
-    // 根据搜索过滤store
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     final filteredStores = stores.where((store) {
       return store.name.toLowerCase().contains(searchQuery.toLowerCase());
     }).toList();
@@ -63,31 +65,31 @@ class _MoreStorePageState extends State<MoreStorePage> {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 20),
+                SizedBox(height: screenHeight * 0.02),
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => UserOrderPage()), // 或者 OrderPage()
+                      MaterialPageRoute(builder: (context) => UserOrderPage()),
                     );
                   },
                   child: Row(
                     children: [
                       Image.asset(
                         'assets/image/BackButton.jpg',
-                        width: 40,
-                        height: 40,
+                        width: screenWidth * 0.1,
+                        height: screenWidth * 0.1,
                         fit: BoxFit.cover,
                       ),
-                      const SizedBox(width: 8),
-                      const Text(
+                      SizedBox(width: screenWidth * 0.02),
+                      Text(
                         'Back',
                         style: TextStyle(
-                          fontSize: 24,
+                          fontSize: screenWidth * 0.06,
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
@@ -95,16 +97,16 @@ class _MoreStorePageState extends State<MoreStorePage> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 30),
+                SizedBox(height: screenHeight * 0.03),
 
-                // Search Bar
+                // 搜索栏
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: Colors.black),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.03),
                   child: TextField(
                     controller: _searchController,
                     onChanged: (value) {
@@ -112,16 +114,17 @@ class _MoreStorePageState extends State<MoreStorePage> {
                         searchQuery = value;
                       });
                     },
-                    decoration: const InputDecoration(
-                      icon: Icon(Icons.search),
+                    style: TextStyle(fontSize: screenWidth * 0.045),
+                    decoration: InputDecoration(
+                      icon: Icon(Icons.search, size: screenWidth * 0.06),
                       hintText: 'Search store...',
                       border: InputBorder.none,
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: screenHeight * 0.02),
 
-                // 白色Container包着所有store
+                // 白色容器内的商店列表
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
@@ -129,21 +132,22 @@ class _MoreStorePageState extends State<MoreStorePage> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: ListView.builder(
-                      padding: const EdgeInsets.all(12),
+                      padding: EdgeInsets.all(screenWidth * 0.03),
                       itemCount: filteredStores.length,
                       itemBuilder: (context, index) {
                         final store = filteredStores[index];
                         return Column(
                           children: [
-                            if (index != 0) const Divider(color: Colors.black, thickness: 2),
-                            const SizedBox(height: 20),
-
+                            if (index != 0)
+                              Divider(color: Colors.black, thickness: 2),
+                            SizedBox(height: screenHeight * 0.02),
                             GestureDetector(
                               onTap: () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => StoreMenuPage(store: store),
+                                    builder: (context) =>
+                                        StoreMenuPage(store: store),
                                   ),
                                 );
                               },
@@ -153,17 +157,17 @@ class _MoreStorePageState extends State<MoreStorePage> {
                                     borderRadius: BorderRadius.circular(10),
                                     child: Image.asset(
                                       store.image,
-                                      width: 130,
-                                      height: 130,
+                                      width: screenWidth * 0.3,
+                                      height: screenWidth * 0.3,
                                       fit: BoxFit.cover,
                                     ),
                                   ),
-                                  const SizedBox(width: 14),
+                                  SizedBox(width: screenWidth * 0.04),
                                   Expanded(
                                     child: Text(
                                       store.name,
-                                      style: const TextStyle(
-                                        fontSize: 22,
+                                      style: TextStyle(
+                                        fontSize: screenWidth * 0.05,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),

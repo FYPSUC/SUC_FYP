@@ -6,6 +6,9 @@ class UserQRScanPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -16,35 +19,33 @@ class UserQRScanPage extends StatelessWidget {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 顶部返回按钮区域
-                Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Image.asset(
-                          'assets/image/BackButton.jpg',
-                          width: 40,
-                          height: 40,
-                          fit: BoxFit.cover,
+                // 返回按钮
+                SizedBox(height: screenHeight * 0.02),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.asset(
+                        'assets/image/BackButton.jpg',
+                        width: screenWidth * 0.1,
+                        height: screenWidth * 0.1,
+                        fit: BoxFit.cover,
+                      ),
+                      SizedBox(width: screenWidth * 0.02),
+                      Text(
+                        'Back',
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.065,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
                         ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Back',
-                          style: TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
 
@@ -54,37 +55,36 @@ class UserQRScanPage extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // 提示文本
                         Text(
                           "Scan QR code",
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontSize: 25,
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.06,
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        SizedBox(height: screenHeight * 0.015),
 
-                        // 修改后的二维码按钮容器
+                        // QR 图像按钮
                         Padding(
-                          padding: const EdgeInsets.only(bottom: 100),
-                          child: InkWell( // 使用InkWell添加点击效果
+                          padding: EdgeInsets.only(bottom: screenHeight * 0.12),
+                          child: InkWell(
                             onTap: () {
-                              // 点击后跳转到支付页面
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const UserQRScanPaymentPage(),
+                                  builder: (context) =>
+                                  const UserQRScanPaymentPage(),
                                 ),
                               );
                             },
-                            borderRadius: BorderRadius.circular(16), // 圆角效果
+                            borderRadius: BorderRadius.circular(16),
                             child: Container(
-                              padding: const EdgeInsets.all(8), // 增加内边距使点击区域更大
+                              padding: EdgeInsets.all(screenWidth * 0.02),
                               child: Image.asset(
                                 'assets/image/QRScan.png',
-                                width: 300,
-                                height: 300,
+                                width: screenWidth * 0.7,
+                                height: screenWidth * 0.7,
                                 fit: BoxFit.contain,
                               ),
                             ),

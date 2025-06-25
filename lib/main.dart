@@ -26,149 +26,135 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomePage extends StatefulWidget {
+class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  @override
   Widget build(BuildContext context) {
+    final Size size = MediaQuery.of(context).size;
+
     return Scaffold(
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/image/background.jpg'), // 确保路径正确，资源已添加
+            image: AssetImage('assets/image/background.jpg'),
             fit: BoxFit.cover,
           ),
         ),
         child: SafeArea(
-          child: Column(
-            children: [
-              SizedBox(height: MediaQuery.of(context).size.height * 0.1),
-              Image.asset(
-                'assets/image/sucE-wallet_icon.png',
-                width: 300,
-                height: 300,
-                fit: BoxFit.contain,
-              ),
-              const SizedBox(height: 30),
-              Text(
-                'Welcome to',
-                style: GoogleFonts.roboto(
-                  fontSize: 33,
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: size.width * 0.08),
+            child: Column(
+              children: [
+                SizedBox(height: size.height * 0.08),
+                Image.asset(
+                  'assets/image/sucE-wallet_icon.png',
+                  width: size.width * 0.8,
+                  height: size.height * 0.35,
+                  fit: BoxFit.contain,
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 15),
-              Text(
-                'SUC',
-                style: GoogleFonts.roboto(
-                  fontSize: 33,
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
+                SizedBox(height: size.height * 0.03),
+                Text(
+                  'Welcome to',
+                  style: GoogleFonts.roboto(
+                    fontSize: size.width * 0.08,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 15),
-              Text(
-                'E-wallet!',
-                style: GoogleFonts.roboto(
-                  fontSize: 33,
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
+                Text(
+                  'SUC',
+                  style: GoogleFonts.roboto(
+                    fontSize: size.width * 0.08,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 50),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  SizedBox(
-                    width: 180,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const LoginPage(),
+                Text(
+                  'E-wallet!',
+                  style: GoogleFonts.roboto(
+                    fontSize: size.width * 0.08,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: size.height * 0.08),
+                Column(
+                  children: [
+                    SizedBox(
+                      width: size.width * 0.5,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const LoginPage()),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          elevation: 0,
+                          side: const BorderSide(color: Colors.black, width: 2),
+                          padding: EdgeInsets.symmetric(
+                            vertical: size.height * 0.02,
                           ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        elevation: 0,
-                        shadowColor: Colors.transparent,
-                        side: const BorderSide(color: Colors.black, width: 2),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 12,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25),
+                          ),
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                      ),
-                      child: const Text(
-                        'Login',
-                        style: TextStyle(
-                          fontSize: 28,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
+                        child: Text(
+                          'Login',
+                          style: TextStyle(
+                            fontSize: size.width * 0.05,
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 25),
-                  SizedBox(
-                    width: 180,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const RegisterPage(),
+                    SizedBox(height: size.height * 0.02),
+                    SizedBox(
+                      width: size.width * 0.5,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const RegisterPage()),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          elevation: 0,
+                          side: const BorderSide(color: Colors.black, width: 2),
+                          padding: EdgeInsets.symmetric(
+                            vertical: size.height * 0.02,
                           ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        elevation: 0,
-                        shadowColor: Colors.transparent,
-                        side: const BorderSide(color: Colors.black, width: 2),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 12,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25),
+                          ),
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                      ),
-                      child: const Text(
-                        'Register',
-                        style: TextStyle(
-                          fontSize: 28,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
+                        child: Text(
+                          'Register',
+                          style: TextStyle(
+                            fontSize: size.width * 0.05,
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-            ],
+                  ],
+                ),
+                const Spacer(),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 }
-
-
-

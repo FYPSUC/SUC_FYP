@@ -29,6 +29,9 @@ class _OrderStatusPageState extends State<OrderStatusPage>
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -41,38 +44,43 @@ class _OrderStatusPageState extends State<OrderStatusPage>
         child: SafeArea(
           child: Column(
             children: [
-              const SizedBox(height: 10),
+              SizedBox(height: screenHeight * 0.01),
               GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: Row(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: screenWidth * 0.03,
+                      ),
                       child: Image.asset(
                         'assets/image/BackButton.jpg',
-                        width: 40,
-                        height: 40,
+                        width: screenWidth * 0.1,
+                        height: screenWidth * 0.1,
                       ),
                     ),
-                    const Text(
+                    Text(
                       'Back',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.06,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: screenHeight * 0.02),
               Expanded(
                 child: Stack(
                   children: [
                     Align(
                       alignment: Alignment.center,
                       child: Padding(
-                        padding: const EdgeInsets.only(bottom: 300),
+                        padding: EdgeInsets.only(bottom: screenHeight * 0.35),
                         child: Image.asset(
                           'assets/image/chef.png',
-                          width: 370,
-                          height: 370,
+                          width: screenWidth * 0.8,
+                          height: screenWidth * 0.8,
                           fit: BoxFit.contain,
                         ),
                       ),
@@ -80,7 +88,7 @@ class _OrderStatusPageState extends State<OrderStatusPage>
                     Align(
                       alignment: Alignment.bottomCenter,
                       child: Container(
-                        height: 350,
+                        height: screenHeight * 0.35,
                         width: double.infinity,
                         decoration: const BoxDecoration(
                           color: Colors.white,
@@ -90,46 +98,67 @@ class _OrderStatusPageState extends State<OrderStatusPage>
                           ),
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Order Received',
-                                style: TextStyle(
-                                    fontSize: 30, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 4),
-                              const Text(
-                                '12:00 – 12:15 PM',
-                                style: TextStyle(
-                                    fontSize: 20,
+                          padding: EdgeInsets.all(screenWidth * 0.04),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Order Received',
+                                  style: TextStyle(
+                                    fontSize: screenWidth * 0.075,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: screenHeight * 0.005),
+                                Text(
+                                  '12:00 – 12:15 PM',
+                                  style: TextStyle(
+                                    fontSize: screenWidth * 0.05,
                                     color: Colors.black54,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 16),
-                              Row(
-                                children: [
-                                  _buildStepIcon(Icons.list_alt, 0),
-                                  _buildLine(0),
-                                  _buildStepIcon(Icons.restaurant, 1),
-                                  _buildLine(1),
-                                  _buildStepIcon(Icons.check_circle_outline, 2),
-                                ],
-                              ),
-                              const SizedBox(height: 30),
-                              const Text(
-                                'Order Detail',
-                                style: TextStyle(
-                                    fontSize: 28, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 10),
-                              const Text(
-                                '1 item\nx1 Pearl milk tea',
-                                style: TextStyle(
-                                    fontSize: 23, fontWeight: FontWeight.bold),
-                              ),
-                            ],
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: screenHeight * 0.02),
+                                Row(
+                                  children: [
+                                    _buildStepIcon(
+                                      Icons.list_alt,
+                                      0,
+                                      screenWidth,
+                                    ),
+                                    _buildLine(0),
+                                    _buildStepIcon(
+                                      Icons.restaurant,
+                                      1,
+                                      screenWidth,
+                                    ),
+                                    _buildLine(1),
+                                    _buildStepIcon(
+                                      Icons.check_circle_outline,
+                                      2,
+                                      screenWidth,
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: screenHeight * 0.03),
+                                Text(
+                                  'Order Detail',
+                                  style: TextStyle(
+                                    fontSize: screenWidth * 0.07,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: screenHeight * 0.01),
+                                Text(
+                                  '1 item\nx1 Pearl milk tea',
+                                  style: TextStyle(
+                                    fontSize: screenWidth * 0.06,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -138,29 +167,30 @@ class _OrderStatusPageState extends State<OrderStatusPage>
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.04,
+                  vertical: screenHeight * 0.01,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          currentStep = 1;
-                        });
-                      },
-                      child: const Text("Receive"),
+                      onPressed: () => setState(() => currentStep = 1),
+                      child: Text(
+                        "Receive",
+                        style: TextStyle(fontSize: screenWidth * 0.045),
+                      ),
                     ),
                     ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          currentStep = 2;
-                        });
-                      },
-                      child: const Text("Complete"),
+                      onPressed: () => setState(() => currentStep = 2),
+                      child: Text(
+                        "Complete",
+                        style: TextStyle(fontSize: screenWidth * 0.045),
+                      ),
                     ),
                   ],
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -173,13 +203,14 @@ class _OrderStatusPageState extends State<OrderStatusPage>
     bool isCurrent = index == currentStep;
 
     return Expanded(
-      child: isCurrent
-          ? _buildAnimatedShimmerLine()
-          : AnimatedContainer(
-        duration: const Duration(milliseconds: 500),
-        height: 4,
-        color: isCompleted ? Colors.green : Colors.black,
-      ),
+      child:
+          isCurrent
+              ? _buildAnimatedShimmerLine()
+              : AnimatedContainer(
+                duration: const Duration(milliseconds: 500),
+                height: 4,
+                color: isCompleted ? Colors.green : Colors.black,
+              ),
     );
   }
 
@@ -208,11 +239,11 @@ class _OrderStatusPageState extends State<OrderStatusPage>
     );
   }
 
-  Widget _buildStepIcon(IconData icon, int stepIndex) {
+  Widget _buildStepIcon(IconData icon, int stepIndex, double screenWidth) {
     bool isCompleted = stepIndex <= currentStep;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 500),
-      padding: const EdgeInsets.all(6),
+      padding: EdgeInsets.all(screenWidth * 0.015),
       decoration: BoxDecoration(
         color: isCompleted ? Colors.green : Colors.white,
         border: Border.all(color: Colors.black, width: 3),
@@ -221,7 +252,7 @@ class _OrderStatusPageState extends State<OrderStatusPage>
       child: Icon(
         icon,
         color: isCompleted ? Colors.white : Colors.black,
-        size: 40,
+        size: screenWidth * 0.09,
       ),
     );
   }

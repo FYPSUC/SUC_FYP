@@ -2,7 +2,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ApiService {
-  static const String baseUrl = 'http://192.168.97.141/flutter_api';
+  static const String baseUrl = 'http://192.168.0.85/flutter_api';
 
   /// 🔸旧方法：传统注册
   static Future<Map<String, dynamic>> legacyRegisterUser(
@@ -68,7 +68,7 @@ class ApiService {
     }
   }
 
-  /// ✅ 只查 `users` 表（用于 User 登录）
+  /// ✅ 只查 users 表（用于 User 登录）
   static Future<Map<String, dynamic>> getUserByUID(String uid) async {
     try {
       final response = await http.post(
@@ -90,7 +90,7 @@ class ApiService {
     }
   }
 
-  /// ✅ 只查 `vendor` 表（用于 Vendor 登录）
+  /// ✅ 只查 vendor 表（用于 Vendor 登录）
   static Future<Map<String, dynamic>> getVendorByUID(String uid) async {
     try {
       final response = await http.post(

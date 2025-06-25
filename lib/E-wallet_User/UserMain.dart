@@ -7,8 +7,8 @@ import 'TransactionHistory.dart';
 import '../Clinic_User/Clinic.dart';
 import '../Order_User/Order.dart';
 import 'Voucher.dart';
-import '../Order_User/OrderPurchase.dart'; // 导入 OrderPurchase 页面（**新增**）
-import 'package:suc_fyp/Order_User/models.dart' as models; // 导入模型（**新增**）
+import '../Order_User/OrderPurchase.dart';
+import 'package:suc_fyp/Order_User/models.dart' as models;
 
 class UserMainPage extends StatefulWidget {
   const UserMainPage({super.key});
@@ -18,8 +18,11 @@ class UserMainPage extends StatefulWidget {
 }
 
 class _UserMainPageState extends State<UserMainPage> {
-  double balance = 888.00; // Initial balance
-  bool showBalance = true; // Toggle for balance visibility
+  double balance = 888.00;
+  bool showBalance = true;
+
+  double screenWidth(BuildContext context) => MediaQuery.of(context).size.width;
+  double screenHeight(BuildContext context) => MediaQuery.of(context).size.height;
 
   @override
   Widget build(BuildContext context) {
@@ -39,12 +42,11 @@ class _UserMainPageState extends State<UserMainPage> {
           ),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth(context) * 0.05),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 30),
-
+                  SizedBox(height: screenHeight(context) * 0.04),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,33 +56,34 @@ class _UserMainPageState extends State<UserMainPage> {
                         children: [
                           GestureDetector(
                             onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => const HomePage()),
-                              );
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage()));
                             },
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Log Out',
                                   style: TextStyle(
-                                    fontSize: 30,
+                                    fontSize: screenWidth(context) * 0.06,
                                     color: Colors.black,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                Container(width: 108, height: 2, color: Colors.black),
+                                Container(
+                                  width: screenWidth(context) * 0.24,
+                                  height: 2,
+                                  color: Colors.black,
+                                ),
                               ],
                             ),
                           ),
-                          const SizedBox(height: 20),
+                          SizedBox(height: screenHeight(context) * 0.02),
                           Row(
                             children: [
                               Text(
                                 showBalance ? 'RM ${balance.toStringAsFixed(2)}' : 'RM ****',
-                                style: const TextStyle(
-                                  fontSize: 40,
+                                style: TextStyle(
+                                  fontSize: screenWidth(context) * 0.08,
                                   color: Colors.black,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -109,14 +112,11 @@ class _UserMainPageState extends State<UserMainPage> {
                           elevation: 0,
                         ),
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const UserProfilePage()),
-                          );
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => const UserProfilePage()));
                         },
                         child: Container(
-                          width: 110,
-                          height: 110,
+                          width: screenWidth(context) * 0.28,
+                          height: screenWidth(context) * 0.28,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             image: const DecorationImage(
@@ -128,8 +128,7 @@ class _UserMainPageState extends State<UserMainPage> {
                       )
                     ],
                   ),
-                  const SizedBox(height: 30),
-
+                  SizedBox(height: screenHeight(context) * 0.03),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -137,37 +136,41 @@ class _UserMainPageState extends State<UserMainPage> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: screenWidth(context) * 0.04,
+                            vertical: screenHeight(context) * 0.015,
+                          ),
                           elevation: 2,
                         ),
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const UserTopUpPage()),
-                          );
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => const UserTopUpPage()));
                         },
-                        child: const Text(
+                        child: Text(
                           '+ Top up',
-                          style: TextStyle(fontSize: 25, color: Colors.black, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: screenWidth(context) * 0.06,
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                       TextButton(
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const UserTransactionHistoryPage()),
-                          );
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => const UserTransactionHistoryPage()));
                         },
-                        child: const Text(
+                        child: Text(
                           'Transaction history >',
-                          style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: screenWidth(context) * 0.045,
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],
                   ),
                   const Divider(height: 40, thickness: 2, color: Colors.black),
-                  const SizedBox(height: 30),
-
+                  SizedBox(height: screenHeight(context) * 0.02),
                   Expanded(
                     child: GridView.count(
                       crossAxisCount: 2,
@@ -185,13 +188,16 @@ class _UserMainPageState extends State<UserMainPage> {
                             MaterialPageRoute(
                               builder: (context) => UserVoucherPage(
                                 onVoucherSelected: (voucher) {
-                                  // ⚠️ 示例用途: 选择优惠券后跳转到订单页面
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => OrderSummaryPage(
                                         selectedItems: {
-                                          models.MenuItem(name: 'Example Item', price: 6.0, image: 'assets/image/example.png',): 1
+                                          models.MenuItem(
+                                            name: 'Example Item',
+                                            price: 6.0,
+                                            image: 'assets/image/example.png',
+                                          ): 1
                                         },
                                       ),
                                     ),
@@ -229,11 +235,14 @@ class _UserMainPageState extends State<UserMainPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(imagePath, width: 110, height: 110),
-            const SizedBox(height: 10),
+            Image.asset(imagePath, width: screenWidth(context) * 0.25, height: screenWidth(context) * 0.25),
+            SizedBox(height: screenHeight(context) * 0.015),
             Text(
               title,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: screenWidth(context) * 0.045,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),

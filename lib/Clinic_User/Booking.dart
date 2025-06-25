@@ -12,6 +12,7 @@ class ClinicCalendarPage extends StatefulWidget {
 class _ClinicCalendarPageState extends State<ClinicCalendarPage> {
   DateTime? selectedDate;
   bool showBookingInput = false;
+  String? selectedTime;
 
   final TextEditingController _bookingController = TextEditingController();
 
@@ -34,15 +35,21 @@ class _ClinicCalendarPageState extends State<ClinicCalendarPage> {
     if (picked != null) {
       setState(() {
         selectedDate = picked;
-        showBookingInput = false; // 选择新日期时，重置状态
+        showBookingInput = false;
+        selectedTime = null;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/image/UserMainBackground.jpg'),
@@ -51,47 +58,46 @@ class _ClinicCalendarPageState extends State<ClinicCalendarPage> {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 20),
+                SizedBox(height: screenHeight * 0.02),
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
                   child: Row(
                     children: [
                       Image.asset(
                         'assets/image/BackButton.jpg',
-                        width: 40,
-                        height: 40,
+                        width: screenWidth * 0.1,
+                        height: screenWidth * 0.1,
                       ),
-                      const SizedBox(width: 8),
-                      const Text(
+                      SizedBox(width: screenWidth * 0.02),
+                      Text(
                         'Back',
                         style: TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
+                          fontSize: screenWidth * 0.06,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 30),
-                const Text(
+                SizedBox(height: screenHeight * 0.03),
+                Text(
                   'Calendar',
                   style: TextStyle(
-                    fontSize: 35,
+                    fontSize: screenWidth * 0.08,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
                   ),
                 ),
-                const SizedBox(height: 20),
-
-                // 日期选择框
+                SizedBox(height: screenHeight * 0.02),
                 GestureDetector(
                   onTap: _pickDate,
                   child: Container(
-                    height: 60,
+                    height: screenHeight * 0.07,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(15),
@@ -103,7 +109,7 @@ class _ClinicCalendarPageState extends State<ClinicCalendarPage> {
                             ? DateFormat('d / M / yyyy').format(selectedDate!)
                             : 'Choose date',
                         style: TextStyle(
-                          fontSize: 25,
+                          fontSize: screenWidth * 0.06,
                           color: selectedDate != null
                               ? Colors.black
                               : Colors.grey.shade700,
@@ -113,14 +119,12 @@ class _ClinicCalendarPageState extends State<ClinicCalendarPage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
-
-                // 时间选择部分或输入框
+                SizedBox(height: screenHeight * 0.02),
                 if (selectedDate != null)
                   Expanded(
                     child: showBookingInput
-                        ? _buildSelectedSlotAndBookingInput()
-                        : _buildTimeSlots(),
+                        ? _buildSelectedSlotAndBookingInput(screenWidth, screenHeight)
+                        : _buildTimeSlots(screenWidth),
                   ),
               ],
             ),
@@ -130,7 +134,7 @@ class _ClinicCalendarPageState extends State<ClinicCalendarPage> {
     );
   }
 
-  Widget _buildTimeSlots() {
+  Widget _buildTimeSlots(double screenWidth) {
     return ListView.builder(
       itemCount: timeSlots.length,
       itemBuilder: (context, index) {
@@ -140,6 +144,7 @@ class _ClinicCalendarPageState extends State<ClinicCalendarPage> {
             if (slot['available']) {
               setState(() {
                 showBookingInput = true;
+                selectedTime = slot['time'];
               });
             }
           },
@@ -156,8 +161,8 @@ class _ClinicCalendarPageState extends State<ClinicCalendarPage> {
               children: [
                 Text(
                   slot['time'],
-                  style: const TextStyle(
-                    fontSize: 20,
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.05,
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
                   ),
@@ -165,7 +170,7 @@ class _ClinicCalendarPageState extends State<ClinicCalendarPage> {
                 Text(
                   slot['available'] ? 'available' : 'unavailable',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: screenWidth * 0.045,
                     color: slot['available'] ? Colors.green : Colors.red,
                     fontWeight: FontWeight.bold,
                   ),
@@ -178,7 +183,7 @@ class _ClinicCalendarPageState extends State<ClinicCalendarPage> {
     );
   }
 
-  Widget _buildSelectedSlotAndBookingInput() {
+  Widget _buildSelectedSlotAndBookingInput(double screenWidth, double screenHeight) {
     return Column(
       children: [
         Container(
@@ -191,16 +196,16 @@ class _ClinicCalendarPageState extends State<ClinicCalendarPage> {
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
+            children: [
               Text(
-                '10:00 am',
+                selectedTime ?? '',
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: screenWidth * 0.05,
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Text(
+              const Text(
                 'available',
                 style: TextStyle(
                   fontSize: 18,
@@ -221,16 +226,23 @@ class _ClinicCalendarPageState extends State<ClinicCalendarPage> {
           child: TextField(
             controller: _bookingController,
             decoration: InputDecoration(
-              hintText: 'Enter something...',
-              hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 18),
+              hintText: 'Enter something...'
+              ,
+              hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: screenWidth * 0.045),
               border: InputBorder.none,
             ),
-            style: const TextStyle(fontSize: 20, color: Colors.black),
+            style: TextStyle(fontSize: screenWidth * 0.05, color: Colors.black),
           ),
         ),
-        const SizedBox(height: 20),
+        SizedBox(height: screenHeight * 0.03),
         ElevatedButton(
           onPressed: () {
+            if (_bookingController.text.trim().isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Please enter booking note')),
+              );
+              return;
+            }
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Successful booking')),
             );
@@ -243,17 +255,20 @@ class _ClinicCalendarPageState extends State<ClinicCalendarPage> {
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+            padding: EdgeInsets.symmetric(
+              horizontal: screenWidth * 0.1,
+              vertical: screenHeight * 0.02,
+            ),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15),
             ),
             side: const BorderSide(color: Colors.black),
           ),
-          child: const Text(
+          child: Text(
             'Booking',
             style: TextStyle(
               color: Colors.black,
-              fontSize: 22,
+              fontSize: screenWidth * 0.055,
               fontWeight: FontWeight.bold,
             ),
           ),

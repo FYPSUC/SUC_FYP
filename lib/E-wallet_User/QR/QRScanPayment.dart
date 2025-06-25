@@ -52,6 +52,9 @@ class _UserQRScanPaymentPageState extends State<UserQRScanPaymentPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: Container(
@@ -63,42 +66,39 @@ class _UserQRScanPaymentPageState extends State<UserQRScanPaymentPage> {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top Back Button
-                Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Image.asset(
-                          'assets/image/BackButton.jpg',
-                          width: 40,
-                          height: 40,
-                          fit: BoxFit.cover,
+                SizedBox(height: screenHeight * 0.02),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.asset(
+                        'assets/image/BackButton.jpg',
+                        width: screenWidth * 0.1,
+                        height: screenWidth * 0.1,
+                        fit: BoxFit.cover,
+                      ),
+                      SizedBox(width: screenWidth * 0.02),
+                      Text(
+                        'Back',
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.06,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
                         ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Back',
-                          style: TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
                 Expanded(
                   child: Center(
                     child: showPinInput
-                        ? buildPinInput(context)
-                        : buildAmountInput(context),
+                        ? buildPinInput(context, screenWidth, screenHeight)
+                        : buildAmountInput(context, screenWidth, screenHeight),
                   ),
                 ),
               ],
@@ -109,7 +109,7 @@ class _UserQRScanPaymentPageState extends State<UserQRScanPaymentPage> {
     );
   }
 
-  Widget buildAmountInput(BuildContext context) {
+  Widget buildAmountInput(BuildContext context, double screenWidth, double screenHeight) {
     return Column(
       children: [
         const Spacer(),
@@ -117,30 +117,30 @@ class _UserQRScanPaymentPageState extends State<UserQRScanPaymentPage> {
           children: [
             Text(
               "Enter Amount",
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontSize: 30,
+              style: TextStyle(
+                fontSize: screenWidth * 0.075,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),
             ),
-            const SizedBox(height: 30),
+            SizedBox(height: screenHeight * 0.03),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
+                Text(
                   'RM : ',
                   style: TextStyle(
-                    fontSize: 26,
+                    fontSize: screenWidth * 0.065,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
                   ),
                 ),
                 SizedBox(
-                  width: 150,
+                  width: screenWidth * 0.4,
                   child: TextField(
                     controller: _amountController,
                     keyboardType: TextInputType.number,
-                    style: const TextStyle(fontSize: 26, color: Colors.black),
+                    style: TextStyle(fontSize: screenWidth * 0.065, color: Colors.black),
                     decoration: const InputDecoration(
                       hintText: "0.00",
                       border: UnderlineInputBorder(),
@@ -153,7 +153,7 @@ class _UserQRScanPaymentPageState extends State<UserQRScanPaymentPage> {
         ),
         const Spacer(),
         Padding(
-          padding: const EdgeInsets.only(bottom: 40),
+          padding: EdgeInsets.only(bottom: screenHeight * 0.05),
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
@@ -161,7 +161,7 @@ class _UserQRScanPaymentPageState extends State<UserQRScanPaymentPage> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 18),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1, vertical: screenHeight * 0.02),
             ),
             onPressed: () {
               setState(() {
@@ -169,9 +169,9 @@ class _UserQRScanPaymentPageState extends State<UserQRScanPaymentPage> {
                 showPinInput = true;
               });
             },
-            child: const Text(
+            child: Text(
               "Confirmation of transfer",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: screenWidth * 0.055, fontWeight: FontWeight.bold),
             ),
           ),
         ),
@@ -179,7 +179,7 @@ class _UserQRScanPaymentPageState extends State<UserQRScanPaymentPage> {
     );
   }
 
-  Widget buildPinInput(BuildContext context) {
+  Widget buildPinInput(BuildContext context, double screenWidth, double screenHeight) {
     return Column(
       children: [
         const Spacer(),
@@ -187,36 +187,32 @@ class _UserQRScanPaymentPageState extends State<UserQRScanPaymentPage> {
           children: [
             Text(
               "Enter Amount",
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontSize: 30,
+              style: TextStyle(
+                fontSize: screenWidth * 0.075,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: screenHeight * 0.02),
             Text(
               'RM : ${amount.isEmpty ? "0.00" : amount}',
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: screenWidth * 0.06, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 40),
-            const Text(
+            SizedBox(height: screenHeight * 0.04),
+            Text(
               'Please enter 6-Digit pin linked to account',
-              style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: screenWidth * 0.045, color: Colors.black, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 15),
+            SizedBox(height: screenHeight * 0.02),
             SizedBox(
-              width: 250,
+              width: screenWidth * 0.6,
               child: TextField(
                 controller: _pinController,
                 keyboardType: TextInputType.number,
                 maxLength: 6,
                 obscureText: true,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                    fontSize: 28, letterSpacing: 12, color: Colors.black),
+                style: TextStyle(fontSize: screenWidth * 0.07, letterSpacing: 12, color: Colors.black),
                 decoration: InputDecoration(
                   counterText: '',
                   border: OutlineInputBorder(
@@ -230,7 +226,7 @@ class _UserQRScanPaymentPageState extends State<UserQRScanPaymentPage> {
         ),
         const Spacer(),
         Padding(
-          padding: const EdgeInsets.only(bottom: 40),
+          padding: EdgeInsets.only(bottom: screenHeight * 0.05),
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
@@ -238,8 +234,7 @@ class _UserQRScanPaymentPageState extends State<UserQRScanPaymentPage> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),
               ),
-              padding:
-              const EdgeInsets.symmetric(horizontal: 100, vertical: 18),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.2, vertical: screenHeight * 0.02),
             ),
             onPressed: () {
               String enteredPin = _pinController.text;
@@ -256,9 +251,9 @@ class _UserQRScanPaymentPageState extends State<UserQRScanPaymentPage> {
                 );
               }
             },
-            child: const Text(
+            child: Text(
               "Confirm",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: screenWidth * 0.055, fontWeight: FontWeight.bold),
             ),
           ),
         ),
@@ -274,6 +269,9 @@ class PaymentSuccessPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -284,65 +282,62 @@ class PaymentSuccessPage extends StatelessWidget {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05, vertical: screenHeight * 0.03),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const UserMainPage(),
-                        ),
-                      );
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Image.asset(
-                          'assets/image/BackButton.jpg',
-                          width: 40,
-                          height: 40,
-                          fit: BoxFit.cover,
-                        ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Back',
-                          style: TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 100),
-                Center(
-                  child: Column(
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const UserMainPage(),
+                      ),
+                    );
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text(
-                        'Payment successful',
+                      Image.asset(
+                        'assets/image/BackButton.jpg',
+                        width: screenWidth * 0.1,
+                        height: screenWidth * 0.1,
+                        fit: BoxFit.cover,
+                      ),
+                      SizedBox(width: screenWidth * 0.02),
+                      Text(
+                        'Back',
                         style: TextStyle(
-                          fontSize: 35,
+                          fontSize: screenWidth * 0.06,
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
                       ),
-                      const SizedBox(height: 70),
+                    ],
+                  ),
+                ),
+                SizedBox(height: screenHeight * 0.12),
+                Center(
+                  child: Column(
+                    children: [
+                      Text(
+                        'Payment successful',
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.08,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      SizedBox(height: screenHeight * 0.08),
                       Image.asset(
                         'assets/image/cash.png',
-                        width: 250,
-                        height: 250,
+                        width: screenWidth * 0.6,
+                        height: screenWidth * 0.6,
                       ),
                       Text(
                         'RM ${amount.isEmpty ? "0.00" : amount}',
-                        style: const TextStyle(
-                          fontSize: 35,
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.08,
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),

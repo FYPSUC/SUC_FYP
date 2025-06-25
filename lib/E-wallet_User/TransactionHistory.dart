@@ -5,10 +5,13 @@ class UserTransactionHistoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: Container(
-        width: double.infinity,
-        height: double.infinity,
+        width: screenWidth,
+        height: screenHeight,
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/image/UserMainBackground.jpg'),
@@ -17,131 +20,74 @@ class UserTransactionHistoryPage extends StatelessWidget {
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.symmetric(
+              horizontal: screenWidth * 0.05,
+              vertical: screenHeight * 0.02,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Back button with image and text
+                // Back button
                 Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Image.asset(
-                            'assets/image/BackButton.jpg',
-                            width: 40,
-                            height: 40,
-                            fit: BoxFit.cover,
+                  padding: EdgeInsets.only(top: screenHeight * 0.02),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.asset(
+                          'assets/image/BackButton.jpg',
+                          width: screenWidth * 0.1,
+                          height: screenWidth * 0.1,
+                          fit: BoxFit.cover,
+                        ),
+                        SizedBox(width: screenWidth * 0.02),
+                        Text(
+                          'Back',
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.06,
+                            fontWeight: FontWeight.bold,
                           ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            'Back',
-                            style: TextStyle(
-                              fontSize: 25,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 30),
+                SizedBox(height: screenHeight * 0.03),
 
                 // Amount & Expense
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Column(
-                      children: [
-                        const Text(
-                          'Amount',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 40, vertical: 10),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.black, width: 2),
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                          child: const Text(
-                            'RM888.00',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(width: 30),
-
-                    Column(
-                      children: [
-                        const Text(
-                          'Expense',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 40, vertical: 10),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.black, width: 2),
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                          child: const Text(
-                            'RM108.00',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                    _buildAmountBox('Amount', 'RM888.00', screenWidth * 0.9),
+                    _buildAmountBox('Expense', 'RM108.00', screenWidth * 0.9),
                   ],
                 ),
-                const SizedBox(height: 30),
+                SizedBox(height: screenHeight * 0.03),
 
-                // Chart image
+                // Chart
                 Center(
                   child: Image.asset(
                     'assets/image/Transaction_Graph.png',
-                    width: 350,
+                    width: screenWidth * 0.9,
                   ),
                 ),
-                const SizedBox(height: 30),
+                SizedBox(height: screenHeight * 0.03),
 
-                // Transaction history label
-                const Text(
+                Text(
                   'Transaction history',
                   style: TextStyle(
-                    fontSize: 27,
+                    fontSize: screenWidth * 0.07,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: screenHeight * 0.02),
 
-                // Transaction items (static for now)
-                _buildTransactionItem('+RM888.00', 'Top up', '24/12/2024'),
-                _buildTransactionItem(
-                    '-RM8.00', 'Pearl Milk Tea', '23/12/2024'),
-                _buildTransactionItem('-RM100.00', 'Clinic', '21/12/2024'),
+                _buildTransactionItem('+RM888.00', 'Top up', '24/12/2024', screenWidth),
+                _buildTransactionItem('-RM8.00', 'Pearl Milk Tea', '23/12/2024', screenWidth),
+                _buildTransactionItem('-RM100.00', 'Clinic', '21/12/2024', screenWidth),
               ],
             ),
           ),
@@ -150,7 +96,39 @@ class UserTransactionHistoryPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTransactionItem(String amount, String title, String date) {
+  Widget _buildAmountBox(String label, String value, double screenWidth) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: screenWidth * 0.05,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: 8),
+        Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: screenWidth * 0.1,
+            vertical: 10,
+          ),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.black, width: 2),
+            borderRadius: BorderRadius.circular(25),
+          ),
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: screenWidth * 0.045,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTransactionItem(String amount, String title, String date, double screenWidth) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(15),
@@ -161,37 +139,35 @@ class UserTransactionHistoryPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 标题和金额在同一行
+          // Title and Amount
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 25,
+                style: TextStyle(
+                  fontSize: screenWidth * 0.06,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               Text(
                 amount,
                 style: TextStyle(
-                  fontSize: 25,
+                  fontSize: screenWidth * 0.06,
                   fontWeight: FontWeight.bold,
                   color: amount.startsWith('+') ? Colors.green : Colors.red,
                 ),
               ),
             ],
           ),
-
-          // 日期单独一行，靠右对齐
           Align(
             alignment: Alignment.centerRight,
             child: Padding(
               padding: const EdgeInsets.only(top: 5),
               child: Text(
                 date,
-                style: const TextStyle(
-                  fontSize: 20,
+                style: TextStyle(
+                  fontSize: screenWidth * 0.045,
                   fontWeight: FontWeight.bold,
                 ),
               ),

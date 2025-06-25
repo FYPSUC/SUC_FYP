@@ -8,6 +8,15 @@ class UserClinicPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery
+        .of(context)
+        .size
+        .width;
+    final screenHeight = MediaQuery
+        .of(context)
+        .size
+        .height;
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -20,31 +29,28 @@ class UserClinicPage extends StatelessWidget {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 顶部返回按钮区域
+                // 顶部返回按钮
                 Padding(
-                  padding: const EdgeInsets.only(top: 20),
+                  padding: EdgeInsets.only(top: screenHeight * 0.02),
                   child: GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
+                    onTap: () => Navigator.pop(context),
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Image.asset(
                           'assets/image/BackButton.jpg',
-                          width: 40,
-                          height: 40,
+                          width: screenWidth * 0.1,
+                          height: screenWidth * 0.1,
                           fit: BoxFit.cover,
                         ),
-                        const SizedBox(width: 8),
-                        const Text(
+                        SizedBox(width: screenWidth * 0.02),
+                        Text(
                           'Back',
                           style: TextStyle(
-                            fontSize: 25,
+                            fontSize: screenWidth * 0.065,
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
                           ),
@@ -54,13 +60,13 @@ class UserClinicPage extends StatelessWidget {
                   ),
                 ),
 
-                // 中间区域：QR code标题
+                // 中间 Clinic 标题
                 Expanded(
                   child: Center(
                     child: Text(
                       'Clinic',
                       style: TextStyle(
-                        fontSize: 40,
+                        fontSize: screenWidth * 0.1,
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
                         shadows: [
@@ -75,120 +81,35 @@ class UserClinicPage extends StatelessWidget {
                   ),
                 ),
 
-                // 底部按钮区域：Receive 与 Scan 模块
+                // 底部按钮
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 260), // 调整底部间距
+                  padding: EdgeInsets.only(bottom: screenHeight * 0.28),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      // Receive 区域
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder:
-                                      (context) =>
-                                          const ClinicHistoryAppointmentPage(),
-                                ),
-                              );
-                            },
-                            child: Container(
-                              width: 150, // 增大宽度
-                              height: 220, // 增大高度
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(15),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.3),
-                                    blurRadius: 5,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              // 显示 Receive 图标
-                              child: Padding(
-                                // 添加内边距使图片不贴边
-                                padding: const EdgeInsets.all(5),
-                                child: Image.asset(
-                                  'assets/image/HistoryAppointment_icon.png',
-                                  fit: BoxFit.contain, // 保持图片比例
-                                ),
-                              ),
+                      buildClinicButton(
+                        context,
+                        iconPath: 'assets/image/HistoryAppointment_icon.png',
+                        label: 'History\nAppointment',
+                        onTap: () =>
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (
+                                  context) => const ClinicHistoryAppointmentPage()),
                             ),
-                          ),
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            height: 80,
-                            child: const Text(
-                              textAlign: TextAlign.center,
-                              'History\nAppointment',
-                              style: TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                        ],
+                        screenWidth: screenWidth,
                       ),
-
-                      // Scan 区域
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder:
-                                      (context) => const ClinicCalendarPage(),
-                                ),
-                              );
-                            },
-                            child: Container(
-                              width: 150, // 增大宽度
-                              height: 220, // 增大高度
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(15),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.3),
-                                    blurRadius: 5,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              // 显示 Scan 图标
-                              child: Padding(
-                                // 添加内边距使图片不贴边
-                                padding: const EdgeInsets.all(5),
-                                child: Image.asset(
-                                  'assets/image/Booking_icon.png',
-                                  fit: BoxFit.contain, // 保持图片比例
-                                ),
-                              ),
+                      buildClinicButton(
+                        context,
+                        iconPath: 'assets/image/Booking_icon.png',
+                        label: 'Booking',
+                        onTap: () =>
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (
+                                  context) => const ClinicCalendarPage()),
                             ),
-                          ),
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            height: 80,
-                            child: const Text(
-                              'Booking',
-                              style: TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                        ],
+                        screenWidth: screenWidth,
                       ),
                     ],
                   ),
@@ -198,6 +119,62 @@ class UserClinicPage extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget buildClinicButton(BuildContext context, {
+    required String iconPath,
+    required String label,
+    required VoidCallback onTap,
+    required double screenWidth,
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GestureDetector(
+          onTap: onTap,
+          child: Container(
+            width: screenWidth * 0.38,
+            height: screenWidth * 0.52,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(15),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 5,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(screenWidth * 0.03),
+              child: Image.asset(
+                iconPath,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+        ),
+        SizedBox(height: screenWidth * 0.025),
+        // ⬇ label区域统一高度
+        SizedBox(
+          height: screenWidth * 0.18, // 固定label高度
+          width: screenWidth * 0.38,
+          child: Center(
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: screenWidth * 0.05,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+                height: 1.2, // 控制行距
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

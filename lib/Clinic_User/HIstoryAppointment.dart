@@ -5,6 +5,9 @@ class ClinicHistoryAppointmentPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -15,25 +18,25 @@ class ClinicHistoryAppointmentPage extends StatelessWidget {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 20),
+                SizedBox(height: screenHeight * 0.02),
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
                   child: Row(
                     children: [
                       Image.asset(
                         'assets/image/BackButton.jpg',
-                        width: 40,
-                        height: 40,
+                        width: screenWidth * 0.12,
+                        height: screenWidth * 0.12,
                       ),
-                      const SizedBox(width: 8),
-                      const Text(
+                      SizedBox(width: screenWidth * 0.02),
+                      Text(
                         'Back',
                         style: TextStyle(
-                          fontSize: 25,
+                          fontSize: screenWidth * 0.065,
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
@@ -41,39 +44,43 @@ class ClinicHistoryAppointmentPage extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 30),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 40),
-                  child: Text(
-                    textAlign: TextAlign.center,
-                    'The time you have booked',
-                    style: TextStyle(
-                      fontSize: 35,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                SizedBox(height: screenHeight * 0.04),
+
+                // Title
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: screenHeight * 0.03),
+                  child: Center(
+                    child: Text(
+                      'The time you have booked',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.08,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: screenHeight * 0.02),
 
+                // Appointment Box
                 Container(
                   width: double.infinity,
-                  height: 60,
+                  height: screenHeight * 0.08,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withOpacity(0.85),
                     borderRadius: BorderRadius.circular(15),
                     border: Border.all(color: Colors.black, width: 2),
                   ),
-
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
+                    padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
+                      children: [
                         Text(
                           '10:00 am',
                           style: TextStyle(
-                            fontSize: 25,
+                            fontSize: screenWidth * 0.06,
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
                           ),
@@ -81,7 +88,7 @@ class ClinicHistoryAppointmentPage extends StatelessWidget {
                         Text(
                           '1/12/2025',
                           style: TextStyle(
-                            fontSize: 25,
+                            fontSize: screenWidth * 0.06,
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
                           ),

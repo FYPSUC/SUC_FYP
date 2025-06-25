@@ -29,6 +29,9 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -40,46 +43,47 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
             child: Column(
               children: [
-                const SizedBox(height: 20),
+                SizedBox(height: screenHeight * 0.02),
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
                   child: Row(
                     children: [
                       Image.asset(
                         'assets/image/BackButton.jpg',
-                        width: 40,
-                        height: 40,
+                        width: screenWidth * 0.1,
+                        height: screenWidth * 0.1,
                       ),
-                      const SizedBox(width: 8),
-                      const Text(
+                      SizedBox(width: screenWidth * 0.02),
+                      Text(
                         'Back',
                         style: TextStyle(
-                          fontSize: 24,
+                          fontSize: screenWidth * 0.06,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
-
+                SizedBox(height: screenHeight * 0.02),
                 Expanded(
                   child: SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Order summary',
-                          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.07,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        const SizedBox(height: 20),
-
+                        SizedBox(height: screenHeight * 0.02),
                         Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.all(16),
+                          padding: EdgeInsets.all(screenWidth * 0.04),
                           decoration: BoxDecoration(
                             color: Colors.white.withOpacity(0.9),
                             borderRadius: BorderRadius.circular(20),
@@ -94,67 +98,57 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
                                   final item = widget.selectedItems.keys.elementAt(index);
                                   final quantity = widget.selectedItems[item]!;
                                   return Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 6),
+                                    padding: EdgeInsets.symmetric(vertical: screenHeight * 0.008),
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
                                           '$quantity x ${item.name}',
-                                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                          style: TextStyle(
+                                            fontSize: screenWidth * 0.05,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                         Text(
                                           'RM ${(item.price * quantity).toStringAsFixed(2)}',
-                                          style: const TextStyle(fontSize: 20),
+                                          style: TextStyle(fontSize: screenWidth * 0.05),
                                         ),
                                       ],
                                     ),
                                   );
                                 },
                               ),
-                              const Divider(color: Colors.black, thickness: 2),
-                              const SizedBox(height: 10),
-
+                              Divider(color: Colors.black, thickness: 2),
+                              SizedBox(height: screenHeight * 0.01),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text(
-                                    'Subtotal',
-                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(
-                                    'RM ${subtotal.toStringAsFixed(2)}',
-                                    style: const TextStyle(fontSize: 20),
-                                  ),
+                                  Text('Subtotal', style: TextStyle(fontSize: screenWidth * 0.05, fontWeight: FontWeight.bold)),
+                                  Text('RM ${subtotal.toStringAsFixed(2)}', style: TextStyle(fontSize: screenWidth * 0.05)),
                                 ],
                               ),
                               if (selectedVoucher != null) ...[
-                                const SizedBox(height: 6),
+                                SizedBox(height: screenHeight * 0.01),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
                                       'Voucher (${selectedVoucher!.code})',
-                                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                      style: TextStyle(fontSize: screenWidth * 0.05, fontWeight: FontWeight.bold),
                                     ),
                                     Text(
                                       '- RM ${discount.toStringAsFixed(2)}',
-                                      style: const TextStyle(fontSize: 20, color: Colors.red),
+                                      style: TextStyle(fontSize: screenWidth * 0.05, color: Colors.red),
                                     ),
                                   ],
                                 ),
                               ],
-                              const SizedBox(height: 6),
+                              SizedBox(height: screenHeight * 0.01),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text(
-                                    'Total',
-                                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(
-                                    'RM ${totalPrice.toStringAsFixed(2)}',
-                                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                                  ),
+                                  Text('Total', style: TextStyle(fontSize: screenWidth * 0.055, fontWeight: FontWeight.bold)),
+                                  Text('RM ${totalPrice.toStringAsFixed(2)}', style: TextStyle(fontSize: screenWidth * 0.055, fontWeight: FontWeight.bold)),
                                 ],
                               ),
                             ],
@@ -164,25 +158,22 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
                     ),
                   ),
                 ),
-
-                const SizedBox(height: 20),
+                SizedBox(height: screenHeight * 0.02),
                 GestureDetector(
                   onTap: () async {
                     await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => UserVoucherPage(
-                          onVoucherSelected: (Voucher voucher) {
-                            setState(() {
-                              selectedVoucher = voucher;
-                            });
+                          onVoucherSelected: (voucher) {
+                            setState(() => selectedVoucher = voucher);
                           },
                         ),
                       ),
                     );
                   },
                   child: Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(screenWidth * 0.04),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(15),
@@ -194,18 +185,17 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
                           selectedVoucher != null
                               ? 'Voucher: ${selectedVoucher!.code}'
                               : 'Use voucher',
-                          style: const TextStyle(fontSize: 20),
+                          style: TextStyle(fontSize: screenWidth * 0.05),
                         ),
-                        const Icon(Icons.arrow_forward_ios, size: 24),
+                        Icon(Icons.arrow_forward_ios, size: screenWidth * 0.06),
                       ],
                     ),
                   ),
                 ),
-
-                const SizedBox(height: 20),
+                SizedBox(height: screenHeight * 0.02),
                 SizedBox(
                   width: double.infinity,
-                  height: 60,
+                  height: screenHeight * 0.07,
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.push(
@@ -217,13 +207,16 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
                       backgroundColor: Colors.green,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Place Order',
-                      style: TextStyle(fontSize: 24, color: Colors.white),
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.06,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: screenHeight * 0.02),
               ],
             ),
           ),

@@ -46,6 +46,9 @@ class _StoreMenuPageState extends State<StoreMenuPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -57,35 +60,35 @@ class _StoreMenuPageState extends State<StoreMenuPage> {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 18),
-                // 返回按钮
+                SizedBox(height: screenHeight * 0.02),
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
                   child: Row(
                     children: [
                       Image.asset(
                         'assets/image/BackButton.jpg',
-                        width: 40,
-                        height: 40,
+                        width: screenWidth * 0.1,
+                        height: screenWidth * 0.1,
                         fit: BoxFit.cover,
                       ),
-                      const SizedBox(width: 8),
-                      const Text(
+                      SizedBox(width: screenWidth * 0.02),
+                      Text(
                         'Back',
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.06,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 30),
-
-                // 商店信息
+                SizedBox(height: screenHeight * 0.03),
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(screenWidth * 0.02),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
@@ -96,26 +99,33 @@ class _StoreMenuPageState extends State<StoreMenuPage> {
                         borderRadius: BorderRadius.circular(8),
                         child: Image.asset(
                           widget.store.image,
-                          width: 130,
-                          height: 130,
+                          width: screenWidth * 0.3,
+                          height: screenWidth * 0.3,
                           fit: BoxFit.cover,
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Text(
-                        '${widget.store.name}\n - ${widget.store.location}',
-                        style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                      SizedBox(width: screenWidth * 0.03),
+                      Expanded(
+                        child: Text(
+                          '${widget.store.name}\n - ${widget.store.location}',
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.055,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 25),
-
-                // 菜单标题
-                const Text('Menu', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 5),
-
-                // 菜单项列表
+                SizedBox(height: screenHeight * 0.06),
+                Text(
+                  'Menu',
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.075,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: screenHeight * 0.001),
                 Expanded(
                   child: ListView.builder(
                     itemCount: widget.store.menu.length,
@@ -123,77 +133,84 @@ class _StoreMenuPageState extends State<StoreMenuPage> {
                       final item = widget.store.menu[index];
                       final count = itemCounts[item.name]!;
                       return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        padding: EdgeInsets.symmetric(vertical: screenHeight * 0.015),
                         child: Row(
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(20),
                               child: Image.asset(
                                 item.image,
-                                width: 130,
-                                height: 130,
+                                width: screenWidth * 0.3,
+                                height: screenWidth * 0.3,
                                 fit: BoxFit.cover,
                               ),
                             ),
-                            const SizedBox(width: 14),
+                            SizedBox(width: screenWidth * 0.03),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(item.name, style: const TextStyle(fontSize: 23, fontWeight: FontWeight.bold)),
-                                  Text('RM ${item.price.toStringAsFixed(1)}', style: const TextStyle(fontSize: 23)),
+                                  Text(
+                                    item.name,
+                                    style: TextStyle(
+                                      fontSize: screenWidth * 0.055,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    'RM ${item.price.toStringAsFixed(1)}',
+                                    style: TextStyle(fontSize: screenWidth * 0.05),
+                                  ),
                                 ],
                               ),
                             ),
-                            if (count == 0)
-                              IconButton(
-                                icon: const Icon(Icons.add_circle_outline, size: 30),
-                                onPressed: () => increaseItem(item.name),
-                              )
-                            else
-                              Row(
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.remove_circle_outline, size: 30),
-                                    onPressed: () => decreaseItem(item.name),
+                            count == 0
+                                ? IconButton(
+                              icon: Icon(Icons.add_circle_outline, size: screenWidth * 0.07),
+                              onPressed: () => increaseItem(item.name),
+                            )
+                                : Row(
+                              children: [
+                                IconButton(
+                                  icon: Icon(Icons.remove_circle_outline, size: screenWidth * 0.07),
+                                  onPressed: () => decreaseItem(item.name),
+                                ),
+                                Text(
+                                  '$count',
+                                  style: TextStyle(
+                                    fontSize: screenWidth * 0.05,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                  Text('$count', style: const TextStyle(fontSize: 23, fontWeight: FontWeight.bold)),
-                                  IconButton(
-                                    icon: const Icon(Icons.add_circle_outline, size: 30),
-                                    onPressed: () => increaseItem(item.name),
-                                  ),
-                                ],
-                              ),
+                                ),
+                                IconButton(
+                                  icon: Icon(Icons.add_circle_outline, size: screenWidth * 0.07),
+                                  onPressed: () => increaseItem(item.name),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       );
                     },
                   ),
                 ),
-
-                // 购物篮
                 if (totalItems > 0)
                   GestureDetector(
                     onTap: () {
-                      Map<models.MenuItem, int> selectedItems = {};
-                      for (var item in widget.store.menu) {
-                        if (itemCounts[item.name]! > 0) {
-                          selectedItems[item] = itemCounts[item.name]!;
-                        }
-                      }
+                      final selectedItems = {
+                        for (var item in widget.store.menu)
+                          if (itemCounts[item.name]! > 0) item: itemCounts[item.name]!,
+                      };
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => OrderSummaryPage(
-                              selectedItems: selectedItems.map((item, count) =>
-                                  MapEntry<models.MenuItem, int>(item as models.MenuItem, count))
-                          ),
+                          builder: (context) => OrderSummaryPage(selectedItems: selectedItems),
                         ),
                       );
                     },
                     child: Container(
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      padding: const EdgeInsets.all(12),
+                      margin: EdgeInsets.symmetric(vertical: screenHeight * 0.01),
+                      padding: EdgeInsets.all(screenWidth * 0.03),
                       width: double.infinity,
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -203,7 +220,10 @@ class _StoreMenuPageState extends State<StoreMenuPage> {
                       child: Text(
                         'Basket • $totalItems Item${totalItems > 1 ? 's' : ''} RM ${totalPrice.toStringAsFixed(1)}',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.055,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),

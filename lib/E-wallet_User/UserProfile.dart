@@ -6,6 +6,9 @@ class UserProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Stack(
@@ -22,89 +25,71 @@ class UserProfilePage extends StatelessWidget {
           ),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  SizedBox(height: screenHeight * 0.03),
                   // Back button
-                  Padding(
-                    padding: const EdgeInsets.only(left: 0, top: 20),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const UserMainPage()),
-                          );
-                        },
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min, // Important to prevent row from expanding
-                          children: [
-                            Image.asset(
-                              'assets/image/BackButton.jpg',
-                              width: 40,
-                              height: 40,
-                              fit: BoxFit.cover,
-                            ),
-                            const SizedBox(width: 8), // Add some spacing between icon and text
-                            const Text(
-                              'Back',
-                              style: TextStyle(
-                                fontSize: 25,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const UserMainPage()),
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          'assets/image/BackButton.jpg',
+                          width: screenWidth * 0.08,
+                          height: screenWidth * 0.08,
+                          fit: BoxFit.cover,
                         ),
-                      ),
+                        SizedBox(width: screenWidth * 0.02),
+                        Text(
+                          'Back',
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.06,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-
-                  const SizedBox(height: 30),
+                  SizedBox(height: screenHeight * 0.04),
 
                   // Profile picture and username
                   Row(
                     children: [
                       Container(
-                        width: 85,
-                        height: 85,
+                        width: screenWidth * 0.2,
+                        height: screenWidth * 0.2,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          image: DecorationImage(
+                          image: const DecorationImage(
                             image: AssetImage('assets/image/Profile_icon.png'),
                             fit: BoxFit.cover,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 20),
-                      const Text(
+                      SizedBox(width: screenWidth * 0.05),
+                      Text(
                         'Username',
                         style: TextStyle(
-                          fontSize: 24,
+                          fontSize: screenWidth * 0.06,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
                   ),
 
-                  const Divider(height: 40, thickness: 2, color: Colors.black),
-                  const SizedBox(height: 20),
-
-                  // Email (read-only)
-                  _buildInfoRow('Email', 'JohnWick@gmail.com'),
-                  const SizedBox(height: 20),
-
-                  const Divider(height: 40, thickness: 1, color: Colors.black),
-
-                  // Password (read-only with visibility toggle)
-                  _buildPasswordRow(),
-                  const SizedBox(height: 20),
-
-                  const Divider(height: 40, thickness: 1, color: Colors.black),
-
-                  // 6-Digit PIN (editable)
-                  _buildPinRow(),
+                  Divider(height: screenHeight * 0.05, thickness: 2, color: Colors.black),
+                  _buildInfoRow('Email', 'JohnWick@gmail.com', screenWidth),
+                  Divider(height: screenHeight * 0.05, thickness: 1, color: Colors.black),
+                  _buildPasswordRow(screenWidth),
+                  Divider(height: screenHeight * 0.05, thickness: 1, color: Colors.black),
+                  _buildPinRow(screenWidth, context),
                 ],
               ),
             ),
@@ -114,18 +99,18 @@ class UserProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(String label, String value, double screenWidth) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.bold)),
+        Text(label, style: TextStyle(fontSize: screenWidth * 0.045, fontWeight: FontWeight.bold)),
         const SizedBox(height: 15),
         TextField(
           readOnly: true,
           decoration: InputDecoration(
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             hintText: value,
-            hintStyle: TextStyle(color: Colors.black, fontSize: 17),
+            hintStyle: TextStyle(fontSize: screenWidth * 0.04),
             filled: true,
             fillColor: Colors.grey[200],
             border: OutlineInputBorder(
@@ -138,15 +123,14 @@ class UserProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildPasswordRow() {
+  Widget _buildPasswordRow(double screenWidth) {
     bool obscureText = true;
-
     return StatefulBuilder(
       builder: (context, setState) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Password', style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.bold)),
+            Text('Password', style: TextStyle(fontSize: screenWidth * 0.045, fontWeight: FontWeight.bold)),
             const SizedBox(height: 15),
             TextField(
               readOnly: true,
@@ -172,8 +156,7 @@ class UserProfilePage extends StatelessWidget {
     );
   }
 
-
-  Widget _buildPinRow() {
+  Widget _buildPinRow(double screenWidth, BuildContext context) {
     String pin = '';
     bool obscureText = true;
     bool isEditing = false;
@@ -183,7 +166,7 @@ class UserProfilePage extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('6-Digit pin', style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.bold)),
+            Text('6-Digit pin', style: TextStyle(fontSize: screenWidth * 0.045, fontWeight: FontWeight.bold)),
             const SizedBox(height: 15),
             if (!isEditing && pin.isEmpty)
               ElevatedButton(
@@ -266,7 +249,6 @@ class UserProfilePage extends StatelessWidget {
 
   void _showPinDialog(BuildContext context, Function(String) onPinEntered) {
     String enteredPin = '';
-
     showDialog(
       context: context,
       builder: (context) {
@@ -276,18 +258,12 @@ class UserProfilePage extends StatelessWidget {
             keyboardType: TextInputType.number,
             maxLength: 6,
             obscureText: true,
-            onChanged: (value) {
-              enteredPin = value;
-            },
-            decoration: const InputDecoration(
-              hintText: '000000',
-            ),
+            onChanged: (value) => enteredPin = value,
+            decoration: const InputDecoration(hintText: '000000'),
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
+              onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
             ),
             TextButton(

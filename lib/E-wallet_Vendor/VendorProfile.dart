@@ -7,6 +7,9 @@ class VendorProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: Stack(
@@ -23,103 +26,82 @@ class VendorProfilePage extends StatelessWidget {
           ),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   return SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
                     child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: constraints.maxHeight,
-                      ),
+                      constraints: BoxConstraints(minHeight: constraints.maxHeight),
                       child: IntrinsicHeight(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Back button
-                            Padding(
-                              padding: const EdgeInsets.only(left: 0, top: 20),
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                          const VendorMainPage()),
-                                    );
-                                  },
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Image.asset(
-                                        'assets/image/BackButton.jpg',
-                                        width: 40,
-                                        height: 40,
-                                        fit: BoxFit.cover,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      const Text(
-                                        'Back',
-                                        style: TextStyle(
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
+                            SizedBox(height: screenHeight * 0.03),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => const VendorMainPage()));
+                              },
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Image.asset(
+                                    'assets/image/BackButton.jpg',
+                                    width: screenWidth * 0.08,
+                                    height: screenWidth * 0.08,
                                   ),
-                                ),
+                                  SizedBox(width: screenWidth * 0.02),
+                                  Text(
+                                    'Back',
+                                    style: TextStyle(
+                                      fontSize: screenWidth * 0.06,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-
-                            const SizedBox(height: 30),
-
-                            // Profile picture and username with Set Shop button
+                            SizedBox(height: screenHeight * 0.04),
                             Row(
                               children: [
                                 Container(
-                                  width: 85,
-                                  height: 85,
-                                  decoration: BoxDecoration(
+                                  width: screenWidth * 0.20,
+                                  height: screenWidth * 0.20,
+                                  decoration: const BoxDecoration(
                                     shape: BoxShape.circle,
-                                    image: const DecorationImage(
-                                      image: AssetImage(
-                                          'assets/image/Profile_icon.png'),
+                                    image: DecorationImage(
+                                      image: AssetImage('assets/image/Profile_icon.png'),
                                       fit: BoxFit.cover,
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: 20),
-                                const Text(
+                                SizedBox(width: screenWidth * 0.05),
+                                Text(
                                   'Username',
                                   style: TextStyle(
-                                    fontSize: 24,
+                                    fontSize: screenWidth * 0.06,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 const Spacer(),
                                 ElevatedButton(
                                   onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                          const VendorSetShopPage()),
-                                    );
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => const VendorSetShopPage()));
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.blue[700],
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 20, vertical: 12),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: screenWidth * 0.05,
+                                      vertical: screenHeight * 0.015,
+                                    ),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(30),
                                     ),
                                   ),
-                                  child: const Text(
+                                  child: Text(
                                     'Set Shop',
                                     style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: screenWidth * 0.045,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                     ),
@@ -127,35 +109,18 @@ class VendorProfilePage extends StatelessWidget {
                                 ),
                               ],
                             ),
-
-                            const Divider(height: 40, thickness: 2, color: Colors.black),
-                            const SizedBox(height: 20),
-
-                            // Email (read-only)
-                            _buildInfoRow('Email', 'JohnWick@gmail.com'),
-                            const SizedBox(height: 20),
-
-                            // Shop Name
-                            _buildInfoRow('Shop Name', 'The Alley'),
-                            const SizedBox(height: 20),
-
-                            // Pick Up Address
-                            _buildInfoRow('Pick Up Address', 'IEB'),
-                            const SizedBox(height: 20),
-
-                            const Divider(height: 40, thickness: 1, color: Colors.black),
-
-                            // Password (read-only with visibility toggle)
-                            _buildPasswordRow(),
-                            const SizedBox(height: 20),
-
-                            const Divider(height: 40, thickness: 1, color: Colors.black),
-
-                            // 6-Digit PIN (editable) - 修正标题拼写错误
-                            _buildPinRow(),
-
-                            // 添加底部间距
-                            const SizedBox(height: 40),
+                            Divider(height: screenHeight * 0.05, thickness: 2, color: Colors.black),
+                            SizedBox(height: screenHeight * 0.02),
+                            _buildInfoRow('Email', 'JohnWick@gmail.com', screenWidth),
+                            SizedBox(height: screenHeight * 0.02),
+                            _buildInfoRow('Shop Name', 'The Alley', screenWidth),
+                            SizedBox(height: screenHeight * 0.02),
+                            _buildInfoRow('Pick Up Address', 'IEB', screenWidth),
+                            Divider(height: screenHeight * 0.05, thickness: 1, color: Colors.black),
+                            _buildPasswordRow(screenWidth),
+                            Divider(height: screenHeight * 0.05, thickness: 1, color: Colors.black),
+                            _buildPinRow(screenWidth),
+                            SizedBox(height: screenHeight * 0.05),
                           ],
                         ),
                       ),
@@ -170,38 +135,23 @@ class VendorProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(String label, String value, double screenWidth) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 20,
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        Text(label, style: TextStyle(fontSize: screenWidth * 0.045, fontWeight: FontWeight.bold)),
         const SizedBox(height: 15),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(25),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    value,
-                    style: const TextStyle(
-                      fontSize: 17,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-              ],
+        TextField(
+          readOnly: true,
+          decoration: InputDecoration(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            hintText: value,
+            hintStyle: TextStyle(fontSize: screenWidth * 0.04),
+            filled: true,
+            fillColor: Colors.grey[200],
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(25),
+              borderSide: BorderSide.none,
             ),
           ),
         ),
@@ -209,16 +159,15 @@ class VendorProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildPasswordRow() {
+  Widget _buildPasswordRow(double screenWidth) {
     bool obscureText = true;
-
     return StatefulBuilder(
       builder: (context, setState) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Password', style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 15),
+            Text('Password', style: TextStyle(fontSize: screenWidth * 0.05, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
             TextField(
               readOnly: true,
               obscureText: obscureText,
@@ -228,9 +177,9 @@ class VendorProfilePage extends StatelessWidget {
                   icon: Icon(obscureText ? Icons.visibility : Icons.visibility_off),
                   onPressed: () => setState(() => obscureText = !obscureText),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 filled: true,
                 fillColor: Colors.grey[200],
+                contentPadding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04, vertical: 14),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(25),
                   borderSide: BorderSide.none,
@@ -243,7 +192,7 @@ class VendorProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildPinRow() {
+  Widget _buildPinRow(double screenWidth) {
     String pin = '';
     bool obscureText = true;
     bool isEditing = false;
@@ -253,16 +202,8 @@ class VendorProfilePage extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 修正拼写错误：6-Digit pin (原为6-Dinit nin)
-            const Text(
-              '6-Digit PIN', // 修正后的标题
-              style: TextStyle(
-                fontSize: 20,
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 15),
+            Text('6-Digit PIN', style: TextStyle(fontSize: screenWidth * 0.05, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
             if (!isEditing && pin.isEmpty)
               ElevatedButton(
                 onPressed: () {
@@ -285,7 +226,6 @@ class VendorProfilePage extends StatelessWidget {
                   suffixIcon: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // 眼睛图标 - 点击切换显示/隐藏PIN
                       IconButton(
                         icon: Icon(obscureText ? Icons.visibility : Icons.visibility_off),
                         onPressed: () => setState(() => obscureText = !obscureText),
@@ -304,9 +244,9 @@ class VendorProfilePage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   filled: true,
                   fillColor: Colors.grey[200],
+                  contentPadding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04, vertical: 14),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(25),
                     borderSide: BorderSide.none,
@@ -320,9 +260,9 @@ class VendorProfilePage extends StatelessWidget {
                 obscureText: true,
                 decoration: InputDecoration(
                   hintText: 'Enter 6-digit PIN',
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   filled: true,
                   fillColor: Colors.grey[200],
+                  contentPadding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04, vertical: 14),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(25),
                     borderSide: BorderSide.none,
@@ -358,17 +298,10 @@ class VendorProfilePage extends StatelessWidget {
             onChanged: (value) {
               enteredPin = value;
             },
-            decoration: const InputDecoration(
-              hintText: '000000',
-            ),
+            decoration: const InputDecoration(hintText: '000000'),
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Cancel'),
-            ),
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
             TextButton(
               onPressed: () {
                 if (enteredPin.length == 6) {

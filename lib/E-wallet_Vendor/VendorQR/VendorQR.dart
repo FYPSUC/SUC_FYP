@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'VendorQRReceive.dart';
 import 'VendorQRScan.dart';
-import 'package:suc_fyp/E-wallet_User/UserMain.dart';
 
 class VendorQRPage extends StatelessWidget {
   const VendorQRPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -20,47 +22,45 @@ class VendorQRPage extends StatelessWidget {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 顶部返回按钮区域
-                Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Image.asset(
-                          'assets/image/BackButton.jpg',
-                          width: 40,
-                          height: 40,
-                          fit: BoxFit.cover,
+                SizedBox(height: screenHeight * 0.02),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.asset(
+                        'assets/image/BackButton.jpg',
+                        width: screenWidth * 0.1,
+                        height: screenWidth * 0.1,
+                        fit: BoxFit.cover,
+                      ),
+                      SizedBox(width: screenWidth * 0.02),
+                      Text(
+                        'Back',
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.065,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
                         ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Back',
-                          style: TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
 
-                // 中间区域：QR code标题
+                // 中间标题
                 Expanded(
                   child: Center(
                     child: Text(
                       'QR code',
                       style: TextStyle(
-                        fontSize: 40,
+                        fontSize: screenWidth * 0.1,
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
                         shadows: [
@@ -75,13 +75,13 @@ class VendorQRPage extends StatelessWidget {
                   ),
                 ),
 
-                // 底部按钮区域：Receive 与 Scan 模块
+                // 底部按钮区域：Receive 与 Scan
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 260), // 调整底部间距
+                  padding: EdgeInsets.only(bottom: screenHeight * 0.28),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      // Receive 区域
+                      // Receive
                       Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -95,8 +95,8 @@ class VendorQRPage extends StatelessWidget {
                               );
                             },
                             child: Container(
-                              width: 150, // 增大宽度
-                              height: 220, // 增大高度
+                              width: screenWidth * 0.38,
+                              height: screenHeight * 0.28,
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(15),
@@ -108,21 +108,20 @@ class VendorQRPage extends StatelessWidget {
                                   ),
                                 ],
                               ),
-                              // 显示 Receive 图标
-                              child: Padding( // 添加内边距使图片不贴边
-                                padding: const EdgeInsets.all(5),
+                              child: Padding(
+                                padding: EdgeInsets.all(screenWidth * 0.02),
                                 child: Image.asset(
                                   'assets/image/QRReceive_icon.png',
-                                  fit: BoxFit.contain, // 保持图片比例
+                                  fit: BoxFit.contain,
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(height: 10),
-                          const Text(
+                          SizedBox(height: screenHeight * 0.01),
+                          Text(
                             'Receive',
                             style: TextStyle(
-                              fontSize: 30,
+                              fontSize: screenWidth * 0.075,
                               fontWeight: FontWeight.bold,
                               color: Colors.black,
                             ),
@@ -130,7 +129,7 @@ class VendorQRPage extends StatelessWidget {
                         ],
                       ),
 
-                      // Scan 区域
+                      // Scan
                       Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -144,8 +143,8 @@ class VendorQRPage extends StatelessWidget {
                               );
                             },
                             child: Container(
-                              width: 150, // 增大宽度
-                              height: 220, // 增大高度
+                              width: screenWidth * 0.38,
+                              height: screenHeight * 0.28,
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(15),
@@ -157,21 +156,20 @@ class VendorQRPage extends StatelessWidget {
                                   ),
                                 ],
                               ),
-                              // 显示 Scan 图标
-                              child: Padding( // 添加内边距使图片不贴边
-                                padding: const EdgeInsets.all(5),
+                              child: Padding(
+                                padding: EdgeInsets.all(screenWidth * 0.02),
                                 child: Image.asset(
                                   'assets/image/QRScan_icon.png',
-                                  fit: BoxFit.contain, // 保持图片比例
+                                  fit: BoxFit.contain,
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(height: 10),
-                          const Text(
+                          SizedBox(height: screenHeight * 0.01),
+                          Text(
                             'Scan',
                             style: TextStyle(
-                              fontSize: 30,
+                              fontSize: screenWidth * 0.075,
                               fontWeight: FontWeight.bold,
                               color: Colors.black,
                             ),

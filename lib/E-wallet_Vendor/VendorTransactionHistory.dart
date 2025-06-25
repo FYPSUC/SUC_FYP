@@ -20,6 +20,9 @@ class _VendorTransactionHistoryPageState
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -32,128 +35,109 @@ class _VendorTransactionHistoryPageState
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.symmetric(
+              horizontal: screenWidth * 0.05,
+              vertical: screenHeight * 0.02,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 返回按钮
-                Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Image.asset(
-                          'assets/image/BackButton.jpg',
-                          width: 40,
-                          height: 40,
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Row(
+                    children: [
+                      Image.asset(
+                        'assets/image/BackButton.jpg',
+                        width: screenWidth * 0.1,
+                      ),
+                      SizedBox(width: screenWidth * 0.02),
+                      Text(
+                        'Back',
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.06,
+                          fontWeight: FontWeight.bold,
                         ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Back',
-                          style: TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 30),
-
-                // 收入与支出概览
+                SizedBox(height: screenHeight * 0.03),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildAmountCard('Income', 'RM38.00'),
-                    _buildAmountCard('Expense', 'RM88.00'),
+                    _buildAmountCard('Income', 'RM38.00', screenWidth),
+                    _buildAmountCard('Expense', 'RM88.00', screenWidth),
                   ],
                 ),
-                const SizedBox(height: 30),
-
-                // 图表区域 - 根据状态显示不同的图表组合
+                SizedBox(height: screenHeight * 0.03),
                 _showDetailedGraph
                     ? Column(
                   children: [
-                    // 双图表布局（上下排列）
                     Image.asset(
                       'assets/image/VendorTransaction_Graph.png',
-                      width: 350,
+                      width: screenWidth * 0.9,
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: screenHeight * 0.02),
                     Image.asset(
                       'assets/image/VendorTransaction_Graph2.png',
-                      width: 350,
+                      width: screenWidth * 0.9,
                     ),
-                    const SizedBox(height: 15),
-                    // 图表标题
-                    const Center(
+                    SizedBox(height: screenHeight * 0.02),
+                    Center(
                       child: Text(
                         'Monthly sales of products',
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: screenWidth * 0.05,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                   ],
                 )
-                    : Column(
+                    : Center(
+                  child: Image.asset(
+                    'assets/image/VendorTransaction_Graph.png',
+                    width: screenWidth * 0.9,
+                  ),
+                ),
+                SizedBox(height: screenHeight * 0.03),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // 单图表布局
-                    Center(
-                      child: Image.asset(
-                        'assets/image/VendorTransaction_Graph.png',
-                        width: 350,
+                    Text(
+                      'Transaction history',
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.065,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: _toggleGraphView,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.04,
+                          vertical: screenHeight * 0.01,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: Text(
+                        _showDetailedGraph ? 'View Less' : 'View More',
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.04,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
-
-                // 交易历史标题 + View More/Less按钮
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Transaction history',
-                        style: TextStyle(
-                          fontSize: 27,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: _toggleGraphView,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        ),
-                        child: Text(
-                          _showDetailedGraph ? 'View Less' : 'View More',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 15),
-
-                // 交易记录列表
-                _buildTransactionItem('Top up', '+RM20.00', '24/12/2024'),
-                _buildTransactionItem('StudentA', '+RM8.00', '23/12/2024'),
-                _buildTransactionItem('StudentB', '+RM10.00', '21/12/2024'),
+                SizedBox(height: screenHeight * 0.02),
+                _buildTransactionItem('Top up', '+RM20.00', '24/12/2024', screenWidth),
+                _buildTransactionItem('StudentA', '+RM8.00', '23/12/2024', screenWidth),
+                _buildTransactionItem('StudentB', '+RM10.00', '21/12/2024', screenWidth),
               ],
             ),
           ),
@@ -162,28 +146,30 @@ class _VendorTransactionHistoryPageState
     );
   }
 
-  // 金额卡片组件
-  Widget _buildAmountCard(String title, String amount) {
+  Widget _buildAmountCard(String title, String amount, double screenWidth) {
     return Column(
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 20,
+          style: TextStyle(
+            fontSize: screenWidth * 0.05,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: screenWidth * 0.02),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+          padding: EdgeInsets.symmetric(
+            horizontal: screenWidth * 0.08,
+            vertical: screenWidth * 0.025,
+          ),
           decoration: BoxDecoration(
             border: Border.all(color: Colors.black, width: 2),
             borderRadius: BorderRadius.circular(25),
           ),
           child: Text(
             amount,
-            style: const TextStyle(
-              fontSize: 18,
+            style: TextStyle(
+              fontSize: screenWidth * 0.045,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -192,11 +178,11 @@ class _VendorTransactionHistoryPageState
     );
   }
 
-  // 交易记录项组件
-  Widget _buildTransactionItem(String title, String amount, String date) {
+  Widget _buildTransactionItem(
+      String title, String amount, String date, double screenWidth) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(15),
+      margin: EdgeInsets.only(bottom: screenWidth * 0.03),
+      padding: EdgeInsets.all(screenWidth * 0.04),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.5),
         borderRadius: BorderRadius.circular(12),
@@ -209,15 +195,15 @@ class _VendorTransactionHistoryPageState
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 25,
+                style: TextStyle(
+                  fontSize: screenWidth * 0.06,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               Text(
                 amount,
                 style: TextStyle(
-                  fontSize: 25,
+                  fontSize: screenWidth * 0.06,
                   fontWeight: FontWeight.bold,
                   color: Colors.green,
                 ),
@@ -227,11 +213,11 @@ class _VendorTransactionHistoryPageState
           Align(
             alignment: Alignment.centerRight,
             child: Padding(
-              padding: const EdgeInsets.only(top: 5),
+              padding: EdgeInsets.only(top: screenWidth * 0.01),
               child: Text(
                 date,
-                style: const TextStyle(
-                  fontSize: 20,
+                style: TextStyle(
+                  fontSize: screenWidth * 0.045,
                   fontWeight: FontWeight.bold,
                 ),
               ),

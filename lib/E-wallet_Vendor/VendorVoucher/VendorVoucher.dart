@@ -72,6 +72,9 @@ class _VendorVoucherPageState extends State<VendorVoucherPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: Stack(
@@ -88,57 +91,51 @@ class _VendorVoucherPageState extends State<VendorVoucherPage> {
           ),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 顶部返回按钮
-                  Padding(
-                    padding: const EdgeInsets.only(top: 20),
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const VendorMainPage()),
-                        );
-                      },
-                      child: Row(
-                        children: [
-                          Image.asset(
-                            'assets/image/BackButton.jpg',
-                            width: 40,
-                            height: 40,
-                            fit: BoxFit.cover,
+                  SizedBox(height: screenHeight * 0.02),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const VendorMainPage()),
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          'assets/image/BackButton.jpg',
+                          width: screenWidth * 0.1,
+                          height: screenWidth * 0.1,
+                          fit: BoxFit.cover,
+                        ),
+                        SizedBox(width: screenWidth * 0.02),
+                        Text(
+                          'Back',
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.06,
+                            fontWeight: FontWeight.bold,
                           ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            'Back',
-                            style: TextStyle(
-                              fontSize: 25,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
 
-                  // 标题居中并下移
-                  const SizedBox(height: 40),
-                  const Center(
+                  SizedBox(height: screenHeight * 0.04),
+                  Center(
                     child: Text(
                       'Voucher List',
                       style: TextStyle(
-                        fontSize: 32,
+                        fontSize: screenWidth * 0.08,
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  SizedBox(height: screenHeight * 0.03),
 
-                  // 优惠券列表
                   Expanded(
                     child: ListView.builder(
                       physics: const BouncingScrollPhysics(),
@@ -146,6 +143,8 @@ class _VendorVoucherPageState extends State<VendorVoucherPage> {
                       itemBuilder: (context, index) {
                         final voucher = vouchers[index];
                         return _buildVoucherCard(
+                          context,
+                          screenWidth,
                           voucher: voucher,
                           onDelete: () => _deleteVoucher(voucher['id']),
                         );
@@ -153,63 +152,51 @@ class _VendorVoucherPageState extends State<VendorVoucherPage> {
                     ),
                   ),
 
-                  // 创建新优惠券按钮
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 30, top: 20),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.blue.shade800.withOpacity(0.3),
-                            spreadRadius: 2,
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 60,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const VendorCreateVoucherPage(),
-                              ),
-                            ).then((voucherData) {
-                              if (voucherData != null) {
-                                // 处理创建的优惠券数据
-                                setState(() {
-                                  vouchers.add({
-                                    'id': DateTime.now().millisecondsSinceEpoch.toString(),
-                                    'amount': voucherData['name'],
-                                    'expiry': 'Use before ${voucherData['date']}',
-                                    'claimed': 0,
-                                    'used': 0,
-                                    'unused': 0,
-                                    'name': voucherData['name'],
-                                    'discount': voucherData['amount'],
-                                    'date': voucherData['date'],
-                                  });
+                    padding: EdgeInsets.only(
+                      bottom: screenHeight * 0.03,
+                      top: screenHeight * 0.02,
+                    ),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: screenHeight * 0.07,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const VendorCreateVoucherPage(),
+                            ),
+                          ).then((voucherData) {
+                            if (voucherData != null) {
+                              setState(() {
+                                vouchers.add({
+                                  'id': DateTime.now().millisecondsSinceEpoch.toString(),
+                                  'amount': voucherData['name'],
+                                  'expiry': 'Use before ${voucherData['date']}',
+                                  'claimed': 0,
+                                  'used': 0,
+                                  'unused': 0,
+                                  'name': voucherData['name'],
+                                  'discount': voucherData['amount'],
+                                  'date': voucherData['date'],
                                 });
-                              }
-                            });
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue[700],
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(15),
-                            ),
+                              });
+                            }
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue[700],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(screenWidth * 0.04),
                           ),
-                          child: const Text(
-                            'Create New Voucher',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                        ),
+                        child: Text(
+                          'Create New Voucher',
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.05,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
                         ),
                       ),
@@ -224,174 +211,116 @@ class _VendorVoucherPageState extends State<VendorVoucherPage> {
     );
   }
 
-  // 美观的优惠券卡片组件
-  Widget _buildVoucherCard({
+  Widget _buildVoucherCard(BuildContext context, double screenWidth, {
     required Map<String, dynamic> voucher,
     required VoidCallback onDelete,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 25),
+      margin: EdgeInsets.only(bottom: screenWidth * 0.06),
+      padding: EdgeInsets.all(screenWidth * 0.04),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(screenWidth * 0.05),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.3),
-            spreadRadius: 2,
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
         ],
         gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
           colors: [Colors.white, Color(0xFFE3F2FD)],
         ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(15),
-        child: Row(
-          children: [
-            // 左侧优惠券图标
-            Container(
-              width: 80,
-              height: 80,
-              margin: const EdgeInsets.only(right: 15),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                image: const DecorationImage(
-                  image: AssetImage('assets/image/Voucher_icon.png'),
-                  fit: BoxFit.cover,
+      child: Row(
+        children: [
+          Container(
+            width: screenWidth * 0.2,
+            height: screenWidth * 0.2,
+            margin: EdgeInsets.only(right: screenWidth * 0.04),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(screenWidth * 0.03),
+              image: const DecorationImage(
+                image: AssetImage('assets/image/Voucher_icon.png'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  voucher['amount'],
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.06,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-            ),
-
-            // 右侧信息区域
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 优惠券金额
-                  Text(
-                    voucher['amount'],
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
+                SizedBox(height: screenWidth * 0.015),
+                Text(
+                  voucher['expiry'],
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.04,
+                    color: Colors.grey[700],
+                    fontStyle: FontStyle.italic,
                   ),
-                  const SizedBox(height: 8),
-
-                  // 有效期
-                  Text(
-                    voucher['expiry'],
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[700],
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-
-                  // 统计信息
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildStatBadge('Claimed', voucher['claimed'], Colors.blue),
-                      _buildStatBadge('Used', voucher['used'], Colors.green),
-                      _buildStatBadge('Unused', voucher['unused'], Colors.orange),
-                    ],
-                  ),
-                  const SizedBox(height: 15),
-
-                  // 操作按钮
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      // 编辑按钮
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => VendorVoucherDetailPage(
-                                voucherId: voucher['id'],
-                                voucherName: voucher['name'],
-                                discountAmount: voucher['discount'],
-                                expiredDate: voucher['date'],
-                                onUpdate: _updateVoucher,
-                              ),
+                ),
+                SizedBox(height: screenWidth * 0.04),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildStatBadge('Claimed', voucher['claimed'], Colors.blue, screenWidth),
+                    _buildStatBadge('Used', voucher['used'], Colors.green, screenWidth),
+                    _buildStatBadge('Unused', voucher['unused'], Colors.orange, screenWidth),
+                  ],
+                ),
+                SizedBox(height: screenWidth * 0.04),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _actionButton(
+                      label: 'Edit',
+                      icon: Icons.edit,
+                      color: Colors.blue,
+                      screenWidth: screenWidth,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => VendorVoucherDetailPage(
+                              voucherId: voucher['id'],
+                              voucherName: voucher['name'],
+                              discountAmount: voucher['discount'],
+                              expiredDate: voucher['date'],
+                              onUpdate: _updateVoucher,
                             ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue[700],
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 10),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
                           ),
-                          elevation: 3,
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.edit, size: 18, color: Colors.black),
-                            const SizedBox(width: 5),
-                            Text(
-                              'Edit',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // 删除按钮
-                      ElevatedButton(
-                        onPressed: onDelete,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red[700],
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 10),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          elevation: 3,
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.delete, size: 18, color: Colors.black),
-                            const SizedBox(width: 5),
-                            Text(
-                              'Delete',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                        );
+                      },
+                    ),
+                    _actionButton(
+                      label: 'Delete',
+                      icon: Icons.delete,
+                      color: Colors.red,
+                      screenWidth: screenWidth,
+                      onPressed: onDelete,
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  // 统计徽章组件
-  Widget _buildStatBadge(String label, int value, Color color) {
+  Widget _buildStatBadge(String label, int value, Color color, double screenWidth) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: EdgeInsets.symmetric(
+        horizontal: screenWidth * 0.03,
+        vertical: screenWidth * 0.015,
+      ),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
@@ -402,18 +331,56 @@ class _VendorVoucherPageState extends State<VendorVoucherPage> {
           Text(
             value.toString(),
             style: TextStyle(
-              fontSize: 18,
+              fontSize: screenWidth * 0.045,
               fontWeight: FontWeight.bold,
               color: color,
             ),
           ),
-          const SizedBox(height: 2),
+          SizedBox(height: screenWidth * 0.005),
           Text(
             label,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: screenWidth * 0.03,
               color: color,
               fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _actionButton({
+    required String label,
+    required IconData icon,
+    required Color color,
+    required double screenWidth,
+    required VoidCallback onPressed,
+  }) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color.withOpacity(0.8),
+        padding: EdgeInsets.symmetric(
+          horizontal: screenWidth * 0.05,
+          vertical: screenWidth * 0.025,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(screenWidth * 0.025),
+        ),
+        elevation: 3,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: screenWidth * 0.045, color: Colors.black),
+          SizedBox(width: screenWidth * 0.015),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: screenWidth * 0.04,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
             ),
           ),
         ],

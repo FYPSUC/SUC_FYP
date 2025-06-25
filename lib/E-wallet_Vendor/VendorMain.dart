@@ -16,18 +16,21 @@ class VendorMainPage extends StatefulWidget {
 }
 
 class _VendorMainPageState extends State<VendorMainPage> {
-  double balance = 888.00; // Initial balance
-  bool showBalance = true; // Toggle for balance visibility
+  double balance = 888.00;
+  bool showBalance = true;
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           Container(
-            width: double.infinity,
-            height: double.infinity,
+            width: screenWidth,
+            height: screenHeight,
             decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/image/UserMainBackground.jpg'),
@@ -37,67 +40,65 @@ class _VendorMainPageState extends State<VendorMainPage> {
           ),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 顶部 Log Out + 余额 + 头像
-                  const SizedBox(height: 30),
-
+                  SizedBox(height: screenHeight * 0.03),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // 左侧 Log Out + Balance
+                      // 左侧 Logout 和余额
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           GestureDetector(
                             onTap: () {
-                              Navigator.push(
+                              Navigator.pushReplacement(
                                 context,
-                                MaterialPageRoute(
-                                  builder: (context) => const HomePage(),
-                                ),
+                                MaterialPageRoute(builder: (_) => const HomePage()),
                               );
                             },
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'Log Out',
                                   style: TextStyle(
-                                    fontSize: 30,
+                                    fontSize: screenWidth * 0.07,
                                     color: Colors.black,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 Container(
-                                  width: 108,
+                                  width: screenWidth * 0.25,
                                   height: 2,
                                   color: Colors.black,
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(height: 20),
+                          SizedBox(height: screenHeight * 0.02),
                           Row(
                             children: [
                               Text(
                                 showBalance
                                     ? 'RM ${balance.toStringAsFixed(2)}'
                                     : 'RM ****',
-                                style: const TextStyle(
-                                  fontSize: 40,
+                                style: TextStyle(
+                                  fontSize: screenWidth * 0.08,
                                   color: Colors.black,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               IconButton(
                                 icon: Icon(
-                                  showBalance ? Icons.visibility : Icons
-                                      .visibility_off,
+                                  showBalance
+                                      ? Icons.visibility
+                                      : Icons.visibility_off,
                                   color: Colors.black,
+                                  size: screenWidth * 0.07,
                                 ),
                                 onPressed: () {
                                   setState(() {
@@ -109,36 +110,21 @@ class _VendorMainPageState extends State<VendorMainPage> {
                           ),
                         ],
                       ),
-
-                      // 右侧用户头像图标按钮
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          // Remove default padding
-                          backgroundColor: Colors.transparent,
-                          // Make button background transparent
-                          shadowColor: Colors.transparent,
-                          // Remove shadow
-                          shape: CircleBorder(),
-                          // Circular shape
-                          elevation: 0, // Remove elevation
-                        ),
-                        onPressed: () {
+                      // 头像按钮
+                      GestureDetector(
+                        onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) => const VendorProfilePage(),
-                            ),
+                            MaterialPageRoute(builder: (_) => const VendorProfilePage()),
                           );
                         },
                         child: Container(
-                          width: 110,
-                          height: 110,
+                          width: screenWidth * 0.25,
+                          height: screenWidth * 0.25,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            image: DecorationImage(
-                              image: AssetImage(
-                                  'assets/image/Profile_icon.png'),
+                            image: const DecorationImage(
+                              image: AssetImage('assets/image/Profile_icon.png'),
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -146,55 +132,48 @@ class _VendorMainPageState extends State<VendorMainPage> {
                       )
                     ],
                   ),
-
-                  const SizedBox(height: 30),
-
-                  // Top up & Transaction history 行
+                  SizedBox(height: screenHeight * 0.03),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Top up button with white border
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                                25), // Elliptical shape
+                            borderRadius: BorderRadius.circular(25),
                           ),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: screenWidth * 0.04,
+                            vertical: screenHeight * 0.01,
+                          ),
                           elevation: 2,
                         ),
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
-                                builder: (context) => const VendorTopUpPage()),
+                            MaterialPageRoute(builder: (_) => const VendorTopUpPage()),
                           );
                         },
-                        child: const Text(
+                        child: Text(
                           '+ Top up',
                           style: TextStyle(
-                            fontSize: 25,
+                            fontSize: screenWidth * 0.05,
                             color: Colors.black,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-
-                      // Transaction history text button
                       TextButton(
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (
-                                context) => const VendorTransactionHistoryPage()),
+                            MaterialPageRoute(builder: (_) => const VendorTransactionHistoryPage()),
                           );
                         },
-                        child: const Text(
+                        child: Text(
                           'Transaction history >',
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: screenWidth * 0.045,
                             color: Colors.black,
                             fontWeight: FontWeight.bold,
                           ),
@@ -202,38 +181,33 @@ class _VendorMainPageState extends State<VendorMainPage> {
                       ),
                     ],
                   ),
-                  const Divider(height: 40, thickness: 2, color: Colors.black),
-                  const SizedBox(height: 30),
-
-                  // 主菜单图标 Grid
+                  Divider(
+                    height: screenHeight * 0.04,
+                    thickness: 2,
+                    color: Colors.black,
+                  ),
+                  SizedBox(height: screenHeight * 0.01),
+                  // Grid 菜单
                   Expanded(
                     child: GridView.count(
                       crossAxisCount: 2,
-                      childAspectRatio: 0.7,
-                      padding: const EdgeInsets.all(20),
-                      mainAxisSpacing: 20,
-                      crossAxisSpacing: 20,
+                      childAspectRatio: 0.75,
+                      padding: EdgeInsets.all(screenWidth * 0.04),
+                      crossAxisSpacing: screenWidth * 0.04,
+                      mainAxisSpacing: screenHeight * 0.02,
                       children: [
-                        _buildMenuButton(
-                            'QR code', 'assets/image/QR_icon.png', () {
-                          Navigator.push(context, MaterialPageRoute(
-                              builder: (context) => VendorQRPage()));
-                        }),
-                        _buildMenuButton(
-                            'Create Voucher', 'assets/image/Voucher_icon.png', () {
-                          Navigator.push(context, MaterialPageRoute(
-                              builder: (context) => VendorVoucherPage()));
-                        }),
-                        _buildMenuButton(
-                            'View Order', 'assets/image/Order_icon.png', () {
-                          Navigator.push(context, MaterialPageRoute(
-                              builder: (context) => VendorViewOrderPage()));
-                        }),
-                        _buildMenuButton(
-                            'Product', 'assets/image/Product_icon.png', () {
-                          Navigator.push(context, MaterialPageRoute(
-                              builder: (context) => VendorProductPage()));
-                        }),
+                        _buildMenuButton('QR code', 'assets/image/QR_icon.png', () {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => VendorQRPage()));
+                        }, screenWidth),
+                        _buildMenuButton('Create Voucher', 'assets/image/Voucher_icon.png', () {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => VendorVoucherPage()));
+                        }, screenWidth),
+                        _buildMenuButton('View Order', 'assets/image/Order_icon.png', () {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => VendorViewOrderPage()));
+                        }, screenWidth),
+                        _buildMenuButton('Product', 'assets/image/Product_icon.png', () {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => VendorProductPage()));
+                        }, screenWidth),
                       ],
                     ),
                   ),
@@ -246,7 +220,7 @@ class _VendorMainPageState extends State<VendorMainPage> {
     );
   }
 
-  Widget _buildMenuButton(String title, String imagePath, VoidCallback onTap) {
+  Widget _buildMenuButton(String title, String imagePath, VoidCallback onTap, double screenWidth) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(15),
@@ -260,16 +234,17 @@ class _VendorMainPageState extends State<VendorMainPage> {
           children: [
             Image.asset(
               imagePath,
-              width: 110,
-              height: 110,
+              width: screenWidth * 0.25,
+              height: screenWidth * 0.25,
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: screenWidth * 0.03),
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 20,
+              style: TextStyle(
+                fontSize: screenWidth * 0.045,
                 fontWeight: FontWeight.bold,
               ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),

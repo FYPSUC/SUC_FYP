@@ -5,6 +5,9 @@ class VendorQRReceivePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -15,35 +18,33 @@ class VendorQRReceivePage extends StatelessWidget {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 顶部返回按钮区域 - 已移动到左上角
-                Padding(
-                  padding: const EdgeInsets.only(top: 20),
-                  child: GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Image.asset(
-                          'assets/image/BackButton.jpg',
-                          width: 40,
-                          height: 40,
-                          fit: BoxFit.cover,
+                // 顶部返回按钮区域
+                SizedBox(height: screenHeight * 0.02),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.asset(
+                        'assets/image/BackButton.jpg',
+                        width: screenWidth * 0.1,
+                        height: screenWidth * 0.1,
+                        fit: BoxFit.cover,
+                      ),
+                      SizedBox(width: screenWidth * 0.02),
+                      Text(
+                        'Back',
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.065,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
                         ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Back',
-                          style: TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
 
@@ -53,33 +54,36 @@ class VendorQRReceivePage extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // 提示文本
+                        // 提示文字
                         Text(
                           "Scan this QR code to transfer to",
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontSize: 25,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.06,
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        SizedBox(height: screenHeight * 0.01),
+
                         // 用户名
-                        const Text(
+                        Text(
                           "Username",
                           style: TextStyle(
-                            fontSize: 32,
+                            fontSize: screenWidth * 0.08,
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
                           ),
                         ),
-                        const SizedBox(height: 30),
-                        // 二维码图片容器
+                        SizedBox(height: screenHeight * 0.04),
+
+                        // QR 图片
                         Padding(
-                          padding: const EdgeInsets.only(bottom: 100),
+                          padding: EdgeInsets.only(bottom: screenHeight * 0.1),
                           child: Image.asset(
                             'assets/image/QRReceive.png',
-                            width: 300,
-                            height: 300,
+                            width: screenWidth * 0.7,
+                            height: screenWidth * 0.7,
                             fit: BoxFit.contain,
                           ),
                         ),

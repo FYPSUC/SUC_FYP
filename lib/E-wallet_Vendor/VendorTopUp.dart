@@ -5,11 +5,11 @@ class VendorTopUpPage extends StatefulWidget {
   const VendorTopUpPage({super.key});
 
   @override
-  State<VendorTopUpPage> createState() => _TopUpPageState();
+  State<VendorTopUpPage> createState() => _VendorTopUpPageState();
 }
 
-class _TopUpPageState extends State<VendorTopUpPage> {
-  String _rawAmount = ''; // 用户实际输入的原始数字字符串
+class _VendorTopUpPageState extends State<VendorTopUpPage> {
+  String _rawAmount = '';
   String? _selectedBank;
   String _enteredAmount = '';
   bool _showLimitMessage = false;
@@ -37,27 +37,22 @@ class _TopUpPageState extends State<VendorTopUpPage> {
     super.dispose();
   }
 
-  // 处理手动输入（模拟 TNG 金额格式）
   void _handleManualInput() {
-    // 只拦截实际键盘输入的数字
     final text = _amountController.text.replaceAll(RegExp(r'\D'), '');
     if (text != _rawAmount) {
       setState(() {
         _rawAmount = text;
         _amountController.value = _amountController.value.copyWith(
           text: _formatAmount(_rawAmount),
-          selection: TextSelection.collapsed(
-            offset: _formatAmount(_rawAmount).length,
-          ),
+          selection: TextSelection.collapsed(offset: _formatAmount(_rawAmount).length),
         );
       });
     }
   }
 
-  // 格式化为 0.00 形式
   String _formatAmount(String raw) {
     if (raw.isEmpty) return '';
-    final padded = raw.padLeft(3, '0'); // 至少三个字符
+    final padded = raw.padLeft(3, '0');
     final intPart = padded.substring(0, padded.length - 2);
     final decPart = padded.substring(padded.length - 2);
     return '$intPart.$decPart';
@@ -65,6 +60,9 @@ class _TopUpPageState extends State<VendorTopUpPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -75,100 +73,55 @@ class _TopUpPageState extends State<VendorTopUpPage> {
             fit: BoxFit.cover,
           ),
         ),
-
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.07, vertical: screenHeight * 0.04),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 30),
-              Padding(
-                padding: const EdgeInsets.only(left: 0, top: 20),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const VendorMainPage()),
-                      );
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min, // Important to prevent row from expanding
-                      children: [
-                        Image.asset(
-                          'assets/image/BackButton.jpg',
-                          width: 40,
-                          height: 40,
-                          fit: BoxFit.cover,
-                        ),
-                        const SizedBox(width: 8), // Add some spacing between icon and text
-                        const Text(
-                          'Back',
-                          style: TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+              SizedBox(height: screenHeight * 0.03),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const VendorMainPage()),
+                  );
+                },
+                child: Row(
+                  children: [
+                    Image.asset(
+                      'assets/image/BackButton.jpg',
+                      width: screenWidth * 0.1,
+                      height: screenWidth * 0.1,
+                      fit: BoxFit.cover,
                     ),
-                  ),
+                    SizedBox(width: screenWidth * 0.02),
+                    Text('Back', style: TextStyle(fontSize: screenWidth * 0.06, fontWeight: FontWeight.bold)),
+                  ],
                 ),
               ),
-              const SizedBox(height: 30),
-              const Text(
-                'Top Up',
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 10),
+              SizedBox(height: screenHeight * 0.03),
+              Text('Top Up', style: TextStyle(fontSize: screenWidth * 0.075, fontWeight: FontWeight.bold)),
               const Divider(thickness: 2, color: Colors.black87),
-              const SizedBox(height: 30),
-
-              // ✅ TextField 设置为只输入数字 + 自动格式化
+              SizedBox(height: screenHeight * 0.02),
               TextField(
                 controller: _amountController,
                 keyboardType: TextInputType.number,
-                style: const TextStyle(
-                  fontSize: 25, // 输入文字大小
-                  fontWeight: FontWeight.w500,
-                ),
+                style: TextStyle(fontSize: screenWidth * 0.06),
                 decoration: InputDecoration(
                   prefixText: 'RM ',
-                  prefixStyle: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black,
-                  ),
+                  prefixStyle: TextStyle(fontSize: screenWidth * 0.05, fontWeight: FontWeight.w600),
                   hintText: 'Enter amount',
-                  hintStyle: const TextStyle(
-                    fontSize: 20, // hintText 字体大小
-                    color: Colors.black,
-                  ),
-                  contentPadding: const EdgeInsets.all(15),
-
-                  // 黑色边框（未聚焦）
+                  hintStyle: TextStyle(fontSize: screenWidth * 0.05),
+                  contentPadding: EdgeInsets.all(screenWidth * 0.04),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                      color: Colors.black, // 边框颜色
-                      width: 2,             // 边框粗细
-                    ),
+                    borderSide: const BorderSide(color: Colors.black, width: 2),
                   ),
-
-                  // 黑色边框（聚焦时）
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                      color: Colors.black,
-                      width: 2, // 聚焦时更明显
-                    ),
+                    borderSide: const BorderSide(color: Colors.black, width: 2),
                   ),
                 ),
-
                 onChanged: (value) {
                   String digitsOnly = value.replaceAll(RegExp(r'[^0-9]'), '');
 
@@ -195,9 +148,7 @@ class _TopUpPageState extends State<VendorTopUpPage> {
 
                   _amountController
                     ..text = formatted
-                    ..selection = TextSelection.collapsed(
-                      offset: formatted.length,
-                    );
+                    ..selection = TextSelection.collapsed(offset: formatted.length);
 
                   setState(() {
                     _enteredAmount = formatted;
@@ -205,115 +156,62 @@ class _TopUpPageState extends State<VendorTopUpPage> {
                   });
                 },
               ),
-
               if (_showLimitMessage)
-                const Padding(
-                  padding: EdgeInsets.only(top: 8.0),
-                  child: Text(
-                    'Top Up is limited to 1,000',
-                    style: TextStyle(
-                      color: Colors.red,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                Padding(
+                  padding: EdgeInsets.only(top: screenHeight * 0.01),
+                  child: Text('Top Up is limited to 1,000', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                 ),
-              const SizedBox(height: 30),
-
+              SizedBox(height: screenHeight * 0.03),
               Center(
                 child: Wrap(
-                  spacing: 30,
-                  runSpacing: 30,
+                  spacing: screenWidth * 0.05,
+                  runSpacing: screenHeight * 0.02,
                   children: _amounts.map((amount) {
                     return SizedBox(
-                      width: 150,
-                      height: 60,
+                      width: screenWidth * 0.35,
+                      height: screenHeight * 0.07,
                       child: ElevatedButton(
                         onPressed: () {
                           setState(() {
                             _enteredAmount = amount;
-                            _amountController.text =
-                                double.parse(amount).toStringAsFixed(2);
-                            _amountController.selection = TextSelection.collapsed(
-                              offset: _amountController.text.length,
-                            );
+                            _amountController.text = double.parse(amount).toStringAsFixed(2);
+                            _amountController.selection = TextSelection.collapsed(offset: _amountController.text.length);
                           });
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           foregroundColor: Colors.black,
                           elevation: 0,
-                          side: const BorderSide(
-                            color: Colors.black,
-                            width: 1.5,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(50),
-                          ),
+                          side: const BorderSide(color: Colors.black, width: 1.5),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
                         ),
-                        child: Text(
-                          'RM $amount',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: Text('RM $amount', style: TextStyle(fontSize: screenWidth * 0.05, fontWeight: FontWeight.bold)),
                       ),
                     );
                   }).toList(),
                 ),
               ),
-
-
-              const SizedBox(height: 30),
-              const Divider(height: 1, color: Colors.black),
-              const SizedBox(height: 30),
-
-              const Text(
-                'Choose bank',
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 20),
-
+              SizedBox(height: screenHeight * 0.04),
+              Text('Choose bank', style: TextStyle(fontSize: screenWidth * 0.06, fontWeight: FontWeight.bold)),
+              SizedBox(height: screenHeight * 0.02),
               DropdownButtonFormField<String>(
                 decoration: InputDecoration(
-                  // 黑色边框（未聚焦）
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                      color: Colors.black,
-                      width: 2,
-                    ),
+                    borderSide: const BorderSide(color: Colors.black, width: 2),
                   ),
-
-                  // 黑色边框（聚焦时）
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(
-                      color: Colors.black,
-                      width: 2,
-                    ),
+                    borderSide: const BorderSide(color: Colors.black, width: 2),
                   ),
-
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 15,
-                    vertical: 15,
-                  ),
+                  contentPadding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04, vertical: screenHeight * 0.02),
                 ),
-                hint: const Text(
-                  'Select your bank',
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.black,
-                  ),
-                ),
+                hint: Text('Select your bank', style: TextStyle(fontSize: screenWidth * 0.05)),
                 value: _selectedBank,
                 items: _banks.map((String bank) {
                   return DropdownMenuItem<String>(
                     value: bank,
-                    child: Text(
-                      bank,
-                      style: const TextStyle(fontSize: 17), // 可选：下拉项字体大小
-                    ),
+                    child: Text(bank, style: TextStyle(fontSize: screenWidth * 0.045)),
                   );
                 }).toList(),
                 onChanged: (String? newValue) {
@@ -322,39 +220,25 @@ class _TopUpPageState extends State<VendorTopUpPage> {
                   });
                 },
               ),
-
-
               const Spacer(),
-
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed:
-                  _amountController.text.isEmpty || _selectedBank == null
+                  onPressed: _amountController.text.isEmpty || _selectedBank == null
                       ? null
                       : () {
-                    // TODO: Proceed with top-up
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const VendorMainPage()));
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    padding: EdgeInsets.symmetric(vertical: screenHeight * 0.02),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text(
-                    'Top Up',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1,
-                    ),
-                  ),
+                  child: Text('Top Up', style: TextStyle(fontSize: screenWidth * 0.05, fontWeight: FontWeight.bold)),
                 ),
               ),
-
-              const SizedBox(height: 30),
+              SizedBox(height: screenHeight * 0.03),
             ],
           ),
         ),

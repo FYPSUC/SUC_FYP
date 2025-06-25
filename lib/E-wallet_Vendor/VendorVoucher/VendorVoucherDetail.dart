@@ -37,7 +37,6 @@ class _VendorVoucherDetailPageState extends State<VendorVoucherDetailPage> {
     _enteredAmount = widget.discountAmount;
     _dateController = TextEditingController(text: widget.expiredDate);
 
-    // 尝试解析现有日期
     try {
       final dateParts = widget.expiredDate.split('/');
       if (dateParts.length == 2) {
@@ -47,7 +46,7 @@ class _VendorVoucherDetailPageState extends State<VendorVoucherDetailPage> {
         _selectedDate = DateTime(currentYear, month, day);
       }
     } catch (e) {
-      print('Error parsing date: $e');
+      print('Error parsing date: \$e');
     }
   }
 
@@ -78,8 +77,6 @@ class _VendorVoucherDetailPageState extends State<VendorVoucherDetailPage> {
     if (_nameController.text.isNotEmpty &&
         _enteredAmount.isNotEmpty &&
         _selectedDate != null) {
-
-      // 创建更新后的优惠券数据
       final updatedVoucher = {
         'id': widget.voucherId,
         'name': _nameController.text,
@@ -87,21 +84,19 @@ class _VendorVoucherDetailPageState extends State<VendorVoucherDetailPage> {
         'date': _dateController.text,
       };
 
-      // 调用回调函数返回更新后的数据
       widget.onUpdate(updatedVoucher);
-
-      // 返回上一页
       Navigator.pop(context);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
-          // Background image
           Container(
             width: double.infinity,
             height: double.infinity,
@@ -112,21 +107,17 @@ class _VendorVoucherDetailPageState extends State<VendorVoucherDetailPage> {
               ),
             ),
           ),
-
-          // Main content
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Back button & Title
                   Padding(
-                    padding: const EdgeInsets.only(top: 20),
+                    padding: EdgeInsets.only(top: screenWidth * 0.05),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Back button
                         GestureDetector(
                           onTap: () => Navigator.pop(context),
                           child: Row(
@@ -134,15 +125,15 @@ class _VendorVoucherDetailPageState extends State<VendorVoucherDetailPage> {
                             children: [
                               Image.asset(
                                 'assets/image/BackButton.jpg',
-                                width: 40,
-                                height: 40,
+                                width: screenWidth * 0.1,
+                                height: screenWidth * 0.1,
                                 fit: BoxFit.cover,
                               ),
-                              const SizedBox(width: 8),
-                              const Text(
+                              SizedBox(width: screenWidth * 0.02),
+                              Text(
                                 'Back',
                                 style: TextStyle(
-                                  fontSize: 25,
+                                  fontSize: screenWidth * 0.06,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black,
                                 ),
@@ -150,15 +141,12 @@ class _VendorVoucherDetailPageState extends State<VendorVoucherDetailPage> {
                             ],
                           ),
                         ),
-
-                        const SizedBox(height: 30),
-
-                        // Title - centered
-                        const Center(
+                        SizedBox(height: screenWidth * 0.08),
+                        Center(
                           child: Text(
                             'Edit Voucher',
                             style: TextStyle(
-                              fontSize: 25,
+                              fontSize: screenWidth * 0.06,
                               fontWeight: FontWeight.bold,
                               color: Colors.black,
                             ),
@@ -167,38 +155,34 @@ class _VendorVoucherDetailPageState extends State<VendorVoucherDetailPage> {
                       ],
                     ),
                   ),
-
-                  const SizedBox(height: 40),
-
-                  // Voucher Name (editable)
+                  SizedBox(height: screenWidth * 0.1),
                   _buildInputField('Voucher Name', _nameController),
-                  const SizedBox(height: 30),
-
-                  // Discount Amount (editable)
-                  _buildAmountField(),
-                  const SizedBox(height: 30),
-
-                  // Expired Date (editable)
+                  SizedBox(height: screenWidth * 0.08),
+                  _buildAmountField(screenWidth),
+                  SizedBox(height: screenWidth * 0.08),
                   _buildDateField(context),
-                  const SizedBox(height: 40),
-
-                  // Save button
+                  SizedBox(height: screenWidth * 0.1),
                   Center(
                     child: ElevatedButton(
                       onPressed: _saveChanges,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 80, vertical: 18),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.2,
+                          vertical: screenWidth * 0.05,
+                        ),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30)),
+                          borderRadius: BorderRadius.circular(30),
+                        ),
                         elevation: 5,
                       ),
-                      child: const Text(
+                      child: Text(
                         'Save Changes',
                         style: TextStyle(
-                            fontSize: 22, fontWeight: FontWeight.bold),
+                          fontSize: screenWidth * 0.05,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
@@ -211,19 +195,19 @@ class _VendorVoucherDetailPageState extends State<VendorVoucherDetailPage> {
     );
   }
 
-  // Input field with consistent styling
   Widget _buildInputField(String label, TextEditingController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 15),
         TextField(
           controller: controller,
           decoration: InputDecoration(
-            contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             filled: true,
             fillColor: Colors.grey[200],
             border: OutlineInputBorder(
@@ -236,8 +220,7 @@ class _VendorVoucherDetailPageState extends State<VendorVoucherDetailPage> {
     );
   }
 
-  // Discount amount field with RM prefix
-  Widget _buildAmountField() {
+  Widget _buildAmountField(double screenWidth) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -249,7 +232,7 @@ class _VendorVoucherDetailPageState extends State<VendorVoucherDetailPage> {
         Row(
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05, vertical: 14),
               decoration: BoxDecoration(
                 color: Colors.grey[300],
                 borderRadius: const BorderRadius.only(
@@ -268,8 +251,7 @@ class _VendorVoucherDetailPageState extends State<VendorVoucherDetailPage> {
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
                   hintText: '0.00',
-                  contentPadding:
-                  EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   filled: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.only(
@@ -280,7 +262,6 @@ class _VendorVoucherDetailPageState extends State<VendorVoucherDetailPage> {
                   ),
                 ),
                 onChanged: (value) {
-                  // Only keep digits
                   String digitsOnly = value.replaceAll(RegExp(r'[^0-9]'), '');
                   if (digitsOnly.isEmpty) {
                     _amountController.text = '';
@@ -290,23 +271,14 @@ class _VendorVoucherDetailPageState extends State<VendorVoucherDetailPage> {
                     });
                     return;
                   }
-
-                  // Limit to 5 digits (max RM 999.99)
                   if (digitsOnly.length > 5) {
                     digitsOnly = digitsOnly.substring(0, 5);
                   }
-
-                  // Insert decimal point
                   double numericValue = double.parse(digitsOnly) / 100;
-
-                  // Format to 2 decimal places
                   String formatted = numericValue.toStringAsFixed(2);
-
-                  // Update controller
                   _amountController
                     ..text = formatted
                     ..selection = TextSelection.collapsed(offset: formatted.length);
-
                   setState(() {
                     _enteredAmount = formatted;
                   });
@@ -319,7 +291,6 @@ class _VendorVoucherDetailPageState extends State<VendorVoucherDetailPage> {
     );
   }
 
-  // Date field with calendar picker
   Widget _buildDateField(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -336,8 +307,7 @@ class _VendorVoucherDetailPageState extends State<VendorVoucherDetailPage> {
               controller: _dateController,
               decoration: InputDecoration(
                 hintText: 'DD/MM',
-                contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 filled: true,
                 fillColor: Colors.grey[200],
                 suffixIcon: const Icon(Icons.calendar_today),

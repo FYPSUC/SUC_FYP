@@ -2,7 +2,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ApiService {
-  static const String baseUrl = 'http://192.168.0.85/flutter_api';
+  static const String baseUrl = 'http://192.168.75.128/flutter_api';
 
   /// 🔸旧方法：传统注册
   static Future<Map<String, dynamic>> legacyRegisterUser(

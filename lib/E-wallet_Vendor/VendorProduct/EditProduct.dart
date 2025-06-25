@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // 数字输入限制
-import 'dart:io'; // 文件处理
+import 'package:flutter/services.dart';
+import 'dart:io';
 
 class VendorEditProductPage extends StatefulWidget {
   final String currentName;
   final String currentPrice;
-  final String? currentImageUrl; // 当前图片的URL（可选）
+  final String? currentImageUrl;
 
   const VendorEditProductPage({
     super.key,
@@ -21,16 +21,16 @@ class VendorEditProductPage extends StatefulWidget {
 class _EditProductPageState extends State<VendorEditProductPage> {
   late TextEditingController _nameController;
   late TextEditingController _priceController;
-  File? _selectedImage;                // 存储选择的图片
-  String _enteredAmount = '';          // 格式化后的金额文本
-  bool _showLimitMessage = false;      // 是否显示超限提示
+  File? _selectedImage;
+  String _enteredAmount = '';
+  bool _showLimitMessage = false;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.currentName);
     _priceController = TextEditingController(text: widget.currentPrice);
-    _enteredAmount = widget.currentPrice; // 初始化金额
+    _enteredAmount = widget.currentPrice;
   }
 
   @override
@@ -42,11 +42,13 @@ class _EditProductPageState extends State<VendorEditProductPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
-          // 背景图
           Container(
             width: double.infinity,
             height: double.infinity,
@@ -57,98 +59,69 @@ class _EditProductPageState extends State<VendorEditProductPage> {
               ),
             ),
           ),
-
-          // 主内容
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 返回按钮 & 标题 & 上传图片
-                  Padding(
-                    padding: const EdgeInsets.only(top: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  SizedBox(height: screenHeight * 0.03),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Row(
                       children: [
-                        // 返回按钮
-                        GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Image.asset(
-                                'assets/image/BackButton.jpg',
-                                width: 40,
-                                height: 40,
-                                fit: BoxFit.cover,
-                              ),
-                              const SizedBox(width: 8),
-                              const Text(
-                                'Back',
-                                style: TextStyle(
-                                  fontSize: 25,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ],
-                          ),
+                        Image.asset(
+                          'assets/image/BackButton.jpg',
+                          width: screenWidth * 0.1,
+                          height: screenWidth * 0.1,
                         ),
-
-                        const SizedBox(height: 30),
-
-                        // 标题 - 居中
-                        const Center(
-                          child: Text(
-                            'Edit Product',
-                            style: TextStyle(
-                              fontSize: 25,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 30),
-
-                        // 图片上传区域
-                        Center(
-                          child: GestureDetector(
-                            onTap: () {
-                              // TODO: 调用图片选择器并设置 _selectedImage
-                            },
-                            child: Container(
-                              width: 120,
-                              height: 120,
-                              decoration: BoxDecoration(
-                                color: Colors.grey[200],
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: Colors.grey, width: 1),
-                              ),
-                              child: _buildImagePreview(),
-                            ),
+                        SizedBox(width: screenWidth * 0.02),
+                        Text(
+                          'Back',
+                          style: TextStyle(
+                            fontSize: screenWidth * 0.06,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
                           ),
                         ),
                       ],
                     ),
                   ),
-
-                  const SizedBox(height: 30),
-
-                  // 商品名称
-                  _buildInputField('Product Name', _nameController),
-                  const SizedBox(height: 30),
-
-                  // 商品价格（带格式化与限制）
-                  _buildPriceField(),
-                  const SizedBox(height: 40),
-
-                  // 发布按钮
+                  SizedBox(height: screenHeight * 0.03),
+                  Center(
+                    child: Text(
+                      'Edit Product',
+                      style: TextStyle(
+                        fontSize: screenWidth * 0.06,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: screenHeight * 0.03),
+                  Center(
+                    child: GestureDetector(
+                      onTap: () {},
+                      child: Container(
+                        width: screenWidth * 0.3,
+                        height: screenWidth * 0.3,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.grey, width: 1),
+                        ),
+                        child: _buildImagePreview(),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: screenHeight * 0.03),
+                  _buildInputField('Product Name', _nameController, screenWidth),
+                  SizedBox(height: screenHeight * 0.03),
+                  _buildPriceField(screenWidth),
+                  SizedBox(height: screenHeight * 0.04),
                   Center(
                     child: ElevatedButton(
                       onPressed: () {
-                        // 返回修改后的数据
                         Navigator.pop(context, {
                           'name': _nameController.text,
                           'price': _enteredAmount,
@@ -157,13 +130,19 @@ class _EditProductPageState extends State<VendorEditProductPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 80, vertical: 18),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: screenWidth * 0.2,
+                            vertical: screenHeight * 0.02),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30)),
                         elevation: 5,
                       ),
-                      child: const Text(
+                      child: Text(
                         'Publish',
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: screenWidth * 0.05,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
@@ -176,7 +155,6 @@ class _EditProductPageState extends State<VendorEditProductPage> {
     );
   }
 
-  // 图片预览组件
   Widget _buildImagePreview() {
     if (_selectedImage != null) {
       return ClipRRect(
@@ -193,13 +171,12 @@ class _EditProductPageState extends State<VendorEditProductPage> {
     }
   }
 
-  // 普通输入框构建
-  Widget _buildInputField(String label, TextEditingController controller) {
+  Widget _buildInputField(String label, TextEditingController controller, double width) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 15),
+        Text(label, style: TextStyle(fontSize: width * 0.045, fontWeight: FontWeight.bold)),
+        SizedBox(height: 10),
         TextField(
           controller: controller,
           decoration: InputDecoration(
@@ -216,15 +193,12 @@ class _EditProductPageState extends State<VendorEditProductPage> {
     );
   }
 
-  // 价格输入框（带 RM 标签、格式化、最大值限制和提示）
-  Widget _buildPriceField() {
+  Widget _buildPriceField(double width) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Product Price',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
+        Text('Product Price',
+            style: TextStyle(fontSize: width * 0.045, fontWeight: FontWeight.bold)),
         const SizedBox(height: 15),
         Row(
           children: [
@@ -237,10 +211,8 @@ class _EditProductPageState extends State<VendorEditProductPage> {
                   bottomLeft: Radius.circular(25),
                 ),
               ),
-              child: const Text(
-                'RM',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
+              child: Text('RM',
+                  style: TextStyle(fontSize: width * 0.045, fontWeight: FontWeight.bold)),
             ),
             Expanded(
               child: TextField(
@@ -258,7 +230,6 @@ class _EditProductPageState extends State<VendorEditProductPage> {
                   ),
                 ),
                 onChanged: (value) {
-                  // 只保留数字
                   String digitsOnly = value.replaceAll(RegExp(r'[^0-9]'), '');
                   if (digitsOnly.isEmpty) {
                     _priceController.text = '';
@@ -268,19 +239,15 @@ class _EditProductPageState extends State<VendorEditProductPage> {
                     });
                     return;
                   }
-                  // 最多 7 位数字
                   if (digitsOnly.length > 7) {
                     digitsOnly = digitsOnly.substring(0, 7);
                   }
-                  // 插入小数点
                   double numericValue = double.parse(digitsOnly) / 100;
-                  // 限制最大值
                   if (numericValue > 1000.00) {
                     numericValue = 1000.00;
                     digitsOnly = '100000';
                   }
                   String formatted = numericValue.toStringAsFixed(2);
-                  // 更新文本与光标
                   _priceController
                     ..text = formatted
                     ..selection = TextSelection.collapsed(offset: formatted.length);

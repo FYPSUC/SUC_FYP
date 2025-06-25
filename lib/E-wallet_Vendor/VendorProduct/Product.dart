@@ -15,59 +15,84 @@ class _VendorProductPageState extends State<VendorProductPage> {
     {
       'name': 'Pearl milk tea',
       'price': 'RM 8.0',
-      'image': 'assets/image/pearl_milk_tea.png', // 假设的图片路径
+      'image': 'assets/image/pearl_milk_tea.png',
     },
     {
       'name': 'Garden milk tea',
       'price': 'RM 10.0',
-      'image': 'assets/image/garden_milk_tea.png', // 假设的图片路径
+      'image': 'assets/image/garden_milk_tea.png',
     },
   ];
 
   // 删除商品
   void _deleteProduct(int index) {
-    setState(() {
-      _products.removeAt(index);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Product deleted')),
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Product'),
+        content: const Text('Are you sure you want to delete this product?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                _products.removeAt(index);
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Product deleted')),
+              );
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
     );
   }
 
-  // 编辑商品 - 修改后的方法
+  // 编辑商品
   void _editProduct(int index) {
-    // 获取当前商品数据
     final product = _products[index];
-
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => VendorEditProductPage(
           currentName: product['name'],
-          currentPrice: product['price'].replaceAll('RM ', ''), // 去掉RM前缀
+          currentPrice: product['price'].replaceAll('RM ', ''),
         ),
       ),
     ).then((value) {
-      // 当编辑页面返回时，处理更新后的数据
       if (value != null) {
         setState(() {
-          // 更新商品数据
           _products[index] = {
-            ..._products[index], // 保留原有图片等数据
+            ..._products[index],
             'name': value['name'],
-            'price': 'RM ${value['price']}', // 添加RM前缀
+            'price': 'RM ${value['price']}',
           };
         });
       }
     });
   }
 
-  // 添加新商品 - 直接跳转到添加页面
+  // 添加新商品
   void _addNewProduct() {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => VendorAddProductPage()),
-    );
+    ).then((value) {
+      if (value != null) {
+        setState(() {
+          _products.add({
+            'name': value['name'],
+            'price': 'RM ${value['price']}',
+            'image': value['image'] ?? 'assets/image/default_product.png',
+          });
+        });
+      }
+    });
   }
 
   @override
@@ -95,13 +120,12 @@ class _VendorProductPageState extends State<VendorProductPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 顶部返回按钮和标题
+                  // 返回按钮和标题
                   Padding(
                     padding: const EdgeInsets.only(top: 20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // 返回按钮
                         GestureDetector(
                           onTap: () => Navigator.pop(context),
                           child: Row(
@@ -111,7 +135,6 @@ class _VendorProductPageState extends State<VendorProductPage> {
                                 'assets/image/BackButton.jpg',
                                 width: 40,
                                 height: 40,
-                                fit: BoxFit.cover,
                               ),
                               const SizedBox(width: 8),
                               const Text(
@@ -124,8 +147,6 @@ class _VendorProductPageState extends State<VendorProductPage> {
                             ],
                           ),
                         ),
-
-                        // 标题 - 居中
                         const SizedBox(height: 30),
                         const Center(
                           child: Text(
@@ -142,7 +163,14 @@ class _VendorProductPageState extends State<VendorProductPage> {
 
                   // 商品列表
                   Expanded(
-                    child: ListView.builder(
+                    child: _products.isEmpty
+                        ? const Center(
+                      child: Text(
+                        'No products available.',
+                        style: TextStyle(fontSize: 20, color: Colors.grey),
+                      ),
+                    )
+                        : ListView.builder(
                       padding: const EdgeInsets.only(top: 20),
                       itemCount: _products.length,
                       itemBuilder: (context, index) {
@@ -189,7 +217,7 @@ class _VendorProductPageState extends State<VendorProductPage> {
     );
   }
 
-  // 构建商品卡片
+  // 商品卡片
   Widget _buildProductCard({
     required String name,
     required String price,
@@ -200,82 +228,50 @@ class _VendorProductPageState extends State<VendorProductPage> {
     return Card(
       elevation: 5,
       margin: const EdgeInsets.only(bottom: 20),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: Padding(
         padding: const EdgeInsets.all(15),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 商品图片
             Container(
               width: 80,
               height: 80,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                image: DecorationImage(
-                  image: AssetImage(image),
-                  fit: BoxFit.cover,
-                ),
+                image: DecorationImage(image: AssetImage(image), fit: BoxFit.cover),
               ),
             ),
-
             const SizedBox(width: 15),
-
-            // 商品信息
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    name,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  Text(name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 5),
-                  Text(
-                    price,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: Colors.green,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  Text(price, style: const TextStyle(fontSize: 18, color: Colors.green, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
-
-                  // 操作按钮
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      // 删除按钮
                       ElevatedButton(
                         onPressed: onDelete,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
                         child: const Text('Delete'),
                       ),
-
                       const SizedBox(width: 10),
-
-                      // 编辑按钮
                       ElevatedButton(
                         onPressed: onEdit,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
                         child: const Text('Edit'),
                       ),

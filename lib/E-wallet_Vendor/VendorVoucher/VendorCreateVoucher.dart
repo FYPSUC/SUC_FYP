@@ -50,11 +50,13 @@ class _VendorCreateVoucherPage extends State<VendorCreateVoucherPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final fontScale = MediaQuery.of(context).textScaleFactor;
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
-          // Background image
           Container(
             width: double.infinity,
             height: double.infinity,
@@ -65,21 +67,17 @@ class _VendorCreateVoucherPage extends State<VendorCreateVoucherPage> {
               ),
             ),
           ),
-
-          // Main content
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Back button & Title
                   Padding(
-                    padding: const EdgeInsets.only(top: 20),
+                    padding: EdgeInsets.only(top: screenWidth * 0.05),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Back button
                         GestureDetector(
                           onTap: () => Navigator.pop(context),
                           child: Row(
@@ -87,15 +85,15 @@ class _VendorCreateVoucherPage extends State<VendorCreateVoucherPage> {
                             children: [
                               Image.asset(
                                 'assets/image/BackButton.jpg',
-                                width: 40,
-                                height: 40,
+                                width: screenWidth * 0.1,
+                                height: screenWidth * 0.1,
                                 fit: BoxFit.cover,
                               ),
-                              const SizedBox(width: 8),
-                              const Text(
+                              SizedBox(width: screenWidth * 0.02),
+                              Text(
                                 'Back',
                                 style: TextStyle(
-                                  fontSize: 25,
+                                  fontSize: 20 * fontScale,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black,
                                 ),
@@ -103,15 +101,12 @@ class _VendorCreateVoucherPage extends State<VendorCreateVoucherPage> {
                             ],
                           ),
                         ),
-
-                        const SizedBox(height: 30),
-
-                        // Title - centered
-                        const Center(
+                        SizedBox(height: screenWidth * 0.08),
+                        Center(
                           child: Text(
                             'Create Voucher',
                             style: TextStyle(
-                              fontSize: 25,
+                              fontSize: 26 * fontScale,
                               fontWeight: FontWeight.bold,
                               color: Colors.black,
                             ),
@@ -120,29 +115,19 @@ class _VendorCreateVoucherPage extends State<VendorCreateVoucherPage> {
                       ],
                     ),
                   ),
-
-                  const SizedBox(height: 40),
-
-                  // Voucher Name
-                  _buildInputField('Voucher Name', _nameController),
-                  const SizedBox(height: 30),
-
-                  // Discount Amount
-                  _buildAmountField(),
-                  const SizedBox(height: 30),
-
-                  // Expired Date
-                  _buildDateField(context),
-                  const SizedBox(height: 40),
-
-                  // Publish button
+                  SizedBox(height: screenWidth * 0.1),
+                  _buildInputField('Voucher Name', _nameController, fontScale),
+                  SizedBox(height: screenWidth * 0.08),
+                  _buildAmountField(fontScale),
+                  SizedBox(height: screenWidth * 0.08),
+                  _buildDateField(context, fontScale),
+                  SizedBox(height: screenWidth * 0.1),
                   Center(
                     child: ElevatedButton(
                       onPressed: () {
                         if (_nameController.text.isNotEmpty &&
                             _enteredAmount.isNotEmpty &&
                             _selectedDate != null) {
-                          // Return voucher data
                           Navigator.pop(context, {
                             'name': _nameController.text,
                             'amount': _enteredAmount,
@@ -153,16 +138,18 @@ class _VendorCreateVoucherPage extends State<VendorCreateVoucherPage> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 80, vertical: 18),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: screenWidth * 0.2, vertical: screenWidth * 0.045),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30)),
                         elevation: 5,
                       ),
-                      child: const Text(
+                      child: Text(
                         'Publish',
                         style: TextStyle(
-                            fontSize: 22, fontWeight: FontWeight.bold),
+                          fontSize: 20 * fontScale,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
@@ -175,20 +162,16 @@ class _VendorCreateVoucherPage extends State<VendorCreateVoucherPage> {
     );
   }
 
-  // Input field with consistent styling
-  Widget _buildInputField(String label, TextEditingController controller) {
+  Widget _buildInputField(String label, TextEditingController controller, double fontScale) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style:
-            const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        Text(label, style: TextStyle(fontSize: 18 * fontScale, fontWeight: FontWeight.bold)),
         const SizedBox(height: 15),
         TextField(
           controller: controller,
           decoration: InputDecoration(
-            contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             filled: true,
             fillColor: Colors.grey[200],
             border: OutlineInputBorder(
@@ -201,15 +184,11 @@ class _VendorCreateVoucherPage extends State<VendorCreateVoucherPage> {
     );
   }
 
-  // Discount amount field with RM prefix
-  Widget _buildAmountField() {
+  Widget _buildAmountField(double fontScale) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Discount Amount',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
+        Text('Discount Amount', style: TextStyle(fontSize: 18 * fontScale, fontWeight: FontWeight.bold)),
         const SizedBox(height: 15),
         Row(
           children: [
@@ -222,10 +201,7 @@ class _VendorCreateVoucherPage extends State<VendorCreateVoucherPage> {
                   bottomLeft: Radius.circular(25),
                 ),
               ),
-              child: const Text(
-                'RM',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
+              child: Text('RM', style: TextStyle(fontSize: 18 * fontScale, fontWeight: FontWeight.bold)),
             ),
             Expanded(
               child: TextField(
@@ -233,8 +209,7 @@ class _VendorCreateVoucherPage extends State<VendorCreateVoucherPage> {
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
                   hintText: '0.00',
-                  contentPadding:
-                  EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   filled: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.only(
@@ -245,7 +220,6 @@ class _VendorCreateVoucherPage extends State<VendorCreateVoucherPage> {
                   ),
                 ),
                 onChanged: (value) {
-                  // Only keep digits
                   String digitsOnly = value.replaceAll(RegExp(r'[^0-9]'), '');
                   if (digitsOnly.isEmpty) {
                     _amountController.text = '';
@@ -255,23 +229,14 @@ class _VendorCreateVoucherPage extends State<VendorCreateVoucherPage> {
                     });
                     return;
                   }
-
-                  // Limit to 5 digits (max RM 999.99)
                   if (digitsOnly.length > 5) {
                     digitsOnly = digitsOnly.substring(0, 5);
                   }
-
-                  // Insert decimal point
                   double numericValue = double.parse(digitsOnly) / 100;
-
-                  // Format to 2 decimal places
                   String formatted = numericValue.toStringAsFixed(2);
-
-                  // Update controller
                   _amountController
                     ..text = formatted
                     ..selection = TextSelection.collapsed(offset: formatted.length);
-
                   setState(() {
                     _enteredAmount = formatted;
                   });
@@ -284,15 +249,11 @@ class _VendorCreateVoucherPage extends State<VendorCreateVoucherPage> {
     );
   }
 
-  // Date field with calendar picker
-  Widget _buildDateField(BuildContext context) {
+  Widget _buildDateField(BuildContext context, double fontScale) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Expired Date',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
+        Text('Expired Date', style: TextStyle(fontSize: 18 * fontScale, fontWeight: FontWeight.bold)),
         const SizedBox(height: 15),
         GestureDetector(
           onTap: () => _selectDate(context),
@@ -301,8 +262,7 @@ class _VendorCreateVoucherPage extends State<VendorCreateVoucherPage> {
               controller: _dateController,
               decoration: InputDecoration(
                 hintText: 'DD/MM',
-                contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 filled: true,
                 fillColor: Colors.grey[200],
                 suffixIcon: const Icon(Icons.calendar_today),

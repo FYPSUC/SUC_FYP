@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:suc_fyp/login_system/api_service.dart';
 import 'package:suc_fyp/E-wallet_User/UserMain.dart';
-import 'register.dart';
-import 'Reset_Password.dart';
-import 'vendor_login.dart';
+import 'package:suc_fyp/login_system/register.dart';
+import 'package:suc_fyp/login_system/Reset_Password.dart';
+import 'package:suc_fyp/login_system/vendor_login.dart';
 import 'package:suc_fyp/main.dart';
 
 class LoginPage extends StatefulWidget {
@@ -15,22 +16,36 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  Future<void> loginUser() async {
-    final String username = usernameController.text.trim();
+  Future<void> loginUserWithFirebase() async {
+    final String email = emailController.text.trim();
     final String password = passwordController.text.trim();
 
-    final response = await ApiService.loginUser(username, password);
+    try {
+      // ✅ Step 1: Firebase 登录验证
+      UserCredential credential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
 
-    if (response['success'] == true) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const UserMainPage()),
-      );
-    } else {
-      showError(response['message']);
+      String uid = credential.user!.uid;
+
+      // ✅ Step 2: 发送 UID 给你自己的后端获取用户资料
+      final response = await ApiService.getUserByUID(uid);
+
+      if (response['success']) {
+        // ✅ Step 3: 成功后跳转
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const UserMainPage()),
+        );
+      } else {
+        showError(response['message']);
+      }
+    } on FirebaseAuthException catch (e) {
+      showError(e.message ?? "Firebase login error");
+    } catch (e) {
+      showError("Unexpected error: $e");
     }
   }
 
@@ -106,28 +121,26 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 30),
 
-
-
-                  // Username
+                  // Email
                   SizedBox(
                     width: 280,
                     height: 55,
                     child: TextFormField(
-                      controller: usernameController,
+                      controller: emailController,
                       style: const TextStyle(
                         fontSize: 20,
                         color: Colors.black,
                         fontWeight: FontWeight.bold,
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Username',
+                        hintText: 'Email',
                         hintStyle: const TextStyle(color: Colors.black54),
                         filled: true,
                         fillColor: Colors.transparent,
                         contentPadding: const EdgeInsets.symmetric(vertical: 12),
                         prefixIcon: const Padding(
                           padding: EdgeInsets.only(left: 15, right: 10),
-                          child: Icon(Icons.person, color: Colors.black),
+                          child: Icon(Icons.email, color: Colors.black),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(25),
@@ -140,7 +153,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your username';
+                          return 'Please enter your email';
                         }
                         return null;
                       },
@@ -182,8 +195,6 @@ class _LoginPageState extends State<LoginPage> {
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your password';
-                        } else if (value.length < 6) {
-                          return 'Password must be at least 6 characters';
                         }
                         return null;
                       },
@@ -223,7 +234,7 @@ class _LoginPageState extends State<LoginPage> {
                     child: ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          loginUser();
+                          loginUserWithFirebase();
                         }
                       },
                       style: ElevatedButton.styleFrom(

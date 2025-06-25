@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "121429162458",
-    "project_id": "sucfyp-eefcc",
-    "storage_bucket": "sucfyp-eefcc.firebasestorage.app"
+    "project_number": "275735877841",
+    "project_id": "suc-fyp",
+    "storage_bucket": "suc-fyp.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:121429162458:android:b7ca365b4fe5b4c681e8e3",
+        "mobilesdk_app_id": "1:275735877841:android:d7374ee7290d335230cdf0",
         "android_client_info": {
           "package_name": "com.example.suc_fyp"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAAQiOqaMyybD6Eqi01whg758Jb7bwobt4"
+          "current_key": "AIzaSyAPUaJenw75C4qbELjxAJiTcXixRsCVPDk"
         }
       ],
       "services": {

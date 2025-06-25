@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:suc_fyp/login_system/api_service.dart';
 import 'package:suc_fyp/E-wallet_Vendor/VendorMain.dart';
 import 'package:suc_fyp/login_system/login.dart';
@@ -15,24 +16,47 @@ class VendorLoginPage extends StatefulWidget {
 
 class _VendorLoginPageState extends State<VendorLoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
   Future<void> loginVendor() async {
-    final String username = usernameController.text.trim();
-    final String password = passwordController.text.trim();
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
 
-    final response = await ApiService.loginUser(username, password);
-
-    if (response['success'] == true) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const VendorMainPage()),
+    try {
+      // ✅ Step 1: Firebase 登录
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
       );
-    } else {
-      showError(response['message']);
+
+      final uid = credential.user?.uid;
+
+      // ✅ Step 2: 用 UID 从 MySQL 检查是否是 Vendor
+      final result = await ApiService.getVendorByUID(uid!);
+      print("👀 API 回传: $result");
+      if (result['success'] == true && result['user']['role'] == 'Vendor') {
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const VendorMainPage()),
+        );
+      } else {
+        showError("This account is not registered as a Vendor.");
+      }
+    } on FirebaseAuthException catch (e) {
+      String errorMessage = 'Login failed';
+      if (e.code == 'user-not-found') {
+        errorMessage = 'Email not found';
+      } else if (e.code == 'wrong-password') {
+        errorMessage = 'Incorrect password';
+      }
+      showError(errorMessage);
+    } catch (e) {
+      showError("Unexpected error: $e");
     }
   }
+
 
   void showError(String message) {
     showDialog(
@@ -106,26 +130,26 @@ class _VendorLoginPageState extends State<VendorLoginPage> {
                   ),
                   const SizedBox(height: 30),
 
-                  // Username
+                  // Email
                   SizedBox(
                     width: 280,
                     height: 55,
                     child: TextFormField(
-                      controller: usernameController,
+                      controller: emailController,
                       style: const TextStyle(
                         fontSize: 20,
                         color: Colors.black,
                         fontWeight: FontWeight.bold,
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Username',
+                        hintText: 'Email',
                         hintStyle: const TextStyle(color: Colors.black54),
                         filled: true,
                         fillColor: Colors.transparent,
                         contentPadding: const EdgeInsets.symmetric(vertical: 12),
                         prefixIcon: const Padding(
                           padding: EdgeInsets.only(left: 15, right: 10),
-                          child: Icon(Icons.person, color: Colors.black),
+                          child: Icon(Icons.email, color: Colors.black),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(25),

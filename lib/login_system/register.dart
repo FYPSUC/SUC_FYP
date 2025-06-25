@@ -4,6 +4,7 @@
   import 'vendor_login.dart';
   import 'api_service.dart'; // 导入API服务
   import 'dart:convert';
+  import 'package:firebase_auth/firebase_auth.dart';
 
   class RegisterPage extends StatefulWidget {
     final String initialRole; // User or Vendor
@@ -86,24 +87,49 @@
         return;
       }
 
-      // ✅ API 注册调用
-      final result = await ApiService.registerUser(username, password, email, selectedRole);
-      print(jsonEncode(result));
-
-      if (result['success']) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration successful')),
+      try {
+        // ✅ 第一步：使用 Firebase 进行注册
+        final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
         );
 
-        if (selectedRole == 'User') {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
-        } else {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const VendorLoginPage()));
+        final firebaseUser = credential.user;
+        if (firebaseUser != null) {
+          final uid = firebaseUser.uid;
+
+          // ✅ 第二步：将数据存入你的 MySQL 数据库
+          final result = await ApiService.registerUser(firebaseUser.uid, _usernameController.text.trim(), _emailController.text.trim(), selectedRole, // 'User' or 'Vendor'
+          );
+
+          if (result['success']) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Registration successful')),
+            );
+            if (selectedRole == 'User') {
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginPage()));
+            } else {
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const VendorLoginPage()));
+            }
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(result['message'] ?? 'Registration failed')),
+            );
+          }
         }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['message'] ?? 'Registration failed')),
-        );
+      } on FirebaseAuthException catch (e) {
+        String errorMessage = 'Registration failed';
+        if (e.code == 'email-already-in-use') {
+          errorMessage = 'Email already in use';
+        } else if (e.code == 'invalid-email') {
+          errorMessage = 'Invalid email format';
+        } else if (e.code == 'weak-password') {
+          errorMessage = 'Password is too weak';
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errorMessage)));
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
 

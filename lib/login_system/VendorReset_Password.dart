@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:suc_fyp/main.dart';
 
 class VendorResetPasswordPage extends StatefulWidget {
@@ -9,37 +11,26 @@ class VendorResetPasswordPage extends StatefulWidget {
 }
 
 class _VendorResetPasswordPageState extends State<VendorResetPasswordPage> {
-  final TextEditingController _usernameController = TextEditingController();
+
   final TextEditingController _gmailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _rePasswordController = TextEditingController();
 
-  String? _usernameError;
+
   String? _gmailError;
   String? _passwordError;
   String? _rePasswordError;
-
   bool _showErrors = false;
 
   @override
   void initState() {
     super.initState();
-    _usernameController.addListener(_validateUsername);
+
     _gmailController.addListener(_validateGmail);
     _passwordController.addListener(_validatePassword);
     _rePasswordController.addListener(_validateRePassword);
   }
 
-  void _validateUsername() {
-    final username = _usernameController.text.trim();
-    setState(() {
-      if (username.isEmpty) {
-        _usernameError = "Username can't be empty";
-      } else {
-        _usernameError = null;
-      }
-    });
-  }
 
   void _validateGmail() {
     final gmail = _gmailController.text.trim();
@@ -66,7 +57,7 @@ class _VendorResetPasswordPageState extends State<VendorResetPasswordPage> {
         _passwordError = null;
       }
     });
-    _validateRePassword();  // 保证密码改了，确认密码也要再验证
+    _validateRePassword(); // 保证再次校验
   }
 
   void _validateRePassword() {
@@ -83,29 +74,27 @@ class _VendorResetPasswordPageState extends State<VendorResetPasswordPage> {
     });
   }
 
-  void _handleResetPassword() {
-    // 点击按钮显示错误信息
-    setState(() {
-      _showErrors = true;
+  Future<void> sendResetRequest() async {
+    final email = _gmailController.text.trim();
+    final newPassword = _passwordController.text.trim();
 
-      _validateUsername();
-      _validateGmail();
-      _validatePassword();
-      _validateRePassword();
-    });
+    final response = await http.post(
+      Uri.parse('http://192.168.0.3/flutter_api/send_vendor_reset.php'),// ⚠️ 请改为你实际的 IP 或域名
+      body: {'email': email, 'new_password': newPassword},
+    );
 
-    if (_usernameError == null &&
-        _gmailError == null &&
-        _passwordError == null &&
-        _rePasswordError == null) {
-      Navigator.push(
+    final result = jsonDecode(response.body);
+    if (result['success']) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Check your Gmail to complete reset.')),
+      );
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HomePage()),
       );
     } else {
-      // 可以考虑用SnackBar提示错误
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fix the errors before proceeding.')),
+        SnackBar(content: Text('Failed: ${result['message']}')),
       );
     }
   }
@@ -163,6 +152,25 @@ class _VendorResetPasswordPageState extends State<VendorResetPasswordPage> {
     );
   }
 
+  void _validateAndSubmit() {
+    setState(() {
+      _showErrors = true;
+      _validateGmail();
+      _validatePassword();
+      _validateRePassword();
+    });
+
+    if (_gmailError == null &&
+        _passwordError == null &&
+        _rePasswordError == null) {
+      sendResetRequest(); // 调用发送请求函数
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fix the errors before proceeding.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -181,7 +189,6 @@ class _VendorResetPasswordPageState extends State<VendorResetPasswordPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // 🔙 Back Button
                 Padding(
                   padding: const EdgeInsets.only(left: 19, top: 20),
                   child: Align(
@@ -209,9 +216,6 @@ class _VendorResetPasswordPageState extends State<VendorResetPasswordPage> {
                   height: 300,
                   fit: BoxFit.contain,
                 ),
-                const SizedBox(height: 30),
-                _buildInputField(_usernameController, "Username", Icons.person, errorText: _usernameError),
-                const SizedBox(height: 30),
                 _buildInputField(_gmailController, "Gmail", Icons.email,
                     keyboard: TextInputType.emailAddress, errorText: _gmailError),
                 const SizedBox(height: 30),
@@ -225,7 +229,7 @@ class _VendorResetPasswordPageState extends State<VendorResetPasswordPage> {
                   width: 330,
                   height: 80,
                   child: ElevatedButton(
-                    onPressed: _handleResetPassword,
+                    onPressed: _validateAndSubmit,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
                       elevation: 0,

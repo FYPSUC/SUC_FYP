@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'VendorMain.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:suc_fyp/login_system/api_service.dart';
 
 class VendorTopUpPage extends StatefulWidget {
   const VendorTopUpPage({super.key});
@@ -224,18 +226,57 @@ class _VendorTopUpPageState extends State<VendorTopUpPage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _amountController.text.isEmpty || _selectedBank == null
-                      ? null
-                      : () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const VendorMainPage()));
+                  onPressed: _amountController.text.isEmpty || _selectedBank == null ? null : () async {
+                    SharedPreferences prefs = await SharedPreferences
+                        .getInstance();
+                    String? uid = prefs.getString('uid');
+
+                    if (uid == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("❌ Vendor 未登录")),
+                      );
+                      return;
+                    }
+
+                    double amount = double.tryParse(_enteredAmount) ?? 0.0;
+                    if (amount <= 0) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("❌ 金额无效")),
+                      );
+                      return;
+                    }
+
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) =>
+                      const Center(child: CircularProgressIndicator()),
+                    );
+
+                    bool success = await ApiService.topUpUser(
+                        uid, amount, role: 'vendor');
+
+                    Navigator.of(context).pop(); // 关闭 loading
+
+                    if (success) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("✅ Vendor Top Up 成功")),
+                      );
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const VendorMainPage()),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("❌ Top up 失败")),
+                      );
+                    }
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: screenHeight * 0.02),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: Text('Top Up', style: TextStyle(fontSize: screenWidth * 0.05, fontWeight: FontWeight.bold)),
+
+                  child: Text('Top Up', style: TextStyle(
+                      fontSize: screenWidth * 0.05,
+                      fontWeight: FontWeight.bold)),
                 ),
               ),
               SizedBox(height: screenHeight * 0.03),

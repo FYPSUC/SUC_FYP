@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:suc_fyp/login_system/api_service.dart';
 import 'package:suc_fyp/E-wallet_User/UserMain.dart';
@@ -24,17 +25,26 @@ class _LoginPageState extends State<LoginPage> {
     final String password = passwordController.text.trim();
 
     try {
-      // ✅ Step 1: Firebase 登录验证
+      // 🔒 Step 1: Firebase 登录验证
       UserCredential credential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
 
       String uid = credential.user!.uid;
 
-      // ✅ Step 2: 发送 UID 给你自己的后端获取用户资料
+      // 💾 Step 2: 保存 UID 到 SharedPreferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('uid', uid);
+
+      // 🌐 Step 3: 向你的 PHP 后端请求获取用户资料
       final response = await ApiService.getUserByUID(uid);
 
       if (response['success']) {
-        // ✅ Step 3: 成功后跳转
+        // 🟢 Step 4: 成功跳转主页面
+        final user = response['user'];
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('uid', uid); // Firebase UID
+        await prefs.setString('user_id', user['UserID'].toString()); // 保存 UserID（重要）
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const UserMainPage()),
@@ -48,6 +58,7 @@ class _LoginPageState extends State<LoginPage> {
       showError("Unexpected error: $e");
     }
   }
+
 
   void showError(String message) {
     showDialog(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'UserMain.dart';
+import 'package:suc_fyp/login_system/api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserTopUpPage extends StatefulWidget {
   const UserTopUpPage({super.key});
@@ -226,15 +228,54 @@ class _TopUpPageState extends State<UserTopUpPage> {
                 child: ElevatedButton(
                   onPressed: _amountController.text.isEmpty || _selectedBank == null
                       ? null
-                      : () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const UserMainPage()));
+                      : () async {
+                    SharedPreferences prefs = await SharedPreferences.getInstance();
+                    String? uid = prefs.getString('uid');
+
+                    if (uid == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("❌ 用户未登录 ")),
+                      );
+                      return;
+                    }
+
+                    double amount = double.tryParse(_enteredAmount) ?? 0.0;
+                    if (amount <= 0) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("❌ 金额无效")),
+                      );
+                      return;
+                    }
+
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) => const Center(child: CircularProgressIndicator()),
+                    );
+
+                    bool success = await ApiService.topUpUser(uid, amount);
+
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (context) => const UserMainPage()),
+                          (Route<dynamic> route) => false,
+                    );
+                    // 关闭 loading
+
+                    if (success) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("✅ Top up successful")),
+                      );
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const UserMainPage()),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("❌ Top up failed")),
+                      );
+                    }
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: screenHeight * 0.02),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
+
                   child: Text('Top Up', style: TextStyle(fontSize: screenWidth * 0.05, fontWeight: FontWeight.bold)),
                 ),
               ),

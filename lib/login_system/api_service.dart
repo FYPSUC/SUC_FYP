@@ -5,12 +5,10 @@ class ApiService {
   static const String baseUrl = 'http://192.168.0.3/flutter_api';
 
   /// 🔸旧方法：传统注册
-  static Future<Map<String, dynamic>> legacyRegisterUser(
-      String username,
+  static Future<Map<String, dynamic>> legacyRegisterUser(String username,
       String password,
       String email,
-      String role,
-      ) async {
+      String role,) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/register.php'),
@@ -37,12 +35,10 @@ class ApiService {
   }
 
   /// ✅ 新方法：Firebase 注册
-  static Future<Map<String, dynamic>> registerUser(
-      String uid,
+  static Future<Map<String, dynamic>> registerUser(String uid,
       String username,
       String email,
-      String role,
-      ) async {
+      String role,) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/register.php'),
@@ -113,7 +109,8 @@ class ApiService {
   }
 
   /// ✅ 用户登录 API（如果仍需支持 username 登录）
-  static Future<Map<String, dynamic>> loginUser(String username, String password) async {
+  static Future<Map<String, dynamic>> loginUser(String username,
+      String password) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/login.php'),
@@ -155,4 +152,57 @@ class ApiService {
       return {'success': false, 'message': '请求失败：$e'};
     }
   }
+
+  static Future<Map<String, dynamic>> getUserBalance(String uid) async {
+    final url = Uri.parse('$baseUrl/get_user_balance.php');
+    final response = await http.post(url, body: {'uid': uid});
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data;
+    } else {
+      return {'success': false, 'message': 'Failed to connect to server'};
+    }
+  }
+
+  static Future<double?> fetchUserBalance(String userId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/get_user_balance.php'),
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: {'user_id': userId},
+    );
+    final result = jsonDecode(response.body);
+    return result['success']
+        ? double.parse(result['balance'].toString())
+        : null;
+  }
+
+  static Future<bool> topUpUser(String userId, double amount,
+      {String role = 'users'}) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/topup_user.php'),
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: {
+        'user_id': userId,
+        'amount': amount.toStringAsFixed(2),
+        'role': role,
+      },
+    );
+    final result = jsonDecode(response.body);
+    return result['success'];
+  }
+
+
+  static Future<double?> fetchVendorBalance(String vendorId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/get_user_balance.php'), // 没错，复用同一个 PHP 文件
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: {'uid': vendorId, 'role': 'vendor'}, // 增加 role 字段
+    );
+    final result = jsonDecode(response.body);
+    return result['success']
+        ? double.parse(result['balance'].toString())
+        : null;
+  }
+
 }

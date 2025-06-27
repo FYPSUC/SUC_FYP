@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:suc_fyp/login_system/api_service.dart'; // 确保引入你的 ApiService
 import 'package:suc_fyp/main.dart';
 import 'QR/QR.dart';
 import 'UserProfile.dart';
@@ -18,8 +20,43 @@ class UserMainPage extends StatefulWidget {
 }
 
 class _UserMainPageState extends State<UserMainPage> {
-  double balance = 888.00;
+  double balance = 0.00;
   bool showBalance = true;
+
+  @override
+  void initState() {
+    super.initState();
+    loadBalance(); // 初始化时加载余额
+  }
+  Future<void> loadBalance() async {
+    print("object");
+    final prefs = await SharedPreferences.getInstance();
+    final uid = prefs.getString('uid');
+
+    if (uid == null) {
+      print("⚠️ UID not found");
+      return;
+    }
+
+    try {
+
+      final response = await ApiService.getUserBalance(uid);
+
+      if (response['success']) {
+
+        setState(() {
+          balance = double.tryParse(response['balance'].toString()) ?? 0.00;
+        });
+
+      } else {
+        print("❌ Balance fetch failed: ${response['message']}");
+      }
+    } catch (e) {
+      print("❌ Error: $e");
+    }
+  }
+
+
 
   double screenWidth(BuildContext context) => MediaQuery.of(context).size.width;
   double screenHeight(BuildContext context) => MediaQuery.of(context).size.height;

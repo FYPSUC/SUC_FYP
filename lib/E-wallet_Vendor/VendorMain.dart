@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:suc_fyp/main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:suc_fyp/login_system/api_service.dart';
 import 'VendorQR/VendorQR.dart';
 import 'VendorProfile.dart';
 import 'VendorTopUp.dart';
@@ -16,10 +18,30 @@ class VendorMainPage extends StatefulWidget {
 }
 
 class _VendorMainPageState extends State<VendorMainPage> {
-  double balance = 888.00;
+  double balance = 0.00;
   bool showBalance = true;
 
   @override
+  @override
+  void initState() {
+    super.initState();
+    _loadVendorBalance();
+  }
+
+  void _loadVendorBalance() async {
+    final prefs = await SharedPreferences.getInstance();
+    final uid = prefs.getString('uid');
+
+    if (uid != null) {
+      final vendorBalance = await ApiService.fetchVendorBalance(uid);
+      if (vendorBalance != null) {
+        setState(() {
+          balance = vendorBalance;
+        });
+      }
+    }
+  }
+@override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;

@@ -1,8 +1,12 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+
 class ApiService {
-  static const String baseUrl = 'http://192.168.0.3/flutter_api';
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://7565-2001-e68-540a-2857-81e-2c8f-7a64-285f.ngrok-free.app/flutter_api',
+  );
 
   /// 🔸旧方法：传统注册
   static Future<Map<String, dynamic>> legacyRegisterUser(String username,
@@ -152,6 +156,32 @@ class ApiService {
       return {'success': false, 'message': '请求失败：$e'};
     }
   }
+  static Future<Map<String, dynamic>> sendResetOtp(String email, String newPassword) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/send_reset_otp.php'),
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: {
+        'email': email,
+        'new_password': newPassword,
+      },
+    );
+    return jsonDecode(response.body);
+  }
+
+
+  static Future<Map<String, dynamic>> sendVendorResetOtp(String email, String newPassword) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/send_vendor_reset.php'),
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: {
+        'email': email,
+        'new_password': newPassword,
+      },
+    );
+    return jsonDecode(response.body);
+  }
+
+
 
   static Future<Map<String, dynamic>> getUserBalance(String uid) async {
     final url = Uri.parse('$baseUrl/get_user_balance.php');

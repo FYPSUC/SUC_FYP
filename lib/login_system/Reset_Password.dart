@@ -1,7 +1,8 @@
-import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:suc_fyp/main.dart';
+import 'api_service.dart';
 
 class ResetPasswordPage extends StatefulWidget {
   const ResetPasswordPage({super.key});
@@ -79,11 +80,11 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     final newPassword = _passwordController.text.trim();
 
     final response = await http.post(
-      Uri.parse('http://192.168.0.3/flutter_api/send_reset_otp.php'),// ⚠️ 请改为你实际的 IP 或域名
+      Uri.parse('https://d4d4-2001-e68-540a-2857-954a-4044-e03e-2c71.ngrok-free.app/flutter_api/send_reset_otp.php'),// ⚠️ 请改为你实际的 IP 或域名
       body: {'email': email, 'new_password': newPassword},
     );
 
-    final result = jsonDecode(response.body);
+    final result = await ApiService.sendResetOtp(email, newPassword);
     if (result['success']) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Check your Gmail to complete reset.')),
@@ -97,6 +98,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         SnackBar(content: Text('Failed: ${result['message']}')),
       );
     }
+
   }
 
   InputDecoration buildInputDecoration(String hint, IconData icon, String? errorText) {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:suc_fyp/login_system/api_service.dart'; // 确保引入你的 ApiService
+import 'package:suc_fyp/login_system/api_service.dart';
 import 'package:suc_fyp/main.dart';
 import 'QR/QR.dart';
 import 'UserProfile.dart';
@@ -22,14 +22,15 @@ class UserMainPage extends StatefulWidget {
 class _UserMainPageState extends State<UserMainPage> {
   double balance = 0.00;
   bool showBalance = true;
+  String? _profileImageUrl;
 
   @override
   void initState() {
     super.initState();
-    loadBalance(); // 初始化时加载余额
+    loadBalance();
   }
+
   Future<void> loadBalance() async {
-    print("object");
     final prefs = await SharedPreferences.getInstance();
     final uid = prefs.getString('uid');
 
@@ -39,24 +40,27 @@ class _UserMainPageState extends State<UserMainPage> {
     }
 
     try {
-
-      final response = await ApiService.getUserBalance(uid);
-
-      if (response['success']) {
-
+      final balanceResponse = await ApiService.getUserBalance(uid);
+      if (balanceResponse['success']) {
         setState(() {
-          balance = double.tryParse(response['balance'].toString()) ?? 0.00;
+          balance = double.tryParse(balanceResponse['balance'].toString()) ?? 0.00;
         });
-
       } else {
-        print("❌ Balance fetch failed: ${response['message']}");
+        print("❌ Balance fetch failed: ${balanceResponse['message']}");
+      }
+
+      final userResponse = await ApiService.getUserByUID(uid);
+      if (userResponse['success']) {
+        setState(() {
+          _profileImageUrl = userResponse['user']['Image'];
+        });
+      } else {
+        print("❌ Failed to load user profile image: ${userResponse['message']}");
       }
     } catch (e) {
       print("❌ Error: $e");
     }
   }
-
-
 
   double screenWidth(BuildContext context) => MediaQuery.of(context).size.width;
   double screenHeight(BuildContext context) => MediaQuery.of(context).size.height;
@@ -149,20 +153,25 @@ class _UserMainPageState extends State<UserMainPage> {
                           elevation: 0,
                         ),
                         onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => const UserProfilePage()));
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const UserProfilePage()),
+                          ).then((_) => loadBalance());
                         },
                         child: Container(
                           width: screenWidth(context) * 0.28,
                           height: screenWidth(context) * 0.28,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            image: const DecorationImage(
-                              image: AssetImage('assets/image/Profile_icon.png'),
+                            image: DecorationImage(
                               fit: BoxFit.cover,
+                              image: _profileImageUrl != null && _profileImageUrl!.isNotEmpty
+                                  ? NetworkImage(_profileImageUrl!)
+                                  : const AssetImage('assets/image/Profile_icon.png') as ImageProvider,
                             ),
                           ),
                         ),
-                      )
+                      ),
                     ],
                   ),
                   SizedBox(height: screenHeight(context) * 0.03),

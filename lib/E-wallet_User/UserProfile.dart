@@ -8,16 +8,14 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class CloudinaryService {
-  static const cloudName = 'dj5err3f6'; // ✅ 记得替换
-  static const uploadPreset = 'flutter_upload'; // ✅ 替换为 Cloudinary 设置好的 unsigned preset
+  static const cloudName = 'dj5err3f6';
+  static const uploadPreset = 'flutter_upload';
 
   static Future<String?> uploadImage(File imageFile) async {
     final uri = Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/image/upload');
-
     final request = http.MultipartRequest('POST', uri)
       ..fields['upload_preset'] = uploadPreset
       ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
-
 
     final response = await request.send();
     final res = await http.Response.fromStream(response);
@@ -71,10 +69,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
-  Future<void> _updateProfile() async {
-    if (_uid == null) return;
-
-    String? newImageUrl = _profileImageUrl;
+  Future<void> pickAndUploadImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
@@ -83,19 +78,24 @@ class _UserProfilePageState extends State<UserProfilePage> {
       final uploadedUrl = await CloudinaryService.uploadImage(file);
 
       if (uploadedUrl != null) {
-        newImageUrl = uploadedUrl;
+        setState(() {
+          _profileImageUrl = uploadedUrl;
+        });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Image upload failed")),
         );
-        return;
       }
     }
+  }
+
+  Future<void> _updateProfile() async {
+    if (_uid == null) return;
 
     final response = await ApiService.updateUserProfile(
       uid: _uid!,
       username: _usernameController.text,
-      ImageUrl: newImageUrl ?? '',
+      ImageUrl: _profileImageUrl ?? '',
       SixDigitPassword: _SixDigitPasswordController.text,
     );
 
@@ -103,12 +103,9 @@ class _UserProfilePageState extends State<UserProfilePage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Profile updated successfully")),
       );
-      setState(() {
-        _profileImageUrl = newImageUrl;
-      });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Update failed: ${response['message']}")),
+        SnackBar(content: Text("Update failed: \${response['message']}")),
       );
     }
   }
@@ -158,7 +155,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   Row(
                     children: [
                       GestureDetector(
-                        onTap: _updateProfile,
+                        onTap: pickAndUploadImage,
                         child: CircleAvatar(
                           radius: screenWidth * 0.1,
                           backgroundImage: _profileImageUrl != null

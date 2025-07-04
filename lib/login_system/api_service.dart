@@ -5,7 +5,7 @@ import 'dart:convert';
 class ApiService {
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://7565-2001-e68-540a-2857-81e-2c8f-7a64-285f.ngrok-free.app/flutter_api',
+    defaultValue: 'https://c63f-2001-e68-540a-2857-81e-2c8f-7a64-285f.ngrok-free.app/flutter_api/',
   );
 
   /// 🔸旧方法：传统注册
@@ -233,6 +233,38 @@ class ApiService {
     return result['success']
         ? double.parse(result['balance'].toString())
         : null;
+  }
+
+
+  static Future<Map<String, dynamic>> updateUserProfile({
+    required String uid,
+    required String username,
+    required String ImageUrl,
+    required String SixDigitPassword,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/update_user_profile.php'),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {
+          'uid': uid,
+          'username': username,
+          'Image_url': ImageUrl,
+          'SixDigitPassword': SixDigitPassword,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        return {
+          'success': false,
+          'message': 'Server error: ${response.statusCode}',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Request failed: $e'};
+    }
   }
 
 }

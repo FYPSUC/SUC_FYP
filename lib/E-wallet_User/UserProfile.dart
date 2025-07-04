@@ -1,8 +1,117 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'UserMain.dart';
+import 'package:suc_fyp/login_system/api_service.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-class UserProfilePage extends StatelessWidget {
+class CloudinaryService {
+  static const cloudName = 'dj5err3f6'; // ✅ 记得替换
+  static const uploadPreset = 'flutter_upload'; // ✅ 替换为 Cloudinary 设置好的 unsigned preset
+
+  static Future<String?> uploadImage(File imageFile) async {
+    final uri = Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/image/upload');
+
+    final request = http.MultipartRequest('POST', uri)
+      ..fields['upload_preset'] = uploadPreset
+      ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
+
+
+    final response = await request.send();
+    final res = await http.Response.fromStream(response);
+
+    if (res.statusCode == 200) {
+      final responseData = jsonDecode(res.body);
+      return responseData['secure_url'];
+    } else {
+      print('Cloudinary upload failed: ${res.body}');
+      return null;
+    }
+  }
+}
+
+class UserProfilePage extends StatefulWidget {
   const UserProfilePage({super.key});
+
+  @override
+  State<UserProfilePage> createState() => _UserProfilePageState();
+}
+
+class _UserProfilePageState extends State<UserProfilePage> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _SixDigitPasswordController = TextEditingController();
+  String? _profileImageUrl;
+  String? _email;
+  String? _uid;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      setState(() {
+        _uid = user.uid;
+        _email = user.email;
+      });
+
+      final response = await ApiService.getUserByUID(user.uid);
+      if (response['success']) {
+        setState(() {
+          _usernameController.text = response['user']['username'];
+          _SixDigitPasswordController.text = response['user']['SixDigitPassword'] ?? '';
+          _profileImageUrl = response['user']['Image'];
+        });
+      }
+    }
+  }
+
+  Future<void> _updateProfile() async {
+    if (_uid == null) return;
+
+    String? newImageUrl = _profileImageUrl;
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      final file = File(pickedFile.path);
+      final uploadedUrl = await CloudinaryService.uploadImage(file);
+
+      if (uploadedUrl != null) {
+        newImageUrl = uploadedUrl;
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Image upload failed")),
+        );
+        return;
+      }
+    }
+
+    final response = await ApiService.updateUserProfile(
+      uid: _uid!,
+      username: _usernameController.text,
+      ImageUrl: newImageUrl ?? '',
+      SixDigitPassword: _SixDigitPasswordController.text,
+    );
+
+    if (response['success']) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Profile updated successfully")),
+      );
+      setState(() {
+        _profileImageUrl = newImageUrl;
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Update failed: ${response['message']}")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,14 +139,8 @@ class UserProfilePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: screenHeight * 0.03),
-                  // Back button
                   GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const UserMainPage()),
-                      );
-                    },
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UserMainPage())),
                     child: Row(
                       children: [
                         Image.asset(
@@ -47,49 +150,39 @@ class UserProfilePage extends StatelessWidget {
                           fit: BoxFit.cover,
                         ),
                         SizedBox(width: screenWidth * 0.02),
-                        Text(
-                          'Back',
-                          style: TextStyle(
-                            fontSize: screenWidth * 0.06,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        Text('Back', style: TextStyle(fontSize: screenWidth * 0.06, fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.04),
-
-                  // Profile picture and username
                   Row(
                     children: [
-                      Container(
-                        width: screenWidth * 0.2,
-                        height: screenWidth * 0.2,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          image: const DecorationImage(
-                            image: AssetImage('assets/image/Profile_icon.png'),
-                            fit: BoxFit.cover,
-                          ),
+                      GestureDetector(
+                        onTap: _updateProfile,
+                        child: CircleAvatar(
+                          radius: screenWidth * 0.1,
+                          backgroundImage: _profileImageUrl != null
+                              ? NetworkImage(_profileImageUrl!)
+                              : const AssetImage('assets/image/Profile_icon.png') as ImageProvider,
                         ),
                       ),
                       SizedBox(width: screenWidth * 0.05),
-                      Text(
-                        'Username',
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.06,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Expanded(
+                        child: _buildInfoRow('Username', _usernameController.text, screenWidth),
                       ),
                     ],
                   ),
-
                   Divider(height: screenHeight * 0.05, thickness: 2, color: Colors.black),
-                  _buildInfoRow('Email', 'JohnWick@gmail.com', screenWidth),
-                  Divider(height: screenHeight * 0.05, thickness: 1, color: Colors.black),
-                  _buildPasswordRow(screenWidth),
+                  _buildInfoRow('Email', _email ?? '', screenWidth),
                   Divider(height: screenHeight * 0.05, thickness: 1, color: Colors.black),
                   _buildPinRow(screenWidth, context),
+                  SizedBox(height: screenHeight * 0.05),
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: _updateProfile,
+                      child: const Text("Save Changes"),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -100,6 +193,7 @@ class UserProfilePage extends StatelessWidget {
   }
 
   Widget _buildInfoRow(String label, String value, double screenWidth) {
+    final controller = TextEditingController(text: value);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -107,6 +201,7 @@ class UserProfilePage extends StatelessWidget {
         const SizedBox(height: 15),
         TextField(
           readOnly: true,
+          controller: controller,
           decoration: InputDecoration(
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             hintText: value,
@@ -123,161 +218,29 @@ class UserProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildPasswordRow(double screenWidth) {
-    bool obscureText = true;
-    return StatefulBuilder(
-      builder: (context, setState) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Password', style: TextStyle(fontSize: screenWidth * 0.045, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 15),
-            TextField(
-              readOnly: true,
-              obscureText: obscureText,
-              controller: TextEditingController(text: "actualpassword"),
-              decoration: InputDecoration(
-                suffixIcon: IconButton(
-                  icon: Icon(obscureText ? Icons.visibility : Icons.visibility_off),
-                  onPressed: () => setState(() => obscureText = !obscureText),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                filled: true,
-                fillColor: Colors.grey[200],
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(25),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   Widget _buildPinRow(double screenWidth, BuildContext context) {
-    String pin = '';
-    bool obscureText = true;
-    bool isEditing = false;
-
-    return StatefulBuilder(
-      builder: (context, setState) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('6-Digit pin', style: TextStyle(fontSize: screenWidth * 0.045, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 15),
-            if (!isEditing && pin.isEmpty)
-              ElevatedButton(
-                onPressed: () {
-                  setState(() => isEditing = true);
-                  _showPinDialog(context, (enteredPin) {
-                    setState(() {
-                      pin = enteredPin;
-                      isEditing = false;
-                    });
-                  });
-                },
-                child: const Text('Set PIN'),
-              )
-            else if (!isEditing)
-              TextField(
-                readOnly: true,
-                obscureText: obscureText,
-                controller: TextEditingController(text: pin),
-                decoration: InputDecoration(
-                  suffixIcon: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: Icon(obscureText ? Icons.visibility : Icons.visibility_off),
-                        onPressed: () => setState(() => obscureText = !obscureText),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () {
-                          setState(() => isEditing = true);
-                          _showPinDialog(context, (enteredPin) {
-                            setState(() {
-                              pin = enteredPin;
-                              isEditing = false;
-                            });
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  filled: true,
-                  fillColor: Colors.grey[200],
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(25),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              )
-            else
-              TextField(
-                keyboardType: TextInputType.number,
-                maxLength: 6,
-                obscureText: true,
-                decoration: InputDecoration(
-                  hintText: 'Enter 6-digit PIN',
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  filled: true,
-                  fillColor: Colors.grey[200],
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(25),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-                onSubmitted: (value) {
-                  if (value.length == 6) {
-                    setState(() {
-                      pin = value;
-                      isEditing = false;
-                    });
-                  }
-                },
-              ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showPinDialog(BuildContext context, Function(String) onPinEntered) {
-    String enteredPin = '';
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Enter 6-Digit PIN'),
-          content: TextField(
-            keyboardType: TextInputType.number,
-            maxLength: 6,
-            obscureText: true,
-            onChanged: (value) => enteredPin = value,
-            decoration: const InputDecoration(hintText: '000000'),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('6-Digit PIN', style: TextStyle(fontSize: screenWidth * 0.045, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 15),
+        TextField(
+          controller: _SixDigitPasswordController,
+          keyboardType: TextInputType.number,
+          maxLength: 6,
+          obscureText: true,
+          decoration: InputDecoration(
+            hintText: 'Enter 6-digit PIN',
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            filled: true,
+            fillColor: Colors.grey[200],
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(25),
+              borderSide: BorderSide.none,
+            ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                if (enteredPin.length == 6) {
-                  onPinEntered(enteredPin);
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text('Confirm'),
-            ),
-          ],
-        );
-      },
+        ),
+      ],
     );
   }
 }

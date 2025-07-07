@@ -5,7 +5,7 @@ import 'dart:convert';
 class ApiService {
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://c63f-2001-e68-540a-2857-81e-2c8f-7a64-285f.ngrok-free.app/flutter_api/',
+    defaultValue: 'https://a7eb-202-171-50-195.ngrok-free.app/flutter_api/',
   );
 
   /// 🔸旧方法：传统注册
@@ -139,7 +139,7 @@ class ApiService {
   static Future<Map<String, dynamic>> loginVendor(String username) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/vendorlogin.php'),
+        Uri.parse('$baseUrl/login_vendor.php'),
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: {'username': username},
       );
@@ -266,5 +266,41 @@ class ApiService {
       return {'success': false, 'message': 'Request failed: $e'};
     }
   }
+  static Future<Map<String, dynamic>> updateVendorProfile({
+    required String uid,
+    required String image_url,
+    required String ShopName,
+    required String PickupAddress,
+    required String SixDigitPassword,
+    String AdShopImage = '',
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/update_user_profile.php'),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {
+          'uid': uid,
+          'role': 'vendor',
+          'image_url': image_url,
+          'ShopName': ShopName,
+          'PickupAddress': PickupAddress,
+          'SixDigitPassword': SixDigitPassword,
+          'AdShopImage': AdShopImage,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        return {
+          'success': false,
+          'message': 'Server error: ${response.statusCode}',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Request failed: $e'};
+    }
+  }
+
 
 }

@@ -5,7 +5,7 @@ import 'dart:convert';
 class ApiService {
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://a7eb-202-171-50-195.ngrok-free.app/flutter_api/',
+    defaultValue: 'https://9c6a4aa6434d.ngrok-free.app/flutter_api/',
   );
 
   /// 🔸旧方法：传统注册
@@ -249,8 +249,9 @@ class ApiService {
         body: {
           'uid': uid,
           'username': username,
-          'Image_url': ImageUrl,
+          'image_url': ImageUrl,
           'SixDigitPassword': SixDigitPassword,
+          'role':'User',
         },
       );
 
@@ -280,7 +281,7 @@ class ApiService {
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: {
           'uid': uid,
-          'role': 'vendor',
+          'role': 'Vendor',
           'image_url': image_url,
           'ShopName': ShopName,
           'PickupAddress': PickupAddress,
@@ -301,6 +302,51 @@ class ApiService {
       return {'success': false, 'message': 'Request failed: $e'};
     }
   }
+
+  // 在 api_service.dart 中添加
+  static Future<Map<String, dynamic>> getQRDataByUID(String uid) async {
+    final response = await http.get(Uri.parse('$baseUrl/get_qr_by_uid.php?uid=$uid'));
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load QR data');
+    }
+  }
+
+  static Future<Map<String, dynamic>> transferFunds({
+    required String SenderID,
+    required String ReceiverID,
+    required String Amount,
+    required String SixDigitPassword,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/transfer_funds.php'),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {
+          'sender_uid': SenderID,
+          'receiver_uid': ReceiverID,
+          'amount': Amount,
+          'SixDigitPassword': SixDigitPassword,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        return {
+          'success': false,
+          'message': 'Server error: ${response.statusCode}',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Request failed: $e'};
+    }
+  }
+
+
+
 
 
 }

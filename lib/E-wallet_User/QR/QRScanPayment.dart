@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:suc_fyp/E-wallet_User/UserMain.dart';
+import 'package:suc_fyp/login_system/api_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class UserQRScanPaymentPage extends StatefulWidget {
-  const UserQRScanPaymentPage({super.key});
+  final String qrData; // firebase_uid
+  const UserQRScanPaymentPage({super.key, required this.qrData});
 
   @override
   State<UserQRScanPaymentPage> createState() => _UserQRScanPaymentPageState();
@@ -13,7 +16,7 @@ class _UserQRScanPaymentPageState extends State<UserQRScanPaymentPage> {
   String amount = '';
   String _rawAmount = '';
   final TextEditingController _amountController = TextEditingController();
-  final TextEditingController _pinController = TextEditingController();
+  final TextEditingController _SixDigitPasswordController = TextEditingController();
 
   @override
   void initState() {
@@ -25,7 +28,7 @@ class _UserQRScanPaymentPageState extends State<UserQRScanPaymentPage> {
   void dispose() {
     _amountController.removeListener(_handleManualInput);
     _amountController.dispose();
-    _pinController.dispose();
+    _SixDigitPasswordController.dispose();
     super.dispose();
   }
 
@@ -207,7 +210,7 @@ class _UserQRScanPaymentPageState extends State<UserQRScanPaymentPage> {
             SizedBox(
               width: screenWidth * 0.6,
               child: TextField(
-                controller: _pinController,
+                controller: _SixDigitPasswordController,
                 keyboardType: TextInputType.number,
                 maxLength: 6,
                 obscureText: true,
@@ -236,19 +239,48 @@ class _UserQRScanPaymentPageState extends State<UserQRScanPaymentPage> {
               ),
               padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.2, vertical: screenHeight * 0.02),
             ),
-            onPressed: () {
-              String enteredPin = _pinController.text;
-              if (enteredPin.length == 6) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PaymentSuccessPage(amount: amount),
-                  ),
-                );
-              } else {
+            onPressed: () async {
+              String enteredPin = _SixDigitPasswordController.text;
+              if (enteredPin.length != 6) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Please enter 6 digits')),
                 );
+                return;
+              }
+
+              final user = FirebaseAuth.instance.currentUser;
+              if (user != null) {
+                final userResponse = await ApiService.getUserByUID(user.uid);
+                final correctPin = userResponse['user']['SixDigitPassword'];
+
+                if (enteredPin == correctPin) {
+                  // ✅ 密码验证成功，你可以在这里调用 transfer API
+                  // 例如：
+                  final response = await ApiService.transferFunds(
+                    SenderID: user.uid,
+                    ReceiverID: widget.qrData,
+                    Amount: amount,
+                    SixDigitPassword: enteredPin,
+                  );
+
+                  if (response['success']) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PaymentSuccessPage(amount: amount),
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(response['message'] ?? 'Transfer failed')),
+                    );
+                  }
+                } else {
+                  // ❌ 密码错误
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Incorrect 6-digit password')),
+                  );
+                }
               }
             },
             child: Text(

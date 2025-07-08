@@ -33,7 +33,8 @@ class _VendorResetPasswordPageState extends State<VendorResetPasswordPage> {
 
   void _validateGmail() {
     final gmail = _gmailController.text.trim();
-    final gmailReg = RegExp(r'^[\w\.-]+@gmail\.com$', caseSensitive: false);
+    final gmailReg = RegExp(r'^[\w\.-]+@[\w\.-]+\.\w+$', caseSensitive: false);
+
     setState(() {
       if (gmail.isEmpty) {
         _gmailError = "Gmail can't be empty";

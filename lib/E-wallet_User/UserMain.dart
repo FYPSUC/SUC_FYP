@@ -33,22 +33,30 @@ class _UserMainPageState extends State<UserMainPage> {
   Future<void> loadBalance() async {
     final prefs = await SharedPreferences.getInstance();
     final uid = prefs.getString('uid');
+    final role = prefs.getString('role');
+    print("🔎 SharedPreferences keys: ${prefs.getKeys()}");
+    print("🔎 uid: ${prefs.getString('uid')}");
+    print("🔎 role: ${prefs.getString('role')}");
+    print("📦 UID: $uid, Role: $role");
 
-    if (uid == null) {
-      print("⚠️ UID not found");
+    if (uid == null || role == null) {
+      print("❌ Balance fetch failed: Missing uid or role");
       return;
     }
 
     try {
-      final balanceResponse = await ApiService.getUserBalance(uid);
-      if (balanceResponse['success']) {
+      // 🟢 获取余额
+      final fetchedBalance = await ApiService.fetchBalance(uid, role); // 应该返回 double 类型
+
+      if (fetchedBalance != null) {
         setState(() {
-          balance = double.tryParse(balanceResponse['balance'].toString()) ?? 0.00;
+          balance = fetchedBalance;
         });
       } else {
-        print("❌ Balance fetch failed: ${balanceResponse['message']}");
+        print("❌ Balance fetch failed: balance is null");
       }
 
+      // 🟢 获取用户资料
       final userResponse = await ApiService.getUserByUID(uid);
       if (userResponse['success']) {
         setState(() {
@@ -57,10 +65,12 @@ class _UserMainPageState extends State<UserMainPage> {
       } else {
         print("❌ Failed to load user profile image: ${userResponse['message']}");
       }
+
     } catch (e) {
-      print("❌ Error: $e");
+      print("❌ Error loading balance/profile: $e");
     }
   }
+
 
   double screenWidth(BuildContext context) => MediaQuery.of(context).size.width;
   double screenHeight(BuildContext context) => MediaQuery.of(context).size.height;
@@ -97,7 +107,7 @@ class _UserMainPageState extends State<UserMainPage> {
                         children: [
                           GestureDetector(
                             onTap: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => const HomePage()));
+                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomePage()));
                             },
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,7 +166,7 @@ class _UserMainPageState extends State<UserMainPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => const UserProfilePage()),
-                          ).then((_) => loadBalance());
+                          ).then((_) => loadBalance()); // 👈 refresh on return
                         },
                         child: Container(
                           width: screenWidth(context) * 0.28,
@@ -189,7 +199,14 @@ class _UserMainPageState extends State<UserMainPage> {
                           elevation: 2,
                         ),
                         onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => const UserTopUpPage()));
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const UserTopUpPage()),
+                          ).then((value) {
+                            if (value == true) {
+                              loadBalance(); // ✅ Only reload if TopUp was successful
+                            }
+                          });
                         },
                         child: Text(
                           '+ Top up',

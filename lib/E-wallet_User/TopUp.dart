@@ -226,15 +226,13 @@ class _TopUpPageState extends State<UserTopUpPage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _amountController.text.isEmpty || _selectedBank == null
-                      ? null
-                      : () async {
+                  onPressed: _amountController.text.isEmpty || _selectedBank == null ? null : () async {
                     SharedPreferences prefs = await SharedPreferences.getInstance();
                     String? uid = prefs.getString('uid');
 
                     if (uid == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("❌ 用户未登录 ")),
+                        const SnackBar(content: Text("❌ 用户未登录")),
                       );
                       return;
                     }
@@ -253,17 +251,12 @@ class _TopUpPageState extends State<UserTopUpPage> {
                       builder: (context) => const Center(child: CircularProgressIndicator()),
                     );
 
-                    bool success = await ApiService.topUpUser(uid, amount);
-
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) => const UserMainPage()),
-                          (Route<dynamic> route) => false,
-                    );
-                    // 关闭 loading
+                    bool success = await ApiService.topUp(uid, amount, 'User');
+                    Navigator.of(context).pop(); // 关闭 loading
 
                     if (success) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("✅ Top up successful")),
+                        const SnackBar(content: Text("✅ Top up 成功")),
                       );
                       Navigator.pushReplacement(
                         context,
@@ -271,10 +264,11 @@ class _TopUpPageState extends State<UserTopUpPage> {
                       );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("❌ Top up failed")),
+                        const SnackBar(content: Text("❌ Top up 失败")),
                       );
                     }
                   },
+
 
                   child: Text('Top Up', style: TextStyle(fontSize: screenWidth * 0.05, fontWeight: FontWeight.bold)),
                 ),

@@ -5,7 +5,7 @@ import 'dart:convert';
 class ApiService {
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://9c6a4aa6434d.ngrok-free.app/flutter_api/',
+    defaultValue: 'https://0a75a70250ce.ngrok-free.app/flutter_api/',
   );
 
   /// 🔸旧方法：传统注册
@@ -208,17 +208,62 @@ class ApiService {
   }
 
   static Future<bool> topUpUser(String userId, double amount,
-      {String role = 'users'}) async {
+      {String role = 'User'}) async {
     final response = await http.post(
       Uri.parse('$baseUrl/topup_user.php'),
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       body: {
-        'user_id': userId,
+        'uid': userId,
         'amount': amount.toStringAsFixed(2),
         'role': role,
       },
     );
     final result = jsonDecode(response.body);
+    return result['success'];
+  }
+// ✅ 通用 Top-Up 方法（适用于 User 和 Vendor）
+  static Future<bool> topUp(String uid, double amount, String role) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/topup_user.php'),
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: {
+        'uid': uid,
+        'amount': amount.toStringAsFixed(2),
+        'role': role,
+      },
+    );
+
+    final result = jsonDecode(response.body);
+    print('🟢 TopUp Result: $result');
+    return result['success'];
+  }
+
+  static Future<double?> fetchBalance(String uid, String role) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/get_user_balance.php'),
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: {
+        'uid': uid,
+        'role': role,
+      },
+    );
+
+    final result = jsonDecode(response.body);
+    return result['success'] ? double.tryParse(result['balance'].toString()) : null;
+  }
+  static Future<bool> topUpVendor(String vendorId, double amount,
+      {String role = 'Vendor'}) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/topup_user.php'),
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: {
+        'uid': vendorId,
+        'amount': amount.toStringAsFixed(2),
+        'role': 'Vendor',
+      },
+    );
+    final result = jsonDecode(response.body);
+    print('🟢 TopUp Vendor Result: $result');
     return result['success'];
   }
 
@@ -227,7 +272,9 @@ class ApiService {
     final response = await http.post(
       Uri.parse('$baseUrl/get_user_balance.php'), // 没错，复用同一个 PHP 文件
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: {'uid': vendorId, 'role': 'vendor'}, // 增加 role 字段
+      body: {'uid': vendorId,
+        'role': 'Vendor',
+      }, // 增加 role 字段
     );
     final result = jsonDecode(response.body);
     return result['success']

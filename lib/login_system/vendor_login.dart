@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suc_fyp/login_system/api_service.dart';
 import 'package:suc_fyp/E-wallet_Vendor/VendorMain.dart';
 import 'package:suc_fyp/login_system/login.dart';
@@ -35,8 +36,14 @@ class _VendorLoginPageState extends State<VendorLoginPage> {
       // ✅ Step 2: 用 UID 从 MySQL 检查是否是 Vendor
       final result = await ApiService.getVendorByUID(uid!);
       print("👀 API 回传: $result");
-      if (result['success'] == true && result['user']['role'] == 'Vendor') {
 
+      if (result['success'] == true && result['user']['role'] == 'Vendor') {
+        // ✅ Step 3: 保存 UID 和角色到本地
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('uid', uid);
+        await prefs.setString('role', 'Vendor');
+
+        // ✅ Step 4: 进入 Vendor 主页
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const VendorMainPage()),
@@ -56,6 +63,7 @@ class _VendorLoginPageState extends State<VendorLoginPage> {
       showError("Unexpected error: $e");
     }
   }
+
 
 
   void showError(String message) {

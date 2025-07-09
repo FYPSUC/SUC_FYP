@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:suc_fyp/login_system/api_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:suc_fyp/E-wallet_User/UserMain.dart';
 
 class VendorQRScanPaymentPage extends StatefulWidget {
-  const VendorQRScanPaymentPage({super.key});
+  final String qrData; // 这是用户 UID
+  const VendorQRScanPaymentPage({super.key, required this.qrData});
 
   @override
   State<VendorQRScanPaymentPage> createState() => _VendorQRScanPaymentPageState();
@@ -36,9 +39,7 @@ class _VendorQRScanPaymentPageState extends State<VendorQRScanPaymentPage> {
         _rawAmount = text;
         _amountController.value = _amountController.value.copyWith(
           text: _formatAmount(_rawAmount),
-          selection: TextSelection.collapsed(
-            offset: _formatAmount(_rawAmount).length,
-          ),
+          selection: TextSelection.collapsed(offset: _formatAmount(_rawAmount).length),
         );
       });
     }
@@ -74,13 +75,11 @@ class _VendorQRScanPaymentPageState extends State<VendorQRScanPaymentPage> {
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
                   child: Row(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Image.asset(
                         'assets/image/BackButton.jpg',
                         width: screenWidth * 0.1,
                         height: screenWidth * 0.1,
-                        fit: BoxFit.cover,
                       ),
                       SizedBox(width: screenWidth * 0.02),
                       Text(
@@ -117,11 +116,7 @@ class _VendorQRScanPaymentPageState extends State<VendorQRScanPaymentPage> {
           children: [
             Text(
               "Enter Amount",
-              style: TextStyle(
-                fontSize: screenWidth * 0.075,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
+              style: TextStyle(fontSize: screenWidth * 0.075, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: screenHeight * 0.03),
             Row(
@@ -129,18 +124,14 @@ class _VendorQRScanPaymentPageState extends State<VendorQRScanPaymentPage> {
               children: [
                 Text(
                   'RM : ',
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.065,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
+                  style: TextStyle(fontSize: screenWidth * 0.065, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(
                   width: screenWidth * 0.4,
                   child: TextField(
                     controller: _amountController,
                     keyboardType: TextInputType.number,
-                    style: TextStyle(fontSize: screenWidth * 0.065, color: Colors.black),
+                    style: TextStyle(fontSize: screenWidth * 0.065),
                     decoration: const InputDecoration(
                       hintText: "0.00",
                       border: UnderlineInputBorder(),
@@ -155,24 +146,20 @@ class _VendorQRScanPaymentPageState extends State<VendorQRScanPaymentPage> {
         Padding(
           padding: EdgeInsets.only(bottom: screenHeight * 0.05),
           child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1, vertical: screenHeight * 0.02),
-            ),
             onPressed: () {
               setState(() {
                 amount = _formatAmount(_rawAmount);
                 showPinInput = true;
               });
             },
-            child: Text(
-              "Confirmation of transfer",
-              style: TextStyle(fontSize: screenWidth * 0.055, fontWeight: FontWeight.bold),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.1, vertical: screenHeight * 0.02),
             ),
+            child: Text("Confirmation of transfer",
+                style: TextStyle(fontSize: screenWidth * 0.055, fontWeight: FontWeight.bold)),
           ),
         ),
       ],
@@ -187,21 +174,17 @@ class _VendorQRScanPaymentPageState extends State<VendorQRScanPaymentPage> {
           children: [
             Text(
               "Enter Amount",
-              style: TextStyle(
-                fontSize: screenWidth * 0.075,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
+              style: TextStyle(fontSize: screenWidth * 0.075, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: screenHeight * 0.02),
             Text(
-              'RM : ${amount.isEmpty ? "0.00" : amount}',
+              'RM : $amount',
               style: TextStyle(fontSize: screenWidth * 0.06, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: screenHeight * 0.04),
             Text(
-              'Please enter 6-Digit pin linked to account',
-              style: TextStyle(fontSize: screenWidth * 0.045, color: Colors.black, fontWeight: FontWeight.bold),
+              'Please enter 6-digit pin linked to your shop',
+              style: TextStyle(fontSize: screenWidth * 0.045, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: screenHeight * 0.02),
             SizedBox(
@@ -212,13 +195,10 @@ class _VendorQRScanPaymentPageState extends State<VendorQRScanPaymentPage> {
                 maxLength: 6,
                 obscureText: true,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: screenWidth * 0.07, letterSpacing: 12, color: Colors.black),
-                decoration: InputDecoration(
+                style: TextStyle(fontSize: screenWidth * 0.07, letterSpacing: 12),
+                decoration: const InputDecoration(
                   counterText: '',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.black),
-                  ),
+                  border: OutlineInputBorder(),
                 ),
               ),
             ),
@@ -228,33 +208,55 @@ class _VendorQRScanPaymentPageState extends State<VendorQRScanPaymentPage> {
         Padding(
           padding: EdgeInsets.only(bottom: screenHeight * 0.05),
           child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.2, vertical: screenHeight * 0.02),
-            ),
-            onPressed: () {
+            onPressed: () async {
               String enteredPin = _pinController.text;
-              if (enteredPin.length == 6) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => PaymentSuccessPage(amount: amount),
-                  ),
-                );
-              } else {
+              if (enteredPin.length != 6) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Please enter 6 digits')),
                 );
+                return;
+              }
+
+              final vendor = FirebaseAuth.instance.currentUser;
+              if (vendor != null) {
+                final response = await ApiService.getVendorByUID(vendor.uid);
+                final correctPin = response['user']['SixDigitPassword']; // 注意 key 仍然是 "user"
+
+                if (enteredPin == correctPin) {
+                  final transferResult = await ApiService.transferFunds(
+                    SenderID: vendor.uid,
+                    ReceiverID: widget.qrData,
+                    Amount: amount,
+                    SixDigitPassword: enteredPin,
+                  );
+
+                  if (transferResult['success']) {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PaymentSuccessPage(amount: amount),
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(transferResult['message'] ?? 'Transfer failed')),
+                    );
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Incorrect 6-digit password')),
+                  );
+                }
               }
             },
-            child: Text(
-              "Confirm",
-              style: TextStyle(fontSize: screenWidth * 0.055, fontWeight: FontWeight.bold),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.2, vertical: screenHeight * 0.02),
             ),
+            child: Text("Confirm",
+                style: TextStyle(fontSize: screenWidth * 0.055, fontWeight: FontWeight.bold)),
           ),
         ),
       ],
@@ -288,30 +290,22 @@ class PaymentSuccessPage extends StatelessWidget {
               children: [
                 GestureDetector(
                   onTap: () {
-                    Navigator.push(
+                    Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const UserMainPage(),
-                      ),
+                      MaterialPageRoute(builder: (context) => const UserMainPage()),
                     );
                   },
                   child: Row(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Image.asset(
                         'assets/image/BackButton.jpg',
                         width: screenWidth * 0.1,
                         height: screenWidth * 0.1,
-                        fit: BoxFit.cover,
                       ),
                       SizedBox(width: screenWidth * 0.02),
                       Text(
                         'Back',
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.06,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
+                        style: TextStyle(fontSize: screenWidth * 0.06, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -322,11 +316,7 @@ class PaymentSuccessPage extends StatelessWidget {
                     children: [
                       Text(
                         'Payment successful',
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.08,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
+                        style: TextStyle(fontSize: screenWidth * 0.08, fontWeight: FontWeight.bold),
                       ),
                       SizedBox(height: screenHeight * 0.08),
                       Image.asset(
@@ -335,12 +325,8 @@ class PaymentSuccessPage extends StatelessWidget {
                         height: screenWidth * 0.6,
                       ),
                       Text(
-                        'RM ${amount.isEmpty ? "0.00" : amount}',
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.08,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
+                        'RM $amount',
+                        style: TextStyle(fontSize: screenWidth * 0.08, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),

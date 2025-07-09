@@ -1,7 +1,58 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:suc_fyp/login_system/api_service.dart';
 
-class VendorQRReceivePage extends StatelessWidget {
+class VendorQRReceivePage extends StatefulWidget {
   const VendorQRReceivePage({super.key});
+
+  @override
+  State<VendorQRReceivePage> createState() => _VendorQRReceivePageState();
+}
+
+class _VendorQRReceivePageState extends State<VendorQRReceivePage> {
+  String? qrData;
+  String? vendorName;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchQRData();
+  }
+
+  Future<void> fetchQRData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        final qrResponse = await ApiService.getQRDataByUID(user.uid);
+        final vendorResponse = await ApiService.getVendorByUID(user.uid);
+
+        if (!mounted) return;
+
+        if (qrResponse['success'] && vendorResponse['success']) {
+          setState(() {
+            qrData = qrResponse['qr_data'];
+            vendorName = vendorResponse['user']['username']; // 注意 key 是 "user"
+            isLoading = false;
+          });
+        } else {
+          setState(() {
+            qrData = null;
+            vendorName = null;
+            isLoading = false;
+          });
+        }
+      } catch (e) {
+        if (!mounted) return;
+        setState(() {
+          qrData = null;
+          vendorName = null;
+          isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +73,6 @@ class VendorQRReceivePage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 顶部返回按钮区域
                 SizedBox(height: screenHeight * 0.02),
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
@@ -47,14 +97,13 @@ class VendorQRReceivePage extends StatelessWidget {
                     ],
                   ),
                 ),
-
-                // 内容区域
                 Expanded(
                   child: Center(
-                    child: Column(
+                    child: isLoading
+                        ? const CircularProgressIndicator()
+                        : Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // 提示文字
                         Text(
                           "Scan this QR code to transfer to",
                           textAlign: TextAlign.center,
@@ -64,28 +113,26 @@ class VendorQRReceivePage extends StatelessWidget {
                             color: Colors.black,
                           ),
                         ),
-                        SizedBox(height: screenHeight * 0.01),
-
-                        // 用户名
+                        const SizedBox(height: 8),
                         Text(
-                          "Username",
+                          vendorName ?? "Vendor",
                           style: TextStyle(
                             fontSize: screenWidth * 0.08,
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
                           ),
                         ),
-                        SizedBox(height: screenHeight * 0.04),
-
-                        // QR 图片
-                        Padding(
-                          padding: EdgeInsets.only(bottom: screenHeight * 0.1),
-                          child: Image.asset(
-                            'assets/image/QRReceive.png',
-                            width: screenWidth * 0.7,
-                            height: screenWidth * 0.7,
-                            fit: BoxFit.contain,
-                          ),
+                        const SizedBox(height: 30),
+                        qrData != null
+                            ? QrImageView(
+                          data: qrData!,
+                          version: QrVersions.auto,
+                          size: screenWidth * 0.7,
+                          backgroundColor: Colors.white,
+                        )
+                            : const Text(
+                          "QR Code not available",
+                          style: TextStyle(color: Colors.red),
                         ),
                       ],
                     ),

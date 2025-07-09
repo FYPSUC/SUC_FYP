@@ -28,11 +28,13 @@ class _UserQRReceivePageState extends State<UserQRReceivePage> {
         final qrResponse = await ApiService.getQRDataByUID(user.uid);
         final userResponse = await ApiService.getUserByUID(user.uid);
 
+        if (!mounted) return;
         if (qrResponse['success'] && userResponse['success']) {
           setState(() {
             qrData = qrResponse['qr_data'];
             username = userResponse['user']['username'];
             isLoading = false;
+
           });
         } else {
           setState(() {
@@ -42,6 +44,7 @@ class _UserQRReceivePageState extends State<UserQRReceivePage> {
           });
         }
       } catch (e) {
+        if (!mounted) return;
         setState(() {
           qrData = null;
           username = null;

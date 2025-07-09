@@ -227,8 +227,7 @@ class _VendorTopUpPageState extends State<VendorTopUpPage> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _amountController.text.isEmpty || _selectedBank == null ? null : () async {
-                    SharedPreferences prefs = await SharedPreferences
-                        .getInstance();
+                    SharedPreferences prefs = await SharedPreferences.getInstance();
                     String? uid = prefs.getString('uid');
 
                     if (uid == null) {
@@ -249,13 +248,10 @@ class _VendorTopUpPageState extends State<VendorTopUpPage> {
                     showDialog(
                       context: context,
                       barrierDismissible: false,
-                      builder: (context) =>
-                      const Center(child: CircularProgressIndicator()),
+                      builder: (context) => const Center(child: CircularProgressIndicator()),
                     );
 
-                    bool success = await ApiService.topUpUser(
-                        uid, amount, role: 'vendor');
-
+                    bool success = await ApiService.topUp(uid, amount, 'Vendor');
                     Navigator.of(context).pop(); // 关闭 loading
 
                     if (success) {
@@ -264,8 +260,7 @@ class _VendorTopUpPageState extends State<VendorTopUpPage> {
                       );
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(
-                            builder: (context) => const VendorMainPage()),
+                        MaterialPageRoute(builder: (context) => const VendorMainPage()),
                       );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(

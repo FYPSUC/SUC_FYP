@@ -39,11 +39,11 @@ class _LoginPageState extends State<LoginPage> {
       final response = await ApiService.getUserByUID(uid);
 
       if (response['success']) {
-        // 🟢 Step 4: 成功跳转主页面
         final user = response['user'];
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('uid', uid); // Firebase UID
         await prefs.setString('user_id', user['UserID'].toString()); // 保存 UserID（重要）
+        await prefs.setString('role', 'User'); // ✅ 加这一行！
 
         Navigator.pushReplacement(
           context,

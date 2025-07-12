@@ -1,7 +1,33 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:suc_fyp/login_system/api_service.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
+class CloudinaryService {
+  static const cloudName = 'dj5err3f6';
+  static const uploadPreset = 'flutter_upload';
+
+  static Future<String?> uploadImage(File imageFile) async {
+    final uri = Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/image/upload');
+    final request = http.MultipartRequest('POST', uri)
+      ..fields['upload_preset'] = uploadPreset
+      ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
+
+    final response = await request.send();
+    final res = await http.Response.fromStream(response);
+
+    if (res.statusCode == 200) {
+      final responseData = jsonDecode(res.body);
+      return responseData['secure_url'];
+    } else {
+      print('Cloudinary upload failed: ${res.body}');
+      return null;
+    }
+  }
+}
 class VendorAddProductPage extends StatefulWidget {
   const VendorAddProductPage({super.key});
 
@@ -15,6 +41,49 @@ class _VendorAddProductPageState extends State<VendorAddProductPage> {
   File? _selectedImage;
   String _enteredAmount = '';
   bool _showLimitMessage = false;
+  bool _isLoading = false;
+
+
+  Future<void> _pickImage() async {
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (picked != null) {
+      setState(() => _selectedImage = File(picked.path));
+    }
+  }
+
+  Future<void> _submitProduct() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || _selectedImage == null) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final image_url = await CloudinaryService.uploadImage(_selectedImage!);
+      if (image_url == null) {
+        throw 'Image upload failed';
+      }
+
+      final success = await ApiService.addProduct(
+        uid: user.uid,
+        name: _productNameController.text,
+        price: double.tryParse(_enteredAmount) ?? 0.0,
+        image_url: image_url,
+      );
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Product added successfully')));
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to add product')));
+      }
+    } catch (e) {
+      print('Upload error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
 
   @override
   void dispose() {
@@ -33,8 +102,6 @@ class _VendorAddProductPageState extends State<VendorAddProductPage> {
       body: Stack(
         children: [
           Container(
-            width: double.infinity,
-            height: double.infinity,
             decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/image/UserMainBackground.jpg'),
@@ -52,51 +119,29 @@ class _VendorAddProductPageState extends State<VendorAddProductPage> {
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Image.asset(
-                          'assets/image/BackButton.jpg',
-                          width: screenWidth * 0.1,
-                          height: screenWidth * 0.1,
-                          fit: BoxFit.cover,
-                        ),
-                        SizedBox(width: screenWidth * 0.02),
-                        Text(
-                          'Back',
-                          style: TextStyle(
-                            fontSize: screenWidth * 0.06,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        Image.asset('assets/image/BackButton.jpg', width: 40, height: 40),
+                        SizedBox(width: 10),
+                        Text('Back', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.03),
-                  Center(
-                    child: Text(
-                      'Add Product',
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.07,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
+                  Center(child: Text('Add Product', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))),
                   SizedBox(height: screenHeight * 0.03),
                   Center(
                     child: GestureDetector(
-                      onTap: () {
-                        // TODO: 选择图片逻辑
-                      },
+                      onTap: _pickImage,
                       child: Container(
-                        width: screenWidth * 0.3,
-                        height: screenWidth * 0.3,
+                        width: 100,
+                        height: 100,
                         decoration: BoxDecoration(
                           color: Colors.grey[200],
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.grey, width: 1),
+                          border: Border.all(color: Colors.grey),
                         ),
                         child: _selectedImage == null
-                            ? Icon(Icons.add, size: screenWidth * 0.1, color: Colors.grey)
+                            ? Icon(Icons.add, size: 40)
                             : ClipRRect(
                           borderRadius: BorderRadius.circular(20),
                           child: Image.file(_selectedImage!, fit: BoxFit.cover),
@@ -104,108 +149,82 @@ class _VendorAddProductPageState extends State<VendorAddProductPage> {
                       ),
                     ),
                   ),
-                  SizedBox(height: screenHeight * 0.03),
+                  SizedBox(height: 20),
                   _buildInputField('Product Name', _productNameController, screenWidth),
-                  SizedBox(height: screenHeight * 0.03),
+                  SizedBox(height: 20),
                   _buildPriceField(screenWidth),
-                  SizedBox(height: screenHeight * 0.04),
+                  SizedBox(height: 30),
                   Center(
                     child: ElevatedButton(
-                      onPressed: () {
-                        String productName = _productNameController.text;
-                        String productPrice = _enteredAmount;
-                        print('Product Name: $productName');
-                        print('Product Price: RM $productPrice');
-                        Navigator.pop(context);
-                      },
+                      onPressed: _isLoading ? null : _submitProduct,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: screenWidth * 0.2,
-                          vertical: screenHeight * 0.02,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        elevation: 5,
+                        padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                       ),
-                      child: Text(
-                        'Publish',
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.055,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: _isLoading
+                          ? CircularProgressIndicator(color: Colors.white)
+                          : Text('Publish', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
               ),
             ),
-          ),
+          )
         ],
       ),
     );
   }
 
-  Widget _buildInputField(String label, TextEditingController controller, double screenWidth) {
+  Widget _buildInputField(String label, TextEditingController controller, double width) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: screenWidth * 0.05, fontWeight: FontWeight.bold)),
+        Text(label, style: TextStyle(fontSize: width * 0.05, fontWeight: FontWeight.bold)),
         SizedBox(height: 10),
         TextField(
           controller: controller,
           decoration: InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             filled: true,
             fillColor: Colors.grey[200],
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(25),
-              borderSide: BorderSide.none,
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: BorderSide.none),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildPriceField(double screenWidth) {
+  Widget _buildPriceField(double width) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Product Price', style: TextStyle(fontSize: screenWidth * 0.05, fontWeight: FontWeight.bold)),
+        Text('Product Price', style: TextStyle(fontSize: width * 0.05, fontWeight: FontWeight.bold)),
         SizedBox(height: 10),
         Row(
           children: [
             Container(
-              padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05, vertical: 14),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
                 color: Colors.grey[300],
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(25),
-                  bottomLeft: Radius.circular(25),
-                ),
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(25), bottomLeft: Radius.circular(25)),
               ),
-              child: Text('RM', style: TextStyle(fontSize: screenWidth * 0.045, fontWeight: FontWeight.bold)),
+              child: Text('RM', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ),
             Expanded(
               child: TextField(
                 controller: _productPriceController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   filled: true,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.only(
-                      topRight: Radius.circular(25),
-                      bottomRight: Radius.circular(25),
-                    ),
+                    borderRadius: BorderRadius.only(topRight: Radius.circular(25), bottomRight: Radius.circular(25)),
                     borderSide: BorderSide.none,
                   ),
                 ),
                 onChanged: (value) {
-                  String digitsOnly = value.replaceAll(RegExp(r'[^0-9]'), '');
+                  final digitsOnly = value.replaceAll(RegExp(r'[^0-9]'), '');
                   if (digitsOnly.isEmpty) {
                     _productPriceController.text = '';
                     setState(() {
@@ -214,15 +233,10 @@ class _VendorAddProductPageState extends State<VendorAddProductPage> {
                     });
                     return;
                   }
-                  if (digitsOnly.length > 7) {
-                    digitsOnly = digitsOnly.substring(0, 7);
-                  }
-                  double numericValue = double.parse(digitsOnly) / 100;
-                  if (numericValue > 1000.00) {
-                    numericValue = 1000.00;
-                    digitsOnly = '100000';
-                  }
-                  String formatted = numericValue.toStringAsFixed(2);
+                  final cappedDigits = digitsOnly.length > 7 ? digitsOnly.substring(0, 7) : digitsOnly;
+                  double numericValue = double.parse(cappedDigits) / 100;
+                  if (numericValue > 1000.00) numericValue = 1000.00;
+                  final formatted = numericValue.toStringAsFixed(2);
                   _productPriceController
                     ..text = formatted
                     ..selection = TextSelection.collapsed(offset: formatted.length);
@@ -238,12 +252,8 @@ class _VendorAddProductPageState extends State<VendorAddProductPage> {
         if (_showLimitMessage)
           Padding(
             padding: const EdgeInsets.only(top: 8.0),
-            child: Text(
-              'Top Up is limited to RM 1,000.00',
-              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: screenWidth * 0.035),
-            ),
+            child: Text('Price is limited to RM 1,000.00', style: TextStyle(color: Colors.red)),
           ),
-        const SizedBox(height: 30),
       ],
     );
   }

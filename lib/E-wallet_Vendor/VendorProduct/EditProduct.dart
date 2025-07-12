@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
+import 'package:suc_fyp/login_system/api_service.dart';// ✅ 确保你导入了 ApiService.dart
 
 class VendorEditProductPage extends StatefulWidget {
+  final String productID;
   final String currentName;
   final String currentPrice;
   final String? currentImageUrl;
 
   const VendorEditProductPage({
     super.key,
+    required this.productID,
     required this.currentName,
     required this.currentPrice,
     this.currentImageUrl,
@@ -24,6 +27,7 @@ class _EditProductPageState extends State<VendorEditProductPage> {
   File? _selectedImage;
   String _enteredAmount = '';
   bool _showLimitMessage = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -121,12 +125,7 @@ class _EditProductPageState extends State<VendorEditProductPage> {
                   SizedBox(height: screenHeight * 0.04),
                   Center(
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context, {
-                          'name': _nameController.text,
-                          'price': _enteredAmount,
-                        });
-                      },
+                      onPressed: _isLoading ? null : _submitProductUpdate,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
@@ -137,7 +136,9 @@ class _EditProductPageState extends State<VendorEditProductPage> {
                             borderRadius: BorderRadius.circular(30)),
                         elevation: 5,
                       ),
-                      child: Text(
+                      child: _isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : Text(
                         'Publish',
                         style: TextStyle(
                           fontSize: screenWidth * 0.05,
@@ -153,6 +154,42 @@ class _EditProductPageState extends State<VendorEditProductPage> {
         ],
       ),
     );
+  }
+
+  void _submitProductUpdate() async {
+    final name = _nameController.text.trim();
+    final price = double.tryParse(_enteredAmount) ?? 0.0;
+
+    if (name.isEmpty || price <= 0.0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter valid name and price')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    final success = await ApiService.updateProduct(
+      productID: widget.productID,
+      name: name,
+      price: price,
+    );
+
+    setState(() => _isLoading = false);
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Product updated')),
+      );
+      Navigator.pop(context, {
+        'name': name,
+        'price': _enteredAmount,
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to update product')),
+      );
+    }
   }
 
   Widget _buildImagePreview() {
@@ -176,7 +213,7 @@ class _EditProductPageState extends State<VendorEditProductPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: TextStyle(fontSize: width * 0.045, fontWeight: FontWeight.bold)),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         TextField(
           controller: controller,
           decoration: InputDecoration(
@@ -264,7 +301,7 @@ class _EditProductPageState extends State<VendorEditProductPage> {
           const Padding(
             padding: EdgeInsets.only(top: 8.0),
             child: Text(
-              'Top Up is limited to RM 1,000.00',
+              'Price is limited to RM 1,000.00',
               style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
             ),
           ),

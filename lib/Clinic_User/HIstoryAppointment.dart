@@ -1,7 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:suc_fyp/login_system/api_service.dart';
 
-class ClinicHistoryAppointmentPage extends StatelessWidget {
+class ClinicHistoryAppointmentPage extends StatefulWidget {
   const ClinicHistoryAppointmentPage({super.key});
+
+  @override
+  State<ClinicHistoryAppointmentPage> createState() => _ClinicHistoryAppointmentPageState();
+}
+
+class _ClinicHistoryAppointmentPageState extends State<ClinicHistoryAppointmentPage> {
+  List<Map<String, dynamic>> appointments = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAppointments();
+  }
+
+  Future<void> _loadAppointments() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final result = await ApiService.getUserAppointments(user.uid);
+      setState(() {
+        appointments = result;
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,8 +73,6 @@ class ClinicHistoryAppointmentPage extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: screenHeight * 0.04),
-
-                // Title
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: screenHeight * 0.03),
                   child: Center(
@@ -61,40 +87,51 @@ class ClinicHistoryAppointmentPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: screenHeight * 0.02),
+                Expanded(
+                  child: isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : appointments.isEmpty
+                      ? const Center(child: Text('No appointment history.'))
+                      : ListView.builder(
+                    itemCount: appointments.length,
+                    itemBuilder: (context, index) {
+                      final appointment = appointments[index];
+                      final dt = DateTime.parse(appointment['DateTime']);
+                      final formattedTime = DateFormat.jm().format(dt); // 10:00 AM
+                      final formattedDate = DateFormat('d/M/yyyy').format(dt); // 1/12/2025
 
-                // Appointment Box
-                Container(
-                  width: double.infinity,
-                  height: screenHeight * 0.08,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.85),
-                    borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: Colors.black, width: 2),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '10:00 am',
-                          style: TextStyle(
-                            fontSize: screenWidth * 0.06,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+                        height: screenHeight * 0.08,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.85),
+                          borderRadius: BorderRadius.circular(15),
+                          border: Border.all(color: Colors.black, width: 2),
                         ),
-                        Text(
-                          '1/12/2025',
-                          style: TextStyle(
-                            fontSize: screenWidth * 0.06,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              formattedTime,
+                              style: TextStyle(
+                                fontSize: screenWidth * 0.06,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                            Text(
+                              formattedDate,
+                              style: TextStyle(
+                                fontSize: screenWidth * 0.06,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
                 ),
               ],

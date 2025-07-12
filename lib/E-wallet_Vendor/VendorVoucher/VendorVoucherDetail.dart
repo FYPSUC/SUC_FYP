@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:suc_fyp/login_system/api_service.dart';
 
 class VendorVoucherDetailPage extends StatefulWidget {
   final String voucherId;
@@ -32,22 +33,18 @@ class _VendorVoucherDetailPageState extends State<VendorVoucherDetailPage> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.voucherName);
-    _amountController = TextEditingController(text: widget.discountAmount);
+    _nameController = TextEditingController(text: widget.voucherName.toString());
+    _amountController = TextEditingController(text: widget.discountAmount.toString());
     _enteredAmount = widget.discountAmount;
     _dateController = TextEditingController(text: widget.expiredDate);
 
     try {
-      final dateParts = widget.expiredDate.split('/');
-      if (dateParts.length == 2) {
-        final day = int.parse(dateParts[0]);
-        final month = int.parse(dateParts[1]);
-        final currentYear = DateTime.now().year;
-        _selectedDate = DateTime(currentYear, month, day);
-      }
+      _selectedDate = DateFormat('yyyy-MM-dd').parse(widget.expiredDate);
+      _dateController.text = DateFormat('dd/MM').format(_selectedDate!);
     } catch (e) {
-      print('Error parsing date: \$e');
+      print('❌ Error parsing expiredDate: $e');
     }
+
   }
 
   @override
@@ -73,21 +70,56 @@ class _VendorVoucherDetailPageState extends State<VendorVoucherDetailPage> {
     }
   }
 
-  void _saveChanges() {
+  void _saveChanges() async {
+    print('🚀 Entering _saveChanges');
+
     if (_nameController.text.isNotEmpty &&
         _enteredAmount.isNotEmpty &&
         _selectedDate != null) {
-      final updatedVoucher = {
-        'id': widget.voucherId,
-        'name': _nameController.text,
-        'discount': _enteredAmount,
-        'date': _dateController.text,
-      };
+      print('📦 Data ready: name=${_nameController.text}, amount=$_enteredAmount, date=$_selectedDate');
 
-      widget.onUpdate(updatedVoucher);
-      Navigator.pop(context);
+      final formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate!);
+      print('🗓️ Formatted date: $formattedDate');
+
+      try {
+        print('📡 Calling updateVoucher...');
+        final success = await ApiService.updateVoucher(
+          voucherId: widget.voucherId,
+          name: _nameController.text,
+          discount: _enteredAmount,
+          expiredDate: formattedDate,
+        );
+        print('✅ updateVoucher returned: $success');
+
+        if (success) {
+          final updatedVoucher = {
+            'id': widget.voucherId,
+            'name': _nameController.text,
+            'discount': _enteredAmount,
+            'date': _dateController.text,
+          };
+
+          print('🎯 Updating UI and closing page...');
+          widget.onUpdate(updatedVoucher);
+          Navigator.pop(context);
+        } else {
+          print('❌ API returned success = false');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to update voucher')),
+          );
+        }
+      } catch (e) {
+        print('❌ Exception in updateVoucher: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error occurred while updating voucher')),
+        );
+      }
+    } else {
+      print('⚠️ Validation failed: name="${_nameController.text}", amount="$_enteredAmount", date=$_selectedDate');
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -164,7 +196,10 @@ class _VendorVoucherDetailPageState extends State<VendorVoucherDetailPage> {
                   SizedBox(height: screenWidth * 0.1),
                   Center(
                     child: ElevatedButton(
-                      onPressed: _saveChanges,
+                      onPressed:(){
+                        print('📥 Save Changes button pressed');
+                        _saveChanges();
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,

@@ -1,7 +1,9 @@
+// ✅ 更新后的 MoreStorePage：从 API 动态获取 stores
 import 'package:flutter/material.dart';
 import 'MainStorePage.dart';
-import 'package:suc_fyp/Order_User/Order.dart';
 import 'models.dart';
+import 'package:suc_fyp/Order_User/Order.dart';
+import 'package:suc_fyp/login_system/api_service.dart';
 
 class MoreStorePage extends StatefulWidget {
   @override
@@ -11,52 +13,21 @@ class MoreStorePage extends StatefulWidget {
 class _MoreStorePageState extends State<MoreStorePage> {
   final TextEditingController _searchController = TextEditingController();
   String searchQuery = '';
+  late Future<List<Store>> _futureStores;
 
-  final List<Store> stores = [
-    Store(
-      name: 'The Alley',
-      location: 'IEB',
-      image: 'assets/image/TheAlley.png',
-      menu: [
-        MenuItem(
-          name: 'Pearl milk tea',
-          price: 8.00,
-          image: 'assets/image/pearl_milk_tea.png',
-        ),
-        MenuItem(
-          name: 'Garden milk tea',
-          price: 10.00,
-          image: 'assets/image/garden_milk_tea.png',
-        ),
-      ],
-    ),
-    Store(
-      name: 'Chicken Rice Store',
-      location: 'Canteen',
-      image: 'assets/image/ChickenRise.png',
-      menu: [
-        MenuItem(
-          name: 'Roasted Chicken Rice',
-          price: 7.00,
-          image: 'assets/image/Chicken_rise.jpg',
-        ),
-      ],
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _futureStores = ApiService.fetchStoresWithProducts();
+  }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    final filteredStores = stores.where((store) {
-      return store.name.toLowerCase().contains(searchQuery.toLowerCase());
-    }).toList();
-
     return Scaffold(
       body: Container(
-        width: double.infinity,
-        height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/image/UserMainBackground.jpg'),
@@ -71,52 +42,31 @@ class _MoreStorePageState extends State<MoreStorePage> {
               children: [
                 SizedBox(height: screenHeight * 0.02),
                 GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => UserOrderPage()),
-                    );
-                  },
+                  onTap: () => Navigator.pop(context),
                   child: Row(
                     children: [
-                      Image.asset(
-                        'assets/image/BackButton.jpg',
-                        width: screenWidth * 0.1,
-                        height: screenWidth * 0.1,
-                        fit: BoxFit.cover,
-                      ),
+                      Image.asset('assets/image/BackButton.jpg', width: screenWidth * 0.1),
                       SizedBox(width: screenWidth * 0.02),
-                      Text(
-                        'Back',
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.06,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
+                      Text('Back', style: TextStyle(fontSize: screenWidth * 0.06, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
                 SizedBox(height: screenHeight * 0.03),
 
-                // 搜索栏
                 Container(
+                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.03),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: Colors.black),
                   ),
-                  padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.03),
                   child: TextField(
                     controller: _searchController,
                     onChanged: (value) {
-                      setState(() {
-                        searchQuery = value;
-                      });
+                      setState(() => searchQuery = value);
                     },
-                    style: TextStyle(fontSize: screenWidth * 0.045),
                     decoration: InputDecoration(
-                      icon: Icon(Icons.search, size: screenWidth * 0.06),
+                      icon: Icon(Icons.search),
                       hintText: 'Search store...',
                       border: InputBorder.none,
                     ),
@@ -124,61 +74,79 @@ class _MoreStorePageState extends State<MoreStorePage> {
                 ),
                 SizedBox(height: screenHeight * 0.02),
 
-                // 白色容器内的商店列表
                 Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: ListView.builder(
-                      padding: EdgeInsets.all(screenWidth * 0.03),
-                      itemCount: filteredStores.length,
-                      itemBuilder: (context, index) {
-                        final store = filteredStores[index];
-                        return Column(
-                          children: [
-                            if (index != 0)
-                              Divider(color: Colors.black, thickness: 2),
-                            SizedBox(height: screenHeight * 0.02),
-                            GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        StoreMenuPage(store: store),
+                  child: FutureBuilder<List<Store>>(
+                    future: _futureStores,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error: \${snapshot.error}'));
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return Center(child: Text('No stores found'));
+                      }
+
+                      final filteredStores = snapshot.data!.where((store) =>
+                          store.name.toLowerCase().contains(searchQuery.toLowerCase())).toList();
+
+                      return ListView.builder(
+                        padding: EdgeInsets.all(screenWidth * 0.03),
+                        itemCount: filteredStores.length,
+                        itemBuilder: (context, index) {
+                          final store = filteredStores[index];
+                          return AnimatedContainer(
+                            duration: Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                            margin: EdgeInsets.only(bottom: screenHeight * 0.02),
+                            padding: EdgeInsets.all(screenWidth * 0.025),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.4),
+                                  blurRadius: 6,
+                                  offset: Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: GestureDetector(
+                              onTap: () => Navigator.push(
+                                context,
+                                PageRouteBuilder(
+                                  pageBuilder: (_, __, ___) => StoreMenuPage(store: store),
+                                  transitionsBuilder: (_, anim, __, child) => SlideTransition(
+                                    position: Tween(begin: Offset(1, 0), end: Offset.zero).animate(anim),
+                                    child: child,
                                   ),
-                                );
-                              },
+                                ),
+                              ),
                               child: Row(
                                 children: [
                                   ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Image.asset(
-                                      store.image,
-                                      width: screenWidth * 0.3,
-                                      height: screenWidth * 0.3,
-                                      fit: BoxFit.cover,
-                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: store.image.startsWith('http')
+                                        ? Image.network(store.image, width: screenWidth * 0.3, height: screenWidth * 0.3, fit: BoxFit.cover)
+                                        : Image.asset(store.image, width: screenWidth * 0.3, height: screenWidth * 0.3, fit: BoxFit.cover),
                                   ),
                                   SizedBox(width: screenWidth * 0.04),
                                   Expanded(
-                                    child: Text(
-                                      store.name,
-                                      style: TextStyle(
-                                        fontSize: screenWidth * 0.05,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(store.name, style: TextStyle(fontSize: screenWidth * 0.05, fontWeight: FontWeight.bold)),
+                                        SizedBox(height: 6),
+                                        Text(store.location, style: TextStyle(fontSize: screenWidth * 0.04, color: Colors.grey[600])),
+                                      ],
                                     ),
-                                  ),
+                                  )
                                 ],
                               ),
                             ),
-                          ],
-                        );
-                      },
-                    ),
+                          );
+                        },
+                      );
+                    },
                   ),
                 ),
               ],

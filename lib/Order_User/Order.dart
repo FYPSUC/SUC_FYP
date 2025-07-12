@@ -3,33 +3,10 @@ import 'MoreStore.dart';
 import 'package:suc_fyp/E-wallet_User/UserMain.dart';
 import 'models.dart';
 import 'MainStorePage.dart';
+import 'package:suc_fyp/login_system/api_service.dart'; // 加这一行
 
 class UserOrderPage extends StatelessWidget {
-  UserOrderPage({Key? key}) : super(key: key);
-
-  final List<Store> stores = [
-    Store(
-      name: 'The Alley',
-      location: 'IEB',
-      image: 'assets/image/TheAlley.png',
-      menu: [
-        MenuItem(name: 'Pearl milk tea', price: 8.00, image: 'assets/image/pearl_milk_tea.png'),
-        MenuItem(name: 'Garden milk tea', price: 10.00, image: 'assets/image/garden_milk_tea.png'),
-      ],
-    ),
-    Store(
-      name: 'Chicken Rice Store',
-      location: 'Canteen',
-      image: 'assets/image/ChickenRise.png',
-      menu: [
-        MenuItem(name: 'Roasted Chicken Rice', price: 7.00, image: 'assets/image/Chicken_rise.jpg'),
-      ],
-    ),
-  ];
-
-  Store getStoreByName(String name) {
-    return stores.firstWhere((store) => store.name == name);
-  }
+  const UserOrderPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -66,98 +43,86 @@ class UserOrderPage extends StatelessWidget {
                 SizedBox(height: screenHeight * 0.03),
 
                 Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          height: screenHeight * 0.2, // 你可以根据需要调整这个比例
-                          child: PageView(
-                            children: [
-                              GestureDetector(
-                                onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => StoreMenuPage(store: getStoreByName('The Alley')),
-                                  ),
-                                ),
-                                child: SizedBox(
-                                  height: screenHeight * 0.2, // 或者写固定高度 e.g., 180
-                                  child: Image.asset(
-                                    'assets/image/TheAlley_LongPicture.png',
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => StoreMenuPage(store: getStoreByName('Chicken Rice Store')),
-                                  ),
-                                ),
-                                child: SizedBox(
-                                  height: screenHeight * 0.25,
-                                  child: Image.asset(
-                                    'assets/image/ChickenRise_LongPicture.png',
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(height: screenHeight * 0.015),
+                  child: FutureBuilder<List<Store>>(
+                    future: ApiService.fetchStoresWithProducts(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return const Center(child: Text('No stores found'));
+                      }
 
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: GestureDetector(
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => MoreStorePage())),
-                            child: Text(
-                              'More store',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: screenWidth * 0.045,
-                                decoration: TextDecoration.underline,
-                                fontWeight: FontWeight.bold,
+                      final stores = snapshot.data!;
+
+                      return SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // ✅ PageView 展示前两个店家的广告图
+                            SizedBox(
+                              height: screenHeight * 0.2,
+                              child: PageView(
+                                children: stores.take(2).map((store) {
+                                  return GestureDetector(
+                                    onTap: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => StoreMenuPage(store: store),
+                                      ),
+                                    ),
+                                    child: SizedBox(
+                                      height: screenHeight * 0.2,
+                                      child: Image.network(store.image, fit: BoxFit.cover),
+                                    ),
+                                  );
+                                }).toList(),
                               ),
                             ),
-                          ),
-                        ),
-                        SizedBox(height: screenHeight * 0.03),
+                            SizedBox(height: screenHeight * 0.015),
 
-                        Text(
-                          'Today ranking',
-                          style: TextStyle(fontSize: screenWidth * 0.06, fontWeight: FontWeight.bold),
-                        ),
-                        const Divider(color: Colors.black, thickness: 1),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: GestureDetector(
+                                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => MoreStorePage())),
+                                child: Text(
+                                  'More store',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: screenWidth * 0.045,
+                                    decoration: TextDecoration.underline,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: screenHeight * 0.03),
 
-                        RankingItem(
-                          rank: 'Top 1',
-                          imagePath: 'assets/image/pearl_milk_tea.png',
-                          title: 'Boba tea',
-                          price: 'RM 8',
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => StoreMenuPage(store: getStoreByName('The Alley')))),
-                          screenWidth: screenWidth,
+                            Text(
+                              'Today ranking',
+                              style: TextStyle(fontSize: screenWidth * 0.06, fontWeight: FontWeight.bold),
+                            ),
+                            const Divider(color: Colors.black, thickness: 1),
+
+                            // ✅ 展示前3个食物作为排行榜
+                            ...stores.expand((store) => store.menu).take(3).map((menuItem) {
+                              return RankingItem(
+                                rank: 'Top', // 你也可以加入 index + 1
+                                imagePath: menuItem.image,
+                                title: menuItem.name,
+                                price: 'RM ${menuItem.price.toStringAsFixed(2)}',
+                                onTap: () {
+                                  final store = stores.firstWhere((s) => s.menu.contains(menuItem));
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => StoreMenuPage(store: store)));
+                                },
+                                screenWidth: screenWidth,
+                              );
+                            }).toList(),
+                          ],
                         ),
-                        RankingItem(
-                          rank: 'Top 2',
-                          imagePath: 'assets/image/ChickenRise.png',
-                          title: 'Chicken rice',
-                          price: 'RM 7',
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => StoreMenuPage(store: getStoreByName('Chicken Rice Store')))),
-                          screenWidth: screenWidth,
-                        ),
-                        RankingItem(
-                          rank: 'Top 3',
-                          imagePath: 'assets/image/garden_milk_tea.png',
-                          title: 'Garden milk tea',
-                          price: 'RM 10',
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => StoreMenuPage(store: getStoreByName('The Alley')))),
-                          screenWidth: screenWidth,
-                        ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
                 ),
               ],
@@ -205,7 +170,14 @@ class RankingItem extends StatelessWidget {
             SizedBox(width: screenWidth * 0.03),
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
+              child: imagePath.startsWith("http")
+                  ? Image.network(
+                imagePath,
+                width: screenWidth * 0.25,
+                height: screenWidth * 0.25,
+                fit: BoxFit.cover,
+              )
+                  : Image.asset(
                 imagePath,
                 width: screenWidth * 0.25,
                 height: screenWidth * 0.25,

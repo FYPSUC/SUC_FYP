@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'models.dart' as models;
-import 'OrderPurchase.dart'; // 导入订单总结页面
+import 'OrderPurchase.dart';
 
 class StoreMenuPage extends StatefulWidget {
   final models.Store store;
-
   const StoreMenuPage({super.key, required this.store});
 
   @override
@@ -22,13 +21,10 @@ class _StoreMenuPageState extends State<StoreMenuPage> {
     }
   }
 
-  double get totalPrice {
-    double total = 0;
-    widget.store.menu.forEach((item) {
-      total += itemCounts[item.name]! * item.price;
-    });
-    return total;
-  }
+  double get totalPrice => widget.store.menu.fold(
+    0,
+        (sum, item) => sum + (itemCounts[item.name]! * item.price),
+  );
 
   int get totalItems => itemCounts.values.fold(0, (sum, count) => sum + count);
 
@@ -51,7 +47,6 @@ class _StoreMenuPageState extends State<StoreMenuPage> {
 
     return Scaffold(
       body: Container(
-        width: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/image/UserMainBackground.jpg'),
@@ -69,125 +64,90 @@ class _StoreMenuPageState extends State<StoreMenuPage> {
                   onTap: () => Navigator.pop(context),
                   child: Row(
                     children: [
-                      Image.asset(
-                        'assets/image/BackButton.jpg',
-                        width: screenWidth * 0.1,
-                        height: screenWidth * 0.1,
-                        fit: BoxFit.cover,
-                      ),
+                      Image.asset('assets/image/BackButton.jpg', width: screenWidth * 0.1),
                       SizedBox(width: screenWidth * 0.02),
-                      Text(
-                        'Back',
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.06,
-                          fontWeight: FontWeight.bold,
+                      Text('Back', style: TextStyle(fontSize: screenWidth * 0.06, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+                SizedBox(height: screenHeight * 0.03),
+                Container(
+                  padding: EdgeInsets.all(screenWidth * 0.03),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: widget.store.image.startsWith('http')
+                            ? Image.network(widget.store.image, width: screenWidth * 0.25, height: screenWidth * 0.25, fit: BoxFit.cover)
+                            : Image.asset(widget.store.image, width: screenWidth * 0.25, height: screenWidth * 0.25, fit: BoxFit.cover),
+                      ),
+                      SizedBox(width: screenWidth * 0.04),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(widget.store.name, style: TextStyle(fontSize: screenWidth * 0.055, fontWeight: FontWeight.bold)),
+                            SizedBox(height: 4),
+                            Text(widget.store.location, style: TextStyle(fontSize: screenWidth * 0.045)),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
                 SizedBox(height: screenHeight * 0.03),
-                Container(
-                  padding: EdgeInsets.all(screenWidth * 0.02),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.asset(
-                          widget.store.image,
-                          width: screenWidth * 0.3,
-                          height: screenWidth * 0.3,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      SizedBox(width: screenWidth * 0.03),
-                      Expanded(
-                        child: Text(
-                          '${widget.store.name}\n - ${widget.store.location}',
-                          style: TextStyle(
-                            fontSize: screenWidth * 0.055,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: screenHeight * 0.06),
-                Text(
-                  'Menu',
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.075,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: screenHeight * 0.001),
+                Text('Menu', style: TextStyle(fontSize: screenWidth * 0.07, fontWeight: FontWeight.bold)),
+                SizedBox(height: screenHeight * 0.015),
                 Expanded(
                   child: ListView.builder(
                     itemCount: widget.store.menu.length,
                     itemBuilder: (context, index) {
                       final item = widget.store.menu[index];
                       final count = itemCounts[item.name]!;
-                      return Padding(
-                        padding: EdgeInsets.symmetric(vertical: screenHeight * 0.015),
+                      return Container(
+                        margin: EdgeInsets.symmetric(vertical: screenHeight * 0.01),
+                        padding: EdgeInsets.all(screenWidth * 0.03),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                         child: Row(
                           children: [
                             ClipRRect(
-                              borderRadius: BorderRadius.circular(20),
-                              child: Image.asset(
-                                item.image,
-                                width: screenWidth * 0.3,
-                                height: screenWidth * 0.3,
-                                fit: BoxFit.cover,
-                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              child: item.image.startsWith('http')
+                                  ? Image.network(item.image, width: screenWidth * 0.25, height: screenWidth * 0.25, fit: BoxFit.cover)
+                                  : Image.asset(item.image, width: screenWidth * 0.25, height: screenWidth * 0.25, fit: BoxFit.cover),
                             ),
                             SizedBox(width: screenWidth * 0.03),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    item.name,
-                                    style: TextStyle(
-                                      fontSize: screenWidth * 0.055,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    'RM ${item.price.toStringAsFixed(1)}',
-                                    style: TextStyle(fontSize: screenWidth * 0.05),
-                                  ),
+                                  Text(item.name, style: TextStyle(fontSize: screenWidth * 0.05, fontWeight: FontWeight.bold)),
+                                  SizedBox(height: 4),
+                                  Text('RM ${item.price.toStringAsFixed(2)}', style: TextStyle(fontSize: screenWidth * 0.045)),
                                 ],
                               ),
                             ),
-                            count == 0
-                                ? IconButton(
-                              icon: Icon(Icons.add_circle_outline, size: screenWidth * 0.07),
-                              onPressed: () => increaseItem(item.name),
-                            )
-                                : Row(
+                            Row(
                               children: [
-                                IconButton(
-                                  icon: Icon(Icons.remove_circle_outline, size: screenWidth * 0.07),
-                                  onPressed: () => decreaseItem(item.name),
-                                ),
-                                Text(
-                                  '$count',
-                                  style: TextStyle(
-                                    fontSize: screenWidth * 0.05,
-                                    fontWeight: FontWeight.bold,
+                                if (count > 0)
+                                  IconButton(
+                                    icon: Icon(Icons.remove_circle_outline),
+                                    onPressed: () => decreaseItem(item.name),
                                   ),
-                                ),
+                                Text('$count', style: TextStyle(fontSize: screenWidth * 0.045)),
                                 IconButton(
-                                  icon: Icon(Icons.add_circle_outline, size: screenWidth * 0.07),
+                                  icon: Icon(Icons.add_circle_outline),
                                   onPressed: () => increaseItem(item.name),
                                 ),
                               ],
-                            ),
+                            )
                           ],
                         ),
                       );
@@ -197,6 +157,13 @@ class _StoreMenuPageState extends State<StoreMenuPage> {
                 if (totalItems > 0)
                   GestureDetector(
                     onTap: () {
+                      if (widget.store.vendorUID.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Invalid vendor UID, please try again later.')),
+                        );
+                        return;
+                      }
+
                       final selectedItems = {
                         for (var item in widget.store.menu)
                           if (itemCounts[item.name]! > 0) item: itemCounts[item.name]!,
@@ -204,26 +171,23 @@ class _StoreMenuPageState extends State<StoreMenuPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => OrderSummaryPage(selectedItems: selectedItems),
+                          builder: (context) => OrderSummaryPage(selectedItems: selectedItems,vendorUID: widget.store.vendorUID,),
                         ),
                       );
                     },
                     child: Container(
-                      margin: EdgeInsets.symmetric(vertical: screenHeight * 0.01),
-                      padding: EdgeInsets.all(screenWidth * 0.03),
+                      margin: EdgeInsets.only(top: screenHeight * 0.01),
+                      padding: EdgeInsets.all(screenWidth * 0.035),
                       width: double.infinity,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: Colors.black),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        'Basket • $totalItems Item${totalItems > 1 ? 's' : ''} RM ${totalPrice.toStringAsFixed(1)}',
+                        'Basket • $totalItems item${totalItems > 1 ? "s" : ""} • RM ${totalPrice.toStringAsFixed(2)}',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.055,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(fontSize: screenWidth * 0.055, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),

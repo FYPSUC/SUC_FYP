@@ -39,6 +39,9 @@ class _UserMainPageState extends State<UserMainPage> {
     print("🔎 role: ${prefs.getString('role')}");
     print("📦 UID: $uid, Role: $role");
 
+
+
+
     if (uid == null || role == null) {
       print("❌ Balance fetch failed: Missing uid or role");
       return;
@@ -257,11 +260,13 @@ class _UserMainPageState extends State<UserMainPage> {
                                       builder: (context) => OrderSummaryPage(
                                         selectedItems: {
                                           models.MenuItem(
+                                            id: 1,
                                             name: 'Example Item',
                                             price: 6.0,
                                             image: 'assets/image/example.png',
                                           ): 1
                                         },
+                                        vendorUID: 'EXAMPLE_VENDOR_UID',
                                       ),
                                     ),
                                   );

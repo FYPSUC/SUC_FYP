@@ -1,12 +1,42 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import 'package:suc_fyp/Order_User/models.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 
 class ApiService {
-  static const String baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'https://0a75a70250ce.ngrok-free.app/flutter_api/',
-  );
+  //static String baseUrl = 'https://default.ngrok-free.app/flutter_api/';
+  //static const String baseUrl = 'https://567e42c94263.ngrok-free.app/flutter_api/';
+  static late String baseUrl;
+
+  static Future<void> init() async {
+    baseUrl = await ApiService.getBaseUrl();
+  }
+  static Future<String> getBaseUrl() async {
+    final remoteConfig = FirebaseRemoteConfig.instance;
+
+    await remoteConfig.setConfigSettings(RemoteConfigSettings(
+      fetchTimeout: const Duration(seconds: 10),
+      minimumFetchInterval: const Duration(seconds: 0), // Debug 时强制刷新
+    ));
+
+    try {
+      final success = await remoteConfig.fetchAndActivate();
+      print('🔧 RemoteConfig fetch success: $success');
+
+      final url = remoteConfig.getString('baseUrl');
+      print('🐛 Raw baseUrl: $url');
+
+      return url.isNotEmpty
+          ? url
+          : 'https://fallback.ngrok-free.app/flutter_api/';
+    } catch (e) {
+      print('❌ RemoteConfig error: $e');
+      return 'https://fallback.ngrok-free.app/flutter_api/';
+    }
+  }
+
+
+
 
   /// 🔸旧方法：传统注册
   static Future<Map<String, dynamic>> legacyRegisterUser(String username,
@@ -366,6 +396,7 @@ class ApiService {
     required String ReceiverID,
     required String Amount,
     required String SixDigitPassword,
+    int? orderId,
   }) async {
     try {
       final response = await http.post(
@@ -376,6 +407,7 @@ class ApiService {
           'receiver_uid': ReceiverID,
           'amount': Amount,
           'SixDigitPassword': SixDigitPassword,
+          if (orderId != null) 'order_id': orderId.toString(),
         },
       );
 
@@ -392,8 +424,348 @@ class ApiService {
     }
   }
 
+  static Future<bool> addProduct({
+    required String uid, // ✅ 改成 uid，与 updateVendorProfile 统一
+    required String name,
+    required double price,
+    required String image_url,
+  }) async {
+    final url = Uri.parse('$baseUrl/add_product.php');
+    final response = await http.post(url, body: {
+      'uid': uid, // ✅ 与 updateVendorProfile 统一字段
+      'ProductName': name,
+      'ProductPrice': price.toString(),
+      'image_url': image_url,
+    });
+
+    final data = jsonDecode(response.body);
+    return data['success'] == true;
+  }
+
+  static Future<List<Map<String, dynamic>>> getVendorProducts(String uid) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/get_vendor_products.php'),
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: {'uid': uid},
+    );
+
+    final data = jsonDecode(response.body);
+    if (data['success']) {
+      return List<Map<String, dynamic>>.from(data['products']);
+    } else {
+      return [];
+    }
+  }
+
+  static Future<bool> deleteProduct(String productID) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/delete_product.php'),
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: {'ProductID': productID},
+    );
+
+    final data = jsonDecode(response.body);
+    return data['success'] == true;
+  }
+  static Future<bool> updateProduct({
+    required String productID,
+    required String name,
+    required double price,
+  }) async {
+    final url = Uri.parse('$baseUrl/update_product.php');
+    final response = await http.post(url, body: {
+      'ProductID': productID,
+      'ProductName': name,
+      'ProductPrice': price.toString(),
+    });
+
+    final data = jsonDecode(response.body);
+    return data['success'] == true;
+  }
+
+  static Future<List<Store>> fetchStoresWithProducts() async {
+    final response = await http.get(Uri.parse('$baseUrl/get_all_stores_with_products.php'));
+
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+
+      if (jsonData['success']) {
+        return (jsonData['stores'] as List)
+            .map((storeJson) => Store.fromJson(storeJson))
+            .toList();
+      } else {
+        return [];
+      }
+    } else {
+      throw Exception('Failed to load stores');
+    }
+  }
+
+  static Future<Map<String, dynamic>> createVoucher({
+    required String firebaseUID,
+    required String name,
+    required double amount,
+    required DateTime expiredDate,
+  }) async {
+    final url = Uri.parse('$baseUrl/create_voucher.php');
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        "firebaseUID": firebaseUID,
+        "name": name,
+        "amount": amount,
+        "expiredDate": expiredDate.toIso8601String(),
+      }),
+    );
+
+    return jsonDecode(response.body);
+  }
+
+  static Future<List<Map<String, dynamic>>> getVendorVouchers(String firebaseUID) async {
+    final url = Uri.parse('$baseUrl/get_vendor_vouchers.php');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'firebaseUID': firebaseUID}),
+    );
+
+    final data = jsonDecode(response.body);
+    if (data['success'] == true) {
+      return List<Map<String, dynamic>>.from(data['vouchers']);
+    } else {
+      return [];
+    }
+  }
+
+  static Future<bool> deleteVoucher(String voucherId) async {
+    final url = Uri.parse('$baseUrl/delete_voucher.php');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'voucherID': voucherId}),
+    );
+
+    final data = jsonDecode(response.body);
+    return data['success'] == true;
+  }
+
+  static Future<bool> updateVoucher({
+    required String voucherId,
+    required String name,
+    required String discount,
+    required String expiredDate, // yyyy-MM-dd
+  }) async {
+    final url = Uri.parse('$baseUrl/update_voucher.php');
+
+    print('📤 Sending POST request to $url');
+    print('📤 Payload:');
+    print({
+      'voucherId': voucherId,
+      'name': name,
+      'discount': discount,
+      'expiredDate': expiredDate,
+    });
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'voucherId': voucherId,
+          'name': name,
+          'discount': double.parse(discount),
+          'expiredDate': expiredDate,
+        }),
+      );
+
+      print('🔁 Status Code: ${response.statusCode}');
+      print('🔁 Response Body: ${response.body}');
+
+      final data = jsonDecode(response.body);
+      return data['success'] == true;
+    } catch (e) {
+      print('❌ Exception while calling update_voucher.php: $e');
+      return false;
+    }
+  }
+
+  static Future<List<Voucher>> getAllVouchers() async {
+    final response = await http.get(Uri.parse('$baseUrl/get_all_active_vouchers.php'));
+
+    print("Response status: ${response.statusCode}");
+    print("Response body: ${response.body}");
+
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.map((json) => Voucher.fromJson(json)).toList();
+    } else {
+      return [];
+    }
+  }
+
+  static Future<bool> claimVoucher(String firebaseUID, int voucherID) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/claim_voucher.php'),
+        body: {
+          'firebase_uid': firebaseUID,
+          'voucher_id': voucherID.toString(),
+        },
+      );
+
+      final data = jsonDecode(response.body);
+      return data['success'] == true;
+    } catch (e) {
+      print('❌ claimVoucher error: $e');
+      return false;
+    }
+  }
+
+
+  static Future<List<int>> getCollectedVoucherIds(String firebaseUID) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/get_user_collected_vouchers.php?firebase_uid=$firebaseUID'),
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((e) => int.parse(e.toString())).toList();
+    } else {
+      return [];
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getVendorOrders(String vendorUID) async {
+    final resp = await http.get(Uri.parse('$baseUrl/get_vendor_orders.php?vendor_uid=$vendorUID'));
+    if (resp.statusCode == 200) {
+      return List<Map<String, dynamic>>.from(jsonDecode(resp.body));
+    }
+    return [];
+  }
+
+  static Future<Map<String, dynamic>> placeOrder({
+    required String firebaseUID,
+    required String vendorUID,
+    required double total,
+    String? voucherID,
+    required List<Map<String, dynamic>> items,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/place_order.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        "firebase_uid": firebaseUID,
+        "vendor_uid": vendorUID,
+        "total": total,
+        "voucher_id": voucherID,
+        "items": items,
+      }),
+    );
+
+    return jsonDecode(response.body); // 👈 返回完整 map 而不是 true/false
+  }
+
+
+  static Future<Map<String, dynamic>> getOrderStatus(int orderId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/get_order_status.php'),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"order_id": orderId}),
+    );
+
+    return jsonDecode(response.body);
+  }
+
+
+  static Future<bool> updateOrderStatus(int orderId, String newStatus) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/update_order_status.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'order_id': orderId,
+        'status': newStatus,
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+    return data['success'] == true;
+  }
+
+  static Future<Map<String, dynamic>> getUserTransactions(String firebaseUID) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/get_user_transactions.php'),
+      body: {'firebase_uid': firebaseUID},
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      return {'success': false, 'message': 'Failed to connect'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> getVendorTransactions(String uid) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/get_vendor_transactions.php'),
+      body: {'firebase_uid': uid},
+    );
+
+    final data = jsonDecode(response.body);
+    return data;
+  }
+
+  static Future<Map<String, dynamic>> getOrderById(int orderId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/get_order_by_id.php'),
+      body: {'order_id': orderId.toString()},
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      print('API error: ${response.statusCode}');
+      return {"success": false};
+    }
+  }
+
+  static Future<bool> bookAppointment({
+    required String firebaseUID,
+    required String datetime,
+    required String note,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/book_appointment.php'),
+      body: {
+        'uid': firebaseUID,
+        'datetime': datetime,
+        'note': note,
+      },
+    );
+
+    final data = jsonDecode(response.body);
+    return data['success'] == true;
+  }
+
+  static Future<List<Map<String, dynamic>>> getUserAppointments(String firebaseUID) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/get_appointments_by_uid.php?uid=$firebaseUID'),
+    );
+
+    final data = jsonDecode(response.body);
+    if (data['success'] == true && data['appointments'] is List) {
+      return List<Map<String, dynamic>>.from(data['appointments']);
+    } else {
+      return [];
+    }
+  }
 
 
 
 
 }
+
+
+
+

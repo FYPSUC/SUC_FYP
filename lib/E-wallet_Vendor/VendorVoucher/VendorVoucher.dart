@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../VendorMain.dart';
 import 'VendorVoucherDetail.dart';
 import 'VendorCreateVoucher.dart';
+import 'package:suc_fyp/login_system/api_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class VendorVoucherPage extends StatefulWidget {
   const VendorVoucherPage({super.key});
@@ -11,42 +14,42 @@ class VendorVoucherPage extends StatefulWidget {
 }
 
 class _VendorVoucherPageState extends State<VendorVoucherPage> {
-  final List<Map<String, dynamic>> vouchers = [
-    {
-      'id': '1',
-      'amount': 'RM 5 Off',
-      'expiry': 'Use before 30/12',
-      'claimed': 18,
-      'used': 8,
-      'unused': 10,
-      'name': 'RM 5 Off',
-      'discount': '5.0',
-      'date': '30/12',
-    },
-    {
-      'id': '2',
-      'amount': 'RM 10 Off',
-      'expiry': 'Use before 15/11',
-      'claimed': 12,
-      'used': 5,
-      'unused': 7,
-      'name': 'RM 10 Off',
-      'discount': '10.0',
-      'date': '15/11',
-    },
-  ];
 
-  void _deleteVoucher(String id) {
-    setState(() {
-      vouchers.removeWhere((voucher) => voucher['id'] == id);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Voucher deleted successfully'),
-        duration: Duration(seconds: 2),
-      ),
-    );
+  List<Map<String, dynamic>> vouchers = [];
+  bool isLoading = true;
+  @override
+  void initState() {
+    super.initState();
+    fetchVouchersFromDB();
   }
+
+  Future<void> fetchVouchersFromDB() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final data = await ApiService.getVendorVouchers(user.uid);
+      setState(() {
+        vouchers = data;
+        isLoading = false;
+      });
+    }
+  }
+
+
+  Future<void> _deleteVoucher(String id) async {
+    final success = await ApiService.deleteVoucher(id);
+    if (success) {
+      fetchVouchersFromDB();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Voucher deleted successfully')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to delete voucher')),
+      );
+    }
+
+  }
+
 
   void _updateVoucher(Map<String, dynamic> updatedVoucher) {
     setState(() {
@@ -137,7 +140,11 @@ class _VendorVoucherPageState extends State<VendorVoucherPage> {
                   SizedBox(height: screenHeight * 0.03),
 
                   Expanded(
-                    child: ListView.builder(
+                    child: isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : vouchers.isEmpty
+                        ? const Center(child: Text('No vouchers created yet.'))
+                        : ListView.builder(
                       physics: const BouncingScrollPhysics(),
                       itemCount: vouchers.length,
                       itemBuilder: (context, index) {
@@ -146,11 +153,12 @@ class _VendorVoucherPageState extends State<VendorVoucherPage> {
                           context,
                           screenWidth,
                           voucher: voucher,
-                          onDelete: () => _deleteVoucher(voucher['id']),
+                          onDelete: () => _deleteVoucher(voucher['id'].toString()),
                         );
                       },
                     ),
                   ),
+
 
                   Padding(
                     padding: EdgeInsets.only(
@@ -161,30 +169,17 @@ class _VendorVoucherPageState extends State<VendorVoucherPage> {
                       width: double.infinity,
                       height: screenHeight * 0.07,
                       child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
+                        onPressed: () async {
+                          final result = await Navigator.push(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) => const VendorCreateVoucherPage(),
-                            ),
-                          ).then((voucherData) {
-                            if (voucherData != null) {
-                              setState(() {
-                                vouchers.add({
-                                  'id': DateTime.now().millisecondsSinceEpoch.toString(),
-                                  'amount': voucherData['name'],
-                                  'expiry': 'Use before ${voucherData['date']}',
-                                  'claimed': 0,
-                                  'used': 0,
-                                  'unused': 0,
-                                  'name': voucherData['name'],
-                                  'discount': voucherData['amount'],
-                                  'date': voucherData['date'],
-                                });
-                              });
-                            }
-                          });
+                            MaterialPageRoute(builder: (context) => const VendorCreateVoucherPage()),
+                          );
+                          if (result == true) {
+                            await fetchVouchersFromDB();
+                          }
                         },
+
+
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue[700],
                           shape: RoundedRectangleBorder(
@@ -288,14 +283,23 @@ class _VendorVoucherPageState extends State<VendorVoucherPage> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => VendorVoucherDetailPage(
-                              voucherId: voucher['id'],
-                              voucherName: voucher['name'],
-                              discountAmount: voucher['discount'],
-                              expiredDate: voucher['date'],
-                              onUpdate: _updateVoucher,
+                              voucherId: voucher['id'].toString(),
+                              voucherName: voucher['name'].toString(),
+                              discountAmount: voucher['discount'].toString(),
+                              expiredDate: voucher['date'].toString(),
+                              onUpdate: (updatedVoucher) async {
+                                await fetchVouchersFromDB(); // ✅ 直接重新从数据库拉最新数据，避免手动拼字段
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Voucher updated successfully'),
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         );
+
                       },
                     ),
                     _actionButton(

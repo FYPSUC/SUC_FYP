@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:suc_fyp/login_system/api_service.dart'; // 你已有的 ApiService 文件
+import 'package:firebase_auth/firebase_auth.dart';
 
 class VendorCreateVoucherPage extends StatefulWidget {
   const VendorCreateVoucherPage({super.key});
@@ -124,17 +126,35 @@ class _VendorCreateVoucherPage extends State<VendorCreateVoucherPage> {
                   SizedBox(height: screenWidth * 0.1),
                   Center(
                     child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         if (_nameController.text.isNotEmpty &&
                             _enteredAmount.isNotEmpty &&
                             _selectedDate != null) {
-                          Navigator.pop(context, {
-                            'name': _nameController.text,
-                            'amount': _enteredAmount,
-                            'date': _dateController.text,
-                          });
+
+                          final user = FirebaseAuth.instance.currentUser;
+                          if (user == null) return;
+
+                          final response = await ApiService.createVoucher(
+                            firebaseUID: user.uid,
+                            name: _nameController.text,
+                            amount: double.parse(_enteredAmount),
+                            expiredDate: _selectedDate!,
+                          );
+
+                          if (response['success']) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Voucher created successfully')),
+
+                            );
+                            Navigator.pop(context, true);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Failed to create voucher')),
+                            );
+                          }
                         }
-                      },
+                      }
+                      ,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,

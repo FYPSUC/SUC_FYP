@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'AddProduct.dart';
 import 'EditProduct.dart';
+import 'package:suc_fyp/login_system/api_service.dart';
 
 class VendorProductPage extends StatefulWidget {
   const VendorProductPage({super.key});
@@ -10,22 +12,29 @@ class VendorProductPage extends StatefulWidget {
 }
 
 class _VendorProductPageState extends State<VendorProductPage> {
-  // 模拟商品数据
-  final List<Map<String, dynamic>> _products = [
-    {
-      'name': 'Pearl milk tea',
-      'price': 'RM 8.0',
-      'image': 'assets/image/pearl_milk_tea.png',
-    },
-    {
-      'name': 'Garden milk tea',
-      'price': 'RM 10.0',
-      'image': 'assets/image/garden_milk_tea.png',
-    },
-  ];
+  List<Map<String, dynamic>> _products = [];
+  bool _isLoading = true;
 
-  // 删除商品
+  @override
+  void initState() {
+    super.initState();
+    _loadProducts();
+  }
+
+  Future<void> _loadProducts() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final products = await ApiService.getVendorProducts(user.uid);
+      setState(() {
+        _products = products;
+        _isLoading = false;
+      });
+    }
+  }
+
   void _deleteProduct(int index) {
+    final productID = _products[index]['ProductID'].toString();
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -37,14 +46,21 @@ class _VendorProductPageState extends State<VendorProductPage> {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              setState(() {
-                _products.removeAt(index);
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Product deleted')),
-              );
+              final success = await ApiService.deleteProduct(productID);
+              if (success) {
+                setState(() {
+                  _products.removeAt(index);
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Product deleted')),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Failed to delete product')),
+                );
+              }
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
@@ -53,15 +69,16 @@ class _VendorProductPageState extends State<VendorProductPage> {
     );
   }
 
-  // 编辑商品
   void _editProduct(int index) {
     final product = _products[index];
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => VendorEditProductPage(
-          currentName: product['name'],
-          currentPrice: product['price'].replaceAll('RM ', ''),
+          productID: product['ProductID'].toString(),
+          currentName: product['ProductName'],
+          currentPrice: product['ProductPrice'].toString(),
+          currentImageUrl: product['Image'], // 可以为空
         ),
       ),
     ).then((value) {
@@ -69,30 +86,19 @@ class _VendorProductPageState extends State<VendorProductPage> {
         setState(() {
           _products[index] = {
             ..._products[index],
-            'name': value['name'],
-            'price': 'RM ${value['price']}',
+            'ProductName': value['name'],
+            'ProductPrice': value['price'],
           };
         });
       }
     });
   }
 
-  // 添加新商品
   void _addNewProduct() {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => VendorAddProductPage()),
-    ).then((value) {
-      if (value != null) {
-        setState(() {
-          _products.add({
-            'name': value['name'],
-            'price': 'RM ${value['price']}',
-            'image': value['image'] ?? 'assets/image/default_product.png',
-          });
-        });
-      }
-    });
+    ).then((_) => _loadProducts());
   }
 
   @override
@@ -101,7 +107,6 @@ class _VendorProductPageState extends State<VendorProductPage> {
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
-          // 背景图
           Container(
             width: double.infinity,
             height: double.infinity,
@@ -112,15 +117,12 @@ class _VendorProductPageState extends State<VendorProductPage> {
               ),
             ),
           ),
-
-          // 主内容
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 返回按钮和标题
                   Padding(
                     padding: const EdgeInsets.only(top: 20),
                     child: Column(
@@ -160,10 +162,10 @@ class _VendorProductPageState extends State<VendorProductPage> {
                       ],
                     ),
                   ),
-
-                  // 商品列表
                   Expanded(
-                    child: _products.isEmpty
+                    child: _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : _products.isEmpty
                         ? const Center(
                       child: Text(
                         'No products available.',
@@ -176,17 +178,15 @@ class _VendorProductPageState extends State<VendorProductPage> {
                       itemBuilder: (context, index) {
                         final product = _products[index];
                         return _buildProductCard(
-                          name: product['name'],
-                          price: product['price'],
-                          image: product['image'],
+                          name: product['ProductName'],
+                          price: product['ProductPrice'].toString(),
+                          image: product['Image'],
                           onDelete: () => _deleteProduct(index),
                           onEdit: () => _editProduct(index),
                         );
                       },
                     ),
                   ),
-
-                  // 添加商品按钮
                   Padding(
                     padding: const EdgeInsets.only(bottom: 30, top: 10),
                     child: Center(
@@ -217,7 +217,6 @@ class _VendorProductPageState extends State<VendorProductPage> {
     );
   }
 
-  // 商品卡片
   Widget _buildProductCard({
     required String name,
     required String price,
@@ -239,7 +238,7 @@ class _VendorProductPageState extends State<VendorProductPage> {
               height: 80,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                image: DecorationImage(image: AssetImage(image), fit: BoxFit.cover),
+                image: DecorationImage(image: NetworkImage(image), fit: BoxFit.cover),
               ),
             ),
             const SizedBox(width: 15),
@@ -249,7 +248,7 @@ class _VendorProductPageState extends State<VendorProductPage> {
                 children: [
                   Text(name, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 5),
-                  Text(price, style: const TextStyle(fontSize: 18, color: Colors.green, fontWeight: FontWeight.bold)),
+                  Text('RM $price', style: const TextStyle(fontSize: 18, color: Colors.green, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,

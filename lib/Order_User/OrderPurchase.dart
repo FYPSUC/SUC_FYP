@@ -1,20 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:suc_fyp/E-wallet_User/Voucher.dart'; // 导入Voucher页面
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:suc_fyp/E-wallet_User/Voucher.dart';
 import 'package:suc_fyp/Order_User/OrderStatusPage.dart';
-import 'models.dart' as models; // 使用别名导入，避免冲突
-import 'package:suc_fyp/Order_User/models.dart' show Voucher; // 直接导入Voucher类
+import 'models.dart' as models;
+import 'package:suc_fyp/Order_User/models.dart' show Voucher;
+import 'package:suc_fyp/login_system/api_service.dart';
 
 class OrderSummaryPage extends StatefulWidget {
   final Map<models.MenuItem, int> selectedItems;
+  final String vendorUID;
 
-  const OrderSummaryPage({super.key, required this.selectedItems});
+  const OrderSummaryPage({
+    super.key,
+    required this.selectedItems,
+    required this.vendorUID,
+  });
 
   @override
   _OrderSummaryPageState createState() => _OrderSummaryPageState();
 }
 
 class _OrderSummaryPageState extends State<OrderSummaryPage> {
-  Voucher? selectedVoucher; // 使用明确导入的Voucher类型
+  Voucher? selectedVoucher;
 
   double get subtotal {
     double total = 0;
@@ -100,15 +107,19 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
                                   return Padding(
                                     padding: EdgeInsets.symmetric(vertical: screenHeight * 0.008),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          '$quantity x ${item.name}',
-                                          style: TextStyle(
-                                            fontSize: screenWidth * 0.05,
-                                            fontWeight: FontWeight.bold,
+                                        Expanded(
+                                          child: Text(
+                                            '$quantity x ${item.name}',
+                                            style: TextStyle(
+                                              fontSize: screenWidth * 0.05,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            softWrap: true,
                                           ),
                                         ),
+                                        SizedBox(width: screenWidth * 0.03),
                                         Text(
                                           'RM ${(item.price * quantity).toStringAsFixed(2)}',
                                           style: TextStyle(fontSize: screenWidth * 0.05),
@@ -133,7 +144,7 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      'Voucher (${selectedVoucher!.code})',
+                                      'Voucher (${selectedVoucher!.name})',
                                       style: TextStyle(fontSize: screenWidth * 0.05, fontWeight: FontWeight.bold),
                                     ),
                                     Text(
@@ -165,10 +176,17 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => UserVoucherPage(
+
+                          vendorUID: widget.vendorUID, // ✅ 传入当前商家的 UID
                           onVoucherSelected: (voucher) {
                             setState(() => selectedVoucher = voucher);
+                            print("🧾 Selected Voucher: ${selectedVoucher?.name}");
+                            print("🧾 Voucher Discount: ${selectedVoucher?.discount.runtimeType} → ${selectedVoucher?.discount}");
+                            print("🧾 Total Price: $totalPrice");
+
                           },
                         ),
+
                       ),
                     );
                   },
@@ -183,7 +201,7 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
                       children: [
                         Text(
                           selectedVoucher != null
-                              ? 'Voucher: ${selectedVoucher!.code}'
+                              ? 'Voucher: ${selectedVoucher!.name}'
                               : 'Use voucher',
                           style: TextStyle(fontSize: screenWidth * 0.05),
                         ),
@@ -198,10 +216,7 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
                   height: screenHeight * 0.07,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const OrderStatusPage()),
-                      );
+                      _showPinDialogAndPlaceOrder();
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
@@ -216,6 +231,7 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
                     ),
                   ),
                 ),
+
                 SizedBox(height: screenHeight * 0.02),
               ],
             ),
@@ -224,4 +240,125 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
       ),
     );
   }
+  Future<void> _showPinDialogAndPlaceOrder() async {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final TextEditingController _pinController = TextEditingController();
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final userData = await ApiService.getUserByUID(user.uid);
+    final correctPin = userData['user']['SixDigitPassword'];
+
+    final balanceString = userData['user']['balance']?.toString() ?? '0';
+    final currentBalance = double.tryParse(balanceString) ?? 0.0;
+
+    if (!mounted) return;
+    if (currentBalance < totalPrice) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Insufficient balance')),
+      );
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Enter 6-digit PIN'),
+          content: TextField(
+            controller: _pinController,
+            keyboardType: TextInputType.number,
+            maxLength: 6,
+            obscureText: true,
+            decoration: const InputDecoration(
+              hintText: '******',
+              counterText: '',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                final enteredPin = _pinController.text;
+                if (enteredPin != correctPin) {
+                  ScaffoldMessenger.of(dialogContext).showSnackBar(
+                    const SnackBar(content: Text('Incorrect PIN')),
+                  );
+                  return;
+                }
+
+                // ✅ 第一步：创建订单，拿到 orderId
+                final items = widget.selectedItems.entries.map((entry) {
+                  final item = entry.key;
+                  final quantity = entry.value;
+                  return {
+                    "product_id": item.id,
+                    "quantity": quantity,
+                    "unit_price": item.price,
+                  };
+                }).toList();
+
+                final orderResult = await ApiService.placeOrder(
+                  firebaseUID: user.uid,
+                  vendorUID: widget.vendorUID,
+                  total: totalPrice,
+                  voucherID: selectedVoucher?.id.toString(),
+                  items: items,
+                );
+
+                if (!mounted) return;
+
+                if (orderResult['success'] != true) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Order failed")),
+                  );
+                  Navigator.pop(dialogContext, false);
+                  return;
+                }
+
+                // ✅ 第二步：获取 orderId
+                int orderId = orderResult['order_id'];
+
+                // ✅ 第三步：执行转账
+                final transferResult = await ApiService.transferFunds(
+                  SenderID: user.uid,
+                  ReceiverID: widget.vendorUID,
+                  Amount: totalPrice.toStringAsFixed(2),
+                  SixDigitPassword: enteredPin,
+                  orderId: orderId,
+                );
+
+                if (!mounted) return;
+
+                if (!transferResult['success']) {
+                  ScaffoldMessenger.of(dialogContext).showSnackBar(
+                    SnackBar(content: Text(transferResult['message'] ?? 'Transaction failed')),
+                  );
+                  Navigator.pop(dialogContext, false);
+                  return;
+                }
+
+                // ✅ 一切成功，跳转状态页
+                Navigator.pop(dialogContext, true);
+
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => OrderStatusPage(orderId: orderId),
+                  ),
+                );
+              },
+              child: const Text('Confirm'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:suc_fyp/E-wallet_User/UserMain.dart';
+import 'package:suc_fyp/login_system/api_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ClinicCalendarPage extends StatefulWidget {
   const ClinicCalendarPage({super.key});
@@ -17,13 +19,14 @@ class _ClinicCalendarPageState extends State<ClinicCalendarPage> {
   final TextEditingController _bookingController = TextEditingController();
 
   final List<Map<String, dynamic>> timeSlots = [
-    {'time': '10:00 am', 'available': true},
-    {'time': '11:00 am', 'available': false},
-    {'time': '12:00 pm', 'available': false},
-    {'time': '01:00 pm', 'available': false},
-    {'time': '02:00 pm', 'available': false},
-    {'time': '03:00 pm', 'available': false},
+    {'time': '10:00 AM', 'available': true},
+    {'time': '11:00 AM', 'available': true},
+    {'time': '12:00 PM', 'available': false},
+    {'time': '01:00 PM', 'available': false},
+    {'time': '02:00 PM', 'available': true},
+    {'time': '03:00 PM', 'available': false},
   ];
+
 
   Future<void> _pickDate() async {
     final DateTime? picked = await showDatePicker(
@@ -236,23 +239,101 @@ class _ClinicCalendarPageState extends State<ClinicCalendarPage> {
         ),
         SizedBox(height: screenHeight * 0.03),
         ElevatedButton(
-          onPressed: () {
+          onPressed: () async {
             if (_bookingController.text.trim().isEmpty) {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Please enter booking note')),
               );
               return;
             }
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Successful booking')),
-            );
-            Future.delayed(const Duration(seconds: 1), () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const UserMainPage()),
+
+            if (selectedDate == null || selectedTime == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Please select date and time')),
               );
-            });
+              return;
+            }
+
+            final user = FirebaseAuth.instance.currentUser;
+            if (user == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('User not authenticated')),
+              );
+              return;
+            }
+
+            // 清洗 selectedTime 字符串并转换为 TimeOfDay
+            TimeOfDay? parseTime(String timeStr) {
+              try {
+                debugPrint('Original timeStr: "$timeStr"');
+
+                // Step 1: 转为标准字符串，只保留 ASCII 可见字符
+                String cleaned = timeStr
+                    .split('')
+                    .where((c) => c.codeUnitAt(0) >= 32 && c.codeUnitAt(0) <= 126)
+                    .join()
+                    .replaceAll(RegExp(r'\s+'), ' ')
+                    .trim()
+                    .toUpperCase();
+
+                debugPrint('Cleaned timeStr: "$cleaned"');
+                debugPrint('Code units: ${timeStr.codeUnits}');
+
+                final format = DateFormat('hh:mm a'); // 明确使用 10:00 AM 格式
+                // e.g. '10:00 AM'
+                final dt = format.parseStrict(cleaned);
+                return TimeOfDay.fromDateTime(dt);
+              } catch (e) {
+                debugPrint('Time parse error: $e');
+                debugPrint('Code units: ${timeStr.codeUnits}');
+
+                return null;
+              }
+            }
+
+
+
+            final timeOfDay = parseTime(selectedTime!);
+
+            if (timeOfDay == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Invalid time format selected')),
+              );
+              return;
+            }
+
+            final DateTime finalDateTime = DateTime(
+              selectedDate!.year,
+              selectedDate!.month,
+              selectedDate!.day,
+              timeOfDay.hour,
+              timeOfDay.minute,
+            );
+
+            // 调用后端 API 提交预约
+            final success = await ApiService.bookAppointment(
+              firebaseUID: user.uid,
+              datetime: DateFormat('yyyy-MM-dd HH:mm:ss').format(finalDateTime),
+              note: _bookingController.text.trim(),
+            );
+
+            if (success) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Booking successful')),
+              );
+              Future.delayed(const Duration(seconds: 1), () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const UserMainPage()),
+                );
+              });
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Booking failed. Please try again.')),
+              );
+            }
           },
+
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.white,
             padding: EdgeInsets.symmetric(

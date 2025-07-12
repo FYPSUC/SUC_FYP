@@ -66,6 +66,8 @@ class _VendorTopUpPageState extends State<VendorTopUpPage> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
+
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -77,10 +79,15 @@ class _VendorTopUpPageState extends State<VendorTopUpPage> {
         ),
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.07, vertical: screenHeight * 0.04),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: screenHeight * 0.03),
+    child: SingleChildScrollView(
+    padding: EdgeInsets.only(
+    bottom: MediaQuery.of(context).viewInsets.bottom, // 动态适配键盘高度
+    ),
+    child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+
+    SizedBox(height: screenHeight * 0.03),
               GestureDetector(
                 onTap: () {
                   Navigator.push(
@@ -222,11 +229,50 @@ class _VendorTopUpPageState extends State<VendorTopUpPage> {
                   });
                 },
               ),
-              const Spacer(),
-              SizedBox(
+      SizedBox(height: screenHeight * 0.05),
+
+      SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _amountController.text.isEmpty || _selectedBank == null ? null : () async {
+                  onPressed: _amountController.text.isEmpty || _selectedBank == null
+                      ? null
+                      : () async {
+                    final passwordController = TextEditingController();
+
+                    // 1. 弹出密码输入框
+                    final bool? confirmed = await showDialog<bool>(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text("请输入6位交易密码"),
+                          content: TextField(
+                            controller: passwordController,
+                            obscureText: true,
+                            keyboardType: TextInputType.number,
+                            maxLength: 6,
+                            decoration: const InputDecoration(
+                              hintText: '******',
+                              counterText: '',
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: const Text("取消"),
+                            ),
+                            ElevatedButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: const Text("确认"),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+
+                    if (confirmed != true) return;
+
+                    // 2. 获取 FirebaseUID
                     SharedPreferences prefs = await SharedPreferences.getInstance();
                     String? uid = prefs.getString('uid');
 
@@ -237,6 +283,26 @@ class _VendorTopUpPageState extends State<VendorTopUpPage> {
                       return;
                     }
 
+                    // 3. 拉取 Vendor 信息，验证交易密码
+                    final response = await ApiService.getVendorByUID(uid);
+
+                    if (!response['success']) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("❌ 获取 Vendor 信息失败")),
+                      );
+                      return;
+                    }
+
+                    final String correctPassword = response['user']['SixDigitPassword'] ?? '';
+
+                    if (passwordController.text != correctPassword) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("❌ 交易密码错误")),
+                      );
+                      return;
+                    }
+
+                    // 4. 开始执行 Top Up
                     double amount = double.tryParse(_enteredAmount) ?? 0.0;
                     if (amount <= 0) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -269,6 +335,7 @@ class _VendorTopUpPageState extends State<VendorTopUpPage> {
                     }
                   },
 
+
                   child: Text('Top Up', style: TextStyle(
                       fontSize: screenWidth * 0.05,
                       fontWeight: FontWeight.bold)),
@@ -278,6 +345,7 @@ class _VendorTopUpPageState extends State<VendorTopUpPage> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

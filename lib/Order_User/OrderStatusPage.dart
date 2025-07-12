@@ -1,7 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:suc_fyp/login_system/api_service.dart';
 
 class OrderStatusPage extends StatefulWidget {
-  const OrderStatusPage({Key? key}) : super(key: key);
+  final int orderId;
+
+  const OrderStatusPage({super.key, required this.orderId});
 
   @override
   _OrderStatusPageState createState() => _OrderStatusPageState();
@@ -9,8 +13,11 @@ class OrderStatusPage extends StatefulWidget {
 
 class _OrderStatusPageState extends State<OrderStatusPage>
     with SingleTickerProviderStateMixin {
+  List<Map<String, dynamic>> _orderItems = [];
   int currentStep = 0; // 0=Received, 1=Preparing, 2=Ready for Pickup
   late AnimationController _shimmerController;
+  Timer? _pollingTimer;
+
 
   @override
   void initState() {
@@ -19,13 +26,50 @@ class _OrderStatusPageState extends State<OrderStatusPage>
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat();
+
+    _fetchOrderStatus();
+    _startPolling();
   }
 
   @override
   void dispose() {
     _shimmerController.dispose();
+    _pollingTimer?.cancel();
     super.dispose();
   }
+
+  void _startPolling() {
+    _pollingTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      _fetchOrderStatus();
+    });
+  }
+
+  Future<void> _fetchOrderStatus() async {
+    final response = await ApiService.getOrderStatus(widget.orderId);
+    print("📦 getOrderStatus response = $response");
+
+    if (response['success'] == true) {
+      final status = response['status'];
+      final items = response['items'] as List<dynamic>? ?? [];
+
+      setState(() {
+        if (status == 'preparing') {
+          currentStep = 1;
+        } else if (status == 'completed') {
+          currentStep = 2;
+        } else {
+          currentStep = 0;
+        }
+
+        _orderItems = items.map((item) => {
+          'name': item['name'],
+          'quantity': item['quantity'],
+        }).toList();
+      });
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -50,9 +94,7 @@ class _OrderStatusPageState extends State<OrderStatusPage>
                 child: Row(
                   children: [
                     Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.03,
-                      ),
+                      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.03),
                       child: Image.asset(
                         'assets/image/BackButton.jpg',
                         width: screenWidth * 0.1,
@@ -122,23 +164,11 @@ class _OrderStatusPageState extends State<OrderStatusPage>
                                 SizedBox(height: screenHeight * 0.02),
                                 Row(
                                   children: [
-                                    _buildStepIcon(
-                                      Icons.list_alt,
-                                      0,
-                                      screenWidth,
-                                    ),
+                                    _buildStepIcon(Icons.list_alt, 0, screenWidth),
                                     _buildLine(0),
-                                    _buildStepIcon(
-                                      Icons.restaurant,
-                                      1,
-                                      screenWidth,
-                                    ),
+                                    _buildStepIcon(Icons.restaurant, 1, screenWidth),
                                     _buildLine(1),
-                                    _buildStepIcon(
-                                      Icons.check_circle_outline,
-                                      2,
-                                      screenWidth,
-                                    ),
+                                    _buildStepIcon(Icons.check_circle_outline, 2, screenWidth),
                                   ],
                                 ),
                                 SizedBox(height: screenHeight * 0.03),
@@ -149,43 +179,30 @@ class _OrderStatusPageState extends State<OrderStatusPage>
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                SizedBox(height: screenHeight * 0.01),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                                 Text(
-                                  '1 item\nx1 Pearl milk tea',
+                                  '${_orderItems.length} item(s)',
                                   style: TextStyle(
                                     fontSize: screenWidth * 0.06,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
+                                SizedBox(height: screenHeight * 0.005),
+                                ..._orderItems.map((item) => Text(
+                                  'x${item['quantity']} ${item['name']}',
+                                  style: TextStyle(
+                                    fontSize: screenWidth * 0.06,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )),
+                              ],
+                            ),
                               ],
                             ),
                           ),
                         ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: screenWidth * 0.04,
-                  vertical: screenHeight * 0.01,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () => setState(() => currentStep = 1),
-                      child: Text(
-                        "Receive",
-                        style: TextStyle(fontSize: screenWidth * 0.045),
-                      ),
-                    ),
-                    ElevatedButton(
-                      onPressed: () => setState(() => currentStep = 2),
-                      child: Text(
-                        "Complete",
-                        style: TextStyle(fontSize: screenWidth * 0.045),
                       ),
                     ),
                   ],
@@ -203,14 +220,13 @@ class _OrderStatusPageState extends State<OrderStatusPage>
     bool isCurrent = index == currentStep;
 
     return Expanded(
-      child:
-          isCurrent
-              ? _buildAnimatedShimmerLine()
-              : AnimatedContainer(
-                duration: const Duration(milliseconds: 500),
-                height: 4,
-                color: isCompleted ? Colors.green : Colors.black,
-              ),
+      child: isCurrent
+          ? _buildAnimatedShimmerLine()
+          : AnimatedContainer(
+        duration: const Duration(milliseconds: 500),
+        height: 4,
+        color: isCompleted ? Colors.green : Colors.black,
+      ),
     );
   }
 

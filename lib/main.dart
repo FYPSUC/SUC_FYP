@@ -3,10 +3,13 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'login_system/login.dart';
 import 'login_system/register.dart';
+import 'package:suc_fyp/login_system/api_service.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await ApiService.init();
   runApp(const MyApp());
 }
 
@@ -21,7 +24,61 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const HomePage(),
+      home: const SplashPage(),
+    );
+  }
+}
+
+class SplashPage extends StatefulWidget {
+  const SplashPage({super.key});
+
+  @override
+  State<SplashPage> createState() => _SplashPageState();
+}
+
+class _SplashPageState extends State<SplashPage> {
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadBaseUrlAndNavigate();
+    });
+  }
+
+  Future<void> _loadBaseUrlAndNavigate() async {
+    final remoteConfig = FirebaseRemoteConfig.instance;
+
+    try {
+      await remoteConfig.setConfigSettings(RemoteConfigSettings(
+        fetchTimeout: Duration(seconds: 10),
+        minimumFetchInterval: Duration.zero,
+      ));
+      await remoteConfig.fetchAndActivate();
+
+      final url = remoteConfig.getString('baseUrl');
+      if (url.isNotEmpty) {
+        ApiService.baseUrl = url;
+        print('✅ Loaded baseUrl from Firebase Remote Config: $url');
+      } else {
+        print('⚠️ No baseUrl found in Remote Config');
+      }
+    } catch (e) {
+      print('❌ Failed to load Remote Config: $e');
+    }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const HomePage()),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(), // 显示加载中
+      ),
     );
   }
 }

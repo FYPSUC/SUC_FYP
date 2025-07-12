@@ -307,6 +307,11 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ],
                   ),
+                  // Text(
+                  //   'Base URL: ${ApiService.baseUrl}',
+                  //   style: TextStyle(fontSize: 12, color: Colors.grey),
+                  // ),
+
                   const SizedBox(height: 30),
                 ],
               ),
@@ -315,5 +320,6 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+
   }
 }

@@ -66,6 +66,8 @@ class _TopUpPageState extends State<UserTopUpPage> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
+
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -77,10 +79,15 @@ class _TopUpPageState extends State<UserTopUpPage> {
         ),
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.07, vertical: screenHeight * 0.04),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: screenHeight * 0.03),
+    child: SingleChildScrollView(
+    padding: EdgeInsets.only(
+    bottom: MediaQuery.of(context).viewInsets.bottom, // 动态适配键盘高度
+    ),
+    child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+
+    SizedBox(height: screenHeight * 0.03),
               GestureDetector(
                 onTap: () {
                   Navigator.push(
@@ -222,14 +229,52 @@ class _TopUpPageState extends State<UserTopUpPage> {
                   });
                 },
               ),
-              const Spacer(),
-              SizedBox(
+      SizedBox(height: screenHeight * 0.05),
+
+      SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _amountController.text.isEmpty || _selectedBank == null ? null : () async {
+                  onPressed: _amountController.text.isEmpty || _selectedBank == null
+                      ? null
+                      : () async {
+                    final passwordController = TextEditingController();
+
+                    // 显示密码输入对话框
+                    final bool? confirmed = await showDialog<bool>(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text("请输入6位交易密码"),
+                          content: TextField(
+                            controller: passwordController,
+                            obscureText: true,
+                            keyboardType: TextInputType.number,
+                            maxLength: 6,
+                            decoration: const InputDecoration(
+                              hintText: '******',
+                              counterText: '',
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: const Text("取消"),
+                            ),
+                            ElevatedButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: const Text("确认"),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+
+                    if (confirmed != true) return;
+
+                    // 获取 UID 和密码验证
                     SharedPreferences prefs = await SharedPreferences.getInstance();
                     String? uid = prefs.getString('uid');
-
                     if (uid == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("❌ 用户未登录")),
@@ -237,6 +282,24 @@ class _TopUpPageState extends State<UserTopUpPage> {
                       return;
                     }
 
+                    // 获取用户信息并验证密码
+                    final response = await ApiService.getUserByUID(uid);
+                    if (!response['success']) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("❌ 获取用户信息失败")),
+                      );
+                      return;
+                    }
+
+                    final String correctPassword = response['user']['SixDigitPassword'] ?? '';
+                    if (passwordController.text != correctPassword) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("❌ 交易密码错误")),
+                      );
+                      return;
+                    }
+
+                    // 验证通过，开始 Top Up 流程
                     double amount = double.tryParse(_enteredAmount) ?? 0.0;
                     if (amount <= 0) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -270,6 +333,7 @@ class _TopUpPageState extends State<UserTopUpPage> {
                   },
 
 
+
                   child: Text('Top Up', style: TextStyle(fontSize: screenWidth * 0.05, fontWeight: FontWeight.bold)),
                 ),
               ),
@@ -277,6 +341,7 @@ class _TopUpPageState extends State<UserTopUpPage> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

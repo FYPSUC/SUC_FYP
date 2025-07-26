@@ -90,9 +90,9 @@ class _StoreMenuPageState extends State<StoreMenuPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(widget.store.name, style: TextStyle(fontSize: screenWidth * 0.055, fontWeight: FontWeight.bold)),
+                            Text('ShopName: ${widget.store.name}', style: TextStyle(fontSize: screenWidth * 0.055, fontWeight: FontWeight.bold)),
                             SizedBox(height: 4),
-                            Text(widget.store.location, style: TextStyle(fontSize: screenWidth * 0.045)),
+                            Text('PickupAddress: ${widget.store.location}', style: TextStyle(fontSize: screenWidth * 0.045)),
                           ],
                         ),
                       ),
@@ -108,6 +108,7 @@ class _StoreMenuPageState extends State<StoreMenuPage> {
                     itemBuilder: (context, index) {
                       final item = widget.store.menu[index];
                       final count = itemCounts[item.name]!;
+                      print('Item: ${item.name}, isSoldOut: ${item.isSoldOut}');
                       return Container(
                         margin: EdgeInsets.symmetric(vertical: screenHeight * 0.01),
                         padding: EdgeInsets.all(screenWidth * 0.03),
@@ -131,6 +132,18 @@ class _StoreMenuPageState extends State<StoreMenuPage> {
                                   Text(item.name, style: TextStyle(fontSize: screenWidth * 0.05, fontWeight: FontWeight.bold)),
                                   SizedBox(height: 4),
                                   Text('RM ${item.price.toStringAsFixed(2)}', style: TextStyle(fontSize: screenWidth * 0.045)),
+
+                                  if (item.isSoldOut != 0)
+
+
+                                    Text(
+                                      'Sold Out',
+                                      style: TextStyle(
+                                        fontSize: screenWidth * 0.04,
+                                        color: Colors.red,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                 ],
                               ),
                             ),
@@ -144,10 +157,11 @@ class _StoreMenuPageState extends State<StoreMenuPage> {
                                 Text('$count', style: TextStyle(fontSize: screenWidth * 0.045)),
                                 IconButton(
                                   icon: Icon(Icons.add_circle_outline),
-                                  onPressed: () => increaseItem(item.name),
+                                  onPressed: item.isSoldOut != 0 ? null : () => increaseItem(item.name),
                                 ),
                               ],
                             )
+
                           ],
                         ),
                       );

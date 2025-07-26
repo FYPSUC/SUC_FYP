@@ -1,4 +1,3 @@
-// ✅ 更新后的 MoreStorePage：从 API 动态获取 stores
 import 'package:flutter/material.dart';
 import 'MainStorePage.dart';
 import 'models.dart';
@@ -86,8 +85,15 @@ class _MoreStorePageState extends State<MoreStorePage> {
                         return Center(child: Text('No stores found'));
                       }
 
-                      final filteredStores = snapshot.data!.where((store) =>
-                          store.name.toLowerCase().contains(searchQuery.toLowerCase())).toList();
+                      final filteredStores = snapshot.data!
+                          .where((store) =>
+                      store.name.toLowerCase().contains(searchQuery.toLowerCase()) &&
+                          store.image.isNotEmpty &&
+                          Uri.tryParse(store.image)?.hasAbsolutePath == true &&
+                          store.name.trim().isNotEmpty &&
+                          store.location.trim().isNotEmpty)
+                          .toList();
+
 
                       return ListView.builder(
                         padding: EdgeInsets.all(screenWidth * 0.03),

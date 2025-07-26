@@ -2,14 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:suc_fyp/login_system/api_service.dart';
 import 'package:suc_fyp/main.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import 'QR/QR.dart';
 import 'UserProfile.dart';
+import 'dart:convert';
 import 'TopUp.dart';
 import 'TransactionHistory.dart';
 import '../Clinic_User/Clinic.dart';
 import '../Order_User/Order.dart';
 import 'Voucher.dart';
 import '../Order_User/OrderPurchase.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import 'package:suc_fyp/Order_User/models.dart' as models;
 
 class UserMainPage extends StatefulWidget {
@@ -19,61 +23,158 @@ class UserMainPage extends StatefulWidget {
   State<UserMainPage> createState() => _UserMainPageState();
 }
 
-class _UserMainPageState extends State<UserMainPage> {
+class _UserMainPageState extends State<UserMainPage> with WidgetsBindingObserver {
   double balance = 0.00;
   bool showBalance = true;
   String? _profileImageUrl;
+  final GlobalKey _profileKey = GlobalKey();
+  List<Map<String, dynamic>> _notifications = [];
+  bool _showNotificationPopup = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     loadBalance();
+    loadNotifications();
+    checkAndShowGuide();
   }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // 当 App 从后台回来时刷新数据
+      loadBalance();
+      loadNotifications();
+    }
+  }
+
+  Future<void> checkAndShowGuide() async {
+    final prefs = await SharedPreferences.getInstance();
+    final shown = prefs.getBool('user_guide_shown') ?? false;
+
+    if (!shown) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        showTutorial();
+      });
+    }
+  }
+
+  void showTutorial() {
+    TutorialCoachMark(
+      targets: [
+        TargetFocus(
+          keyTarget: _profileKey,
+          shape: ShapeLightFocus.Circle,
+          contents: [
+            TargetContent(
+              align: ContentAlign.bottom,
+              child: const Text(
+                "点击这里可以设置头像与昵称 Click here to edit profile",
+                style: TextStyle(fontSize: 20, color: Colors.lightBlue),
+              ),
+            ),
+          ],
+
+        ),
+      ],
+      onFinish: () async {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('user_guide_shown', true);
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const UserProfilePage(showSecondGuide: true)),
+        );
+      },
+    ).show(context: context);
+  }
+
+
+  Future<void> loadNotifications() async {
+    final prefs = await SharedPreferences.getInstance();
+
+
+    final uid = prefs.getString('uid');
+    if (uid == null) return;
+
+    final result = await ApiService.getUserNotifications(uid);
+    print("📬 Received notifications: $result");
+
+    final newNotifications = <Map<String, dynamic>>[];
+
+    // ✅ 使用字符串集合记录所有 message
+    final shownMessages = Set<String>.from(
+      jsonDecode(prefs.getString('shown_messages') ?? '[]'),
+    );
+
+    for (var notification in result) {
+      final msg = notification['message'].toString();
+
+      // ✅ 完整以 message 内容作为判重依据
+      if (!shownMessages.contains(msg)) {
+        newNotifications.add(notification);
+        shownMessages.add(msg); // ✅ 加入去重集合
+      }
+    }
+
+    if (newNotifications.isNotEmpty) {
+      print("✅ Will show popup for: ${newNotifications.map((e) => e['message'])}");
+      setState(() {
+        _notifications = newNotifications;
+        _showNotificationPopup = true;
+      });
+
+      // ✅ 更新缓存
+      await prefs.setString('shown_messages', jsonEncode(shownMessages.toList()));
+      print("📥 Updated shown_messages: $shownMessages");
+
+      Future.delayed(const Duration(seconds: 3), () {
+        if (mounted) {
+          setState(() {
+            _showNotificationPopup = false;
+          });
+        }
+      });
+    }
+  }
+
+
+
+
+
 
   Future<void> loadBalance() async {
     final prefs = await SharedPreferences.getInstance();
     final uid = prefs.getString('uid');
     final role = prefs.getString('role');
-    print("🔎 SharedPreferences keys: ${prefs.getKeys()}");
-    print("🔎 uid: ${prefs.getString('uid')}");
-    print("🔎 role: ${prefs.getString('role')}");
-    print("📦 UID: $uid, Role: $role");
 
-
-
-
-    if (uid == null || role == null) {
-      print("❌ Balance fetch failed: Missing uid or role");
-      return;
-    }
+    if (uid == null || role == null) return;
 
     try {
-      // 🟢 获取余额
-      final fetchedBalance = await ApiService.fetchBalance(uid, role); // 应该返回 double 类型
-
+      final fetchedBalance = await ApiService.fetchBalance(uid, role);
       if (fetchedBalance != null) {
         setState(() {
           balance = fetchedBalance;
         });
-      } else {
-        print("❌ Balance fetch failed: balance is null");
       }
 
-      // 🟢 获取用户资料
       final userResponse = await ApiService.getUserByUID(uid);
       if (userResponse['success']) {
         setState(() {
           _profileImageUrl = userResponse['user']['Image'];
         });
-      } else {
-        print("❌ Failed to load user profile image: ${userResponse['message']}");
       }
-
     } catch (e) {
-      print("❌ Error loading balance/profile: $e");
+      print("\u274c Error loading balance/profile: $e");
     }
   }
-
 
   double screenWidth(BuildContext context) => MediaQuery.of(context).size.width;
   double screenHeight(BuildContext context) => MediaQuery.of(context).size.height;
@@ -94,6 +195,34 @@ class _UserMainPageState extends State<UserMainPage> {
               ),
             ),
           ),
+          // ✅ 通知浮窗放到 SafeArea 外部、Stack 中
+          if (_showNotificationPopup && _notifications.isNotEmpty)
+            Positioned(
+              top: 20,
+              right: 20,
+              left: 20,
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.yellow[700],
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 6)],
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.notifications, color: Colors.white),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        _notifications[0]['message'], // 显示第一条通知
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           SafeArea(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: screenWidth(context) * 0.05),
@@ -158,6 +287,7 @@ class _UserMainPageState extends State<UserMainPage> {
                         ],
                       ),
                       ElevatedButton(
+                        key: _profileKey,
                         style: ElevatedButton.styleFrom(
                           padding: EdgeInsets.zero,
                           backgroundColor: Colors.transparent,
@@ -169,7 +299,7 @@ class _UserMainPageState extends State<UserMainPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => const UserProfilePage()),
-                          ).then((_) => loadBalance()); // 👈 refresh on return
+                          ).then((_) => loadBalance());
                         },
                         child: Container(
                           width: screenWidth(context) * 0.28,
@@ -207,7 +337,7 @@ class _UserMainPageState extends State<UserMainPage> {
                             MaterialPageRoute(builder: (context) => const UserTopUpPage()),
                           ).then((value) {
                             if (value == true) {
-                              loadBalance(); // ✅ Only reload if TopUp was successful
+                              loadBalance();
                             }
                           });
                         },
@@ -264,6 +394,7 @@ class _UserMainPageState extends State<UserMainPage> {
                                             name: 'Example Item',
                                             price: 6.0,
                                             image: 'assets/image/example.png',
+                                            isSoldOut: 0,
                                           ): 1
                                         },
                                         vendorUID: 'EXAMPLE_VENDOR_UID',
@@ -281,14 +412,31 @@ class _UserMainPageState extends State<UserMainPage> {
                         _buildMenuButton('Clinic', 'assets/image/Clinic_icon.png', () {
                           Navigator.push(context, MaterialPageRoute(builder: (context) => UserClinicPage()));
                         }),
+                        _buildMenuButton('Suc Portal', 'assets/image/Portal_icon.png', () async {
+                          final url = Uri.parse('https://www.sc.edu.my/sccn_dev/login.php');
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(url, mode: LaunchMode.externalApplication);
+                          }
+
+                        }),
+                        _buildMenuButton('Suc E-learning', 'assets/image/Elearning_icon.png', () async {
+                          final url = Uri.parse('https://succms.sc.edu.my/login/index.php');
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(url, mode: LaunchMode.externalApplication);
+                          }
+
+                        }),
                       ],
                     ),
                   ),
+
                 ],
               ),
             ),
           ),
+
         ],
+
       ),
     );
   }

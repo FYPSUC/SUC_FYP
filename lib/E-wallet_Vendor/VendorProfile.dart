@@ -7,6 +7,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'VendorMain.dart';
 import 'VendorSetShop.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CloudinaryService {
   static const cloudName = 'dj5err3f6';
@@ -39,20 +41,99 @@ class VendorProfilePage extends StatefulWidget {
 }
 
 class _VendorProfilePageState extends State<VendorProfilePage> {
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _shopNameController = TextEditingController();
   final TextEditingController _pickupAddressController = TextEditingController();
   final TextEditingController _sixDigitPasswordController = TextEditingController();
+  final GlobalKey _avatarKey = GlobalKey();
+  final GlobalKey _pinKey = GlobalKey();
+  final GlobalKey _setShopKey = GlobalKey(); // 已有
+  TutorialCoachMark? tutorialCoachMark;
+
 
   String? _email;
   String? _username;
   String? _imageUrl;
   String? _uid;
 
+  void _checkAndShowGuide() async {
+    final prefs = await SharedPreferences.getInstance();
+    final step = prefs.getInt('vendor_guide_step') ?? 0;
+
+    if (step == 1) {
+      tutorialCoachMark = TutorialCoachMark(
+        targets: _createTargets(),
+        colorShadow: Colors.grey,
+        textSkip: "SKIP",
+        paddingFocus: 10,
+        opacityShadow: 0.8,
+        onFinish: () async {
+          await prefs.setInt('vendor_guide_step', 2); // 下一步是 SetShop
+          Navigator.push(context, MaterialPageRoute(builder: (_) => const VendorSetShopPage()));
+        },
+        onClickTarget: (target) => true,
+        onSkip: () => true,
+      );
+
+      tutorialCoachMark!.show(context: context);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _loadVendorData();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkAndShowGuide());
   }
+
+
+
+
+
+  List<TargetFocus> _createTargets() {
+    return [
+      TargetFocus(
+        identify: "Avatar",
+        keyTarget: _avatarKey,
+        contents: [
+          TargetContent(
+            align: ContentAlign.custom,
+            customPosition: CustomTargetContentPosition(
+              top: 80, // 距离屏幕顶部 80 px
+            ),
+            child: const Text("点击这里上传店的头像 Tap to upload your shop profile image"),
+          ),
+        ],
+      ),
+      TargetFocus(
+        identify: "PIN",
+        keyTarget: _pinKey,
+        contents: [
+          TargetContent(
+            align: ContentAlign.custom,
+            customPosition: CustomTargetContentPosition(
+              top: 350,
+            ),
+            child: const Text("输入你的6位安全码以确保交易能进行 Set your 6-digit transaction PIN here"),
+          ),
+        ],
+      ),
+      TargetFocus(
+        identify: "SetShop",
+        keyTarget: _setShopKey,
+        contents: [
+          TargetContent(
+            align: ContentAlign.custom,
+            customPosition: CustomTargetContentPosition(
+              top: 80, // 距离屏幕顶部 80 px
+            ),
+            child: const Text("点击这里更改更多店的细节咨询 Click here to set up your shop details"),
+          ),
+        ],
+      ),
+    ];
+  }
+
 
   Future<void> _loadVendorData() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -73,7 +154,7 @@ class _VendorProfilePageState extends State<VendorProfilePage> {
         print('✅ Loaded vendor data: $data');
 
         setState(() {
-          _username = data['Name'] ?? 'No Name';
+          _nameController.text = data['Name'] ?? '';
           _shopNameController.text = data['ShopName'] ?? '';
           _pickupAddressController.text = data['PickupAddress'] ?? '';
           _sixDigitPasswordController.text = data['SixDigitPassword'] ?? '';
@@ -109,8 +190,9 @@ class _VendorProfilePageState extends State<VendorProfilePage> {
     final result = await ApiService.updateVendorProfile(
       uid: _uid!,
       image_url: _imageUrl ?? '',
-      ShopName: _shopNameController.text,
-      PickupAddress: _pickupAddressController.text,
+      Name: _nameController.text,
+      ShopName: '',
+      PickupAddress: '',
       SixDigitPassword: _sixDigitPasswordController.text,
     );
     print('🔧 更新结果: $result'); // 🟢 这行最关键！
@@ -170,6 +252,7 @@ class _VendorProfilePageState extends State<VendorProfilePage> {
                             Row(
                               children: [
                                 GestureDetector(
+                                  key: _avatarKey,
                                   onTap: _selectAndUploadImage,
                                   child: CircleAvatar(
                                     radius: screenWidth * 0.10,
@@ -179,10 +262,29 @@ class _VendorProfilePageState extends State<VendorProfilePage> {
                                   ),
                                 ),
                                 SizedBox(width: screenWidth * 0.05),
-                                Text(_username ?? 'Username', style: TextStyle(fontSize: screenWidth * 0.06, fontWeight: FontWeight.bold)),
+                                SizedBox(
+                                  width: screenWidth * 0.3, // 你可以调整宽度
+                                  child: TextField(
+                                    controller: _nameController,
+                                    style: TextStyle(fontSize: screenWidth * 0.05, fontWeight: FontWeight.bold),
+                                    decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      isDense: true,
+                                      contentPadding: EdgeInsets.zero,
+                                    ),
+                                  ),
+                                ),
+
                                 const Spacer(),
                                 ElevatedButton(
-                                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const VendorSetShopPage())),
+                                  key: _setShopKey,
+                                  onPressed: () async {
+                                    await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (_) => const VendorSetShopPage()),
+                                    );
+                                    await _loadVendorData(); // ✨ 加上这行，刷新
+                                  },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.blue[700],
                                     padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05, vertical: screenHeight * 0.015),
@@ -196,9 +298,9 @@ class _VendorProfilePageState extends State<VendorProfilePage> {
                             SizedBox(height: screenHeight * 0.02),
                             _buildReadOnlyRow('Email', _email ?? '', screenWidth),
                             SizedBox(height: screenHeight * 0.02),
-                            _buildInfoRow('Shop Name', screenWidth, _shopNameController),
+                            _buildReadOnlyRow('Shop Name', _shopNameController.text, screenWidth),
                             SizedBox(height: screenHeight * 0.02),
-                            _buildInfoRow('Pick Up Address', screenWidth, _pickupAddressController),
+                            _buildReadOnlyRow('Pick Up Address', _pickupAddressController.text, screenWidth),
                             Divider(height: screenHeight * 0.05, thickness: 1, color: Colors.black),
                             _buildPINField(screenWidth),
                             SizedBox(height: screenHeight * 0.03),
@@ -281,6 +383,7 @@ class _VendorProfilePageState extends State<VendorProfilePage> {
         Text('6-Digit PIN', style: TextStyle(fontSize: screenWidth * 0.05, fontWeight: FontWeight.bold)),
         const SizedBox(height: 10),
         TextField(
+          key: _pinKey,
           controller: _sixDigitPasswordController,
           obscureText: true,
           maxLength: 6,

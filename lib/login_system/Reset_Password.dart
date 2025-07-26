@@ -178,7 +178,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -190,6 +190,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         ),
         child: SafeArea(
           child: SingleChildScrollView(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -230,7 +231,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                     obscure: true, errorText: _rePasswordError),
                 const SizedBox(height: 30),
                 SizedBox(
-                  width: 330,
+                  width: 220,
                   height: 80,
                   child: ElevatedButton(
                     onPressed: _validateAndSubmit,

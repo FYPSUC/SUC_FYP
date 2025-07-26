@@ -6,6 +6,7 @@ import 'UserMain.dart';
 import 'package:suc_fyp/login_system/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
 class CloudinaryService {
   static const cloudName = 'dj5err3f6';
@@ -31,7 +32,8 @@ class CloudinaryService {
 }
 
 class UserProfilePage extends StatefulWidget {
-  const UserProfilePage({super.key});
+  final bool showSecondGuide;
+  const UserProfilePage({super.key, this.showSecondGuide = false});
 
   @override
   State<UserProfilePage> createState() => _UserProfilePageState();
@@ -44,10 +46,45 @@ class _UserProfilePageState extends State<UserProfilePage> {
   String? _email;
   String? _uid;
 
+  final GlobalKey _avatarKey = GlobalKey();
+  final GlobalKey _pinKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
     _loadUserProfile();
+
+    if (widget.showSecondGuide) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        showSecondTutorial();
+      });
+    }
+  }
+
+  void showSecondTutorial() {
+    TutorialCoachMark(
+      targets: [
+        TargetFocus(
+          keyTarget: _avatarKey,
+          contents: [
+            TargetContent(
+              child: Text("You can upload your profile image here👤", style: TextStyle(color: Colors.lightBlue)),
+            ),
+          ],
+        ),
+        TargetFocus(
+          keyTarget: _pinKey,
+          contents: [
+            TargetContent(
+              child: Text("Setup your 6 digit password for transaction use 🔐", style: TextStyle(color: Colors.black)),
+            ),
+          ],
+        ),
+      ],
+      onFinish: () {
+        // 可以加入完成提示
+      },
+    ).show(context: context);
   }
 
   Future<void> _loadUserProfile() async {
@@ -155,6 +192,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                   Row(
                     children: [
                       GestureDetector(
+                        key: _avatarKey,
                         onTap: pickAndUploadImage,
                         child: CircleAvatar(
                           radius: screenWidth * 0.1,
@@ -222,6 +260,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         Text('6-Digit PIN', style: TextStyle(fontSize: screenWidth * 0.045, fontWeight: FontWeight.bold)),
         const SizedBox(height: 15),
         TextField(
+          key: _pinKey,
           controller: _SixDigitPasswordController,
           keyboardType: TextInputType.number,
           maxLength: 6,

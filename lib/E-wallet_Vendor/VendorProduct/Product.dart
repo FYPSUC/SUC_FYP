@@ -14,6 +14,7 @@ class VendorProductPage extends StatefulWidget {
 class _VendorProductPageState extends State<VendorProductPage> {
   List<Map<String, dynamic>> _products = [];
   bool _isLoading = true;
+  bool _isUpdatingSoldOut = false;
 
   @override
   void initState() {
@@ -30,6 +31,31 @@ class _VendorProductPageState extends State<VendorProductPage> {
         _isLoading = false;
       });
     }
+  }
+
+  void _toggleSoldOut(int index) async {
+    if (_isUpdatingSoldOut) return;
+    _isUpdatingSoldOut = true;
+
+    final product = _products[index];
+    final productID = product['ProductID'].toString();
+    final currentStatus = product['isSoldOut'] == 1;
+
+    final success = await ApiService.toggleProductSoldOut(productID, !currentStatus);
+    if (success) {
+      setState(() {
+        _products[index]['isSoldOut'] = currentStatus ? 0 : 1;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(currentStatus ? 'Product marked as available' : 'Product marked as sold out')),
+      );
+    }
+    else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to update sold out status')),
+      );
+    }
+    _isUpdatingSoldOut = false;
   }
 
   void _deleteProduct(int index) {
@@ -181,8 +207,10 @@ class _VendorProductPageState extends State<VendorProductPage> {
                           name: product['ProductName'],
                           price: product['ProductPrice'].toString(),
                           image: product['Image'],
+                          isSoldOut: product['isSoldOut'] == 1,
                           onDelete: () => _deleteProduct(index),
                           onEdit: () => _editProduct(index),
+                          onToggleSoldOut: () => _toggleSoldOut(index),
                         );
                       },
                     ),
@@ -221,8 +249,10 @@ class _VendorProductPageState extends State<VendorProductPage> {
     required String name,
     required String price,
     required String image,
+    required bool isSoldOut,
     required VoidCallback onDelete,
     required VoidCallback onEdit,
+    required VoidCallback onToggleSoldOut,
   }) {
     return Card(
       elevation: 5,
@@ -250,32 +280,42 @@ class _VendorProductPageState extends State<VendorProductPage> {
                   const SizedBox(height: 5),
                   Text('RM $price', style: const TextStyle(fontSize: 18, color: Colors.green, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      ElevatedButton(
-                        onPressed: onDelete,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        ),
-                        child: const Text('Delete'),
-                      ),
-                      const SizedBox(width: 10),
-                      ElevatedButton(
-                        onPressed: onEdit,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        ),
-                        child: const Text('Edit'),
-                      ),
-                    ],
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  ElevatedButton(
+                    onPressed: onDelete,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    child: const Text('Delete'),
                   ),
+                  ElevatedButton(
+                    onPressed: onEdit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    child: const Text('Edit'),
+                  ),
+                  ElevatedButton(
+                    onPressed: onToggleSoldOut,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isSoldOut ? Colors.grey : Colors.orange,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    child: Text(isSoldOut ? 'Sold Out' : 'Set Sold Out'),
+                  ),
+                ],
+              ),
                 ],
               ),
             ),

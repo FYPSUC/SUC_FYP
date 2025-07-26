@@ -104,6 +104,7 @@
 
           if (result['success']) {
             ScaffoldMessenger.of(context).showSnackBar(
+
               const SnackBar(content: Text('Registration successful')),
             );
             if (selectedRole == 'User') {
@@ -136,7 +137,7 @@
     @override
     Widget build(BuildContext context) {
       return Scaffold(
-        resizeToAvoidBottomInset: false,
+        resizeToAvoidBottomInset: true,
         body: Container(
           width: double.infinity,
           height: double.infinity,
@@ -149,9 +150,15 @@
           child: SafeArea(
             child: Stack(
               children: [
-                SingleChildScrollView(
-                  child: Column(
-                    children: [
+      LayoutBuilder(
+      builder: (context, constraints) {
+      return SingleChildScrollView(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: ConstrainedBox(
+      constraints: BoxConstraints(minHeight: constraints.maxHeight),
+      child: IntrinsicHeight(
+      child: Column(
+      children: [
                       const SizedBox(height: 15),
                       Image.asset('assets/image/sucE-wallet_icon.png', width: 300, height: 300, fit: BoxFit.contain),
                       Text(
@@ -316,7 +323,7 @@
                       ),
                       const SizedBox(height: 30),
                       SizedBox(
-                        width: 330,
+                        width: 220,
                         height: 80,
                         child: ElevatedButton(
                           onPressed: () async {
@@ -335,9 +342,13 @@
                         ),
                       ),
                       const SizedBox(height: 100),
-                    ],
-                  ),
-                ),
+          ],
+          ),
+          ),
+          ),
+          );
+          },
+          ),
                 Positioned(
                   left: 19,
                   top: 20,

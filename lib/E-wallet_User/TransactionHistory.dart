@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:suc_fyp/login_system/api_service.dart';
 import 'package:suc_fyp/Order_User/OrderStatusPage.dart';
-import 'package:suc_fyp/models/transaction_model.dart'; // 👈 你刚刚创建的 model
+import 'package:suc_fyp/models/transaction_model.dart';
 
 class UserTransactionHistoryPage extends StatefulWidget {
   const UserTransactionHistoryPage({super.key});
@@ -106,7 +106,7 @@ class _UserTransactionHistoryPageState extends State<UserTransactionHistoryPage>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildAmountBox('Amount', 'RM${totalIncome.toStringAsFixed(2)}', screenWidth),
+                    _buildAmountBox('Income', 'RM${totalIncome.toStringAsFixed(2)}', screenWidth),
                     _buildAmountBox('Expense', 'RM${totalExpense.toStringAsFixed(2)}', screenWidth),
                   ],
                 ),

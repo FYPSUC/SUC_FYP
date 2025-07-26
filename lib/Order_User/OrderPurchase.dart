@@ -341,6 +341,14 @@ class _OrderSummaryPageState extends State<OrderSummaryPage> {
                   Navigator.pop(dialogContext, false);
                   return;
                 }
+// ✅ 第四步：标记 Voucher 已使用（如果有选择）
+                if (selectedVoucher != null) {
+                  await ApiService.markVoucherAsUsed(
+                    voucherID: selectedVoucher!.id,
+                    firebaseUID: user.uid,
+                    transactionID: transferResult['transaction_id'].toString(),
+                  );
+                }
 
                 // ✅ 一切成功，跳转状态页
                 Navigator.pop(dialogContext, true);

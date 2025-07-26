@@ -9,6 +9,8 @@ import 'VendorTopUp.dart';
 import 'VendorTransactionHistory.dart';
 import 'VendorVoucher/VendorVoucher.dart';
 import 'VendorProduct/Product.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+
 import 'ViewOrder.dart';
 
 class VendorMainPage extends StatefulWidget {
@@ -22,13 +24,207 @@ class _VendorMainPageState extends State<VendorMainPage> {
   double balance = 0.00;
   bool showBalance = true;
   String? _profileImageUrl;
+  final GlobalKey _profileKey = GlobalKey();
+  final GlobalKey _setShopKey = GlobalKey();
+  List<TargetFocus> targets = [];
+  TutorialCoachMark? tutorialCoachMark;
+  final GlobalKey _topUpKey = GlobalKey();
+  final GlobalKey _historyKey = GlobalKey();
+  final GlobalKey _qrKey = GlobalKey();
+  final GlobalKey _voucherKey = GlobalKey();
+  final GlobalKey _viewOrderKey = GlobalKey();
+  final GlobalKey _productKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
     _loadVendorBalance();
     _loadVendorProfileImage();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndShowGuide();  // ✅ 只显示一次
+    });
   }
+
+
+  Future<void> _checkAndShowGuide() async {
+    final prefs = await SharedPreferences.getInstance();
+    final step = prefs.getInt('vendor_guide_step') ?? 0;
+
+    if (step == 0) {
+      // 第一次进来，显示 VendorMainPage 教学
+      buildTargets();
+      Future.delayed(const Duration(milliseconds: 500), () {
+      tutorialCoachMark = TutorialCoachMark(
+        targets: targets,
+        colorShadow: Colors.grey,
+        textSkip: "SKIP",
+        paddingFocus: 10,
+        opacityShadow: 0.8,
+        onFinish: () async {
+          await prefs.setInt('vendor_guide_step', 1); // 下一步为 ProfilePage
+          Navigator.push(context, MaterialPageRoute(builder: (_) => const VendorProfilePage()));
+        },
+        onClickTarget: (target) => true,
+        onSkip: () => true,
+      );
+
+      tutorialCoachMark!.show(context: context);
+    });
+    }
+  }
+
+
+  void buildTargets() {
+    targets.clear();
+
+    targets.add(
+      TargetFocus(
+        identify: "VendorProfile",
+        keyTarget: _profileKey,
+        contents: [
+          TargetContent(
+            align: ContentAlign.custom,
+            customPosition: CustomTargetContentPosition(
+              top: 80, // 距离屏幕顶部 80 px
+            ),
+            child: const Text(
+              "点击这里可以设置你的店头像以及6位数安全交易码\nClick here to set up your profile and upload 6-digit password",
+              style: TextStyle(color: Colors.black, fontSize: 18),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    targets.add(
+      TargetFocus(
+        identify: "SetShop",
+        keyTarget: _setShopKey,
+        contents: [
+          TargetContent(
+            align: ContentAlign.custom,
+            customPosition: CustomTargetContentPosition(
+              top: 80, // 距离屏幕顶部 80 px
+            ),
+            child: const Text(
+              "设置商店广告图片、名称和取货地址\nSet up vendor AdImage, ShopName and Pickup Address",
+              style: TextStyle(color: Colors.black, fontSize: 18),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    targets.add(
+      TargetFocus(
+        identify: "TopUp",
+        keyTarget: _topUpKey,
+        contents: [
+          TargetContent(
+            align: ContentAlign.custom,
+            customPosition: CustomTargetContentPosition(
+              top: 80, // 距离屏幕顶部 80 px
+            ),
+            child: const Text("点击这里可以充值余额\nClick here to top up your wallet",
+            style: TextStyle(color: Colors.black, fontSize: 18),
+          ),
+          ),
+        ],
+      ),
+    );
+
+    targets.add(
+      TargetFocus(
+        identify: "History",
+        keyTarget: _historyKey,
+        contents: [
+          TargetContent(
+            align: ContentAlign.custom,
+            customPosition: CustomTargetContentPosition(
+              top: 80, // 距离屏幕顶部 80 px
+            ),
+            child: const Text("点击这里可以查看交易记录\nView your transaction history here",
+              style: TextStyle(color: Colors.lightBlue, fontSize: 18),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    targets.add(
+      TargetFocus(
+        identify: "QR",
+        keyTarget: _qrKey,
+        contents: [
+          TargetContent(
+            align: ContentAlign.custom,
+            customPosition: CustomTargetContentPosition(
+              top: 80, // 距离屏幕顶部 80 px
+            ),
+            child: const Text("展示你的收款码，或扫码进行支付\nUse this for QR receive or pay",
+              style: TextStyle(color: Colors.lightBlue, fontSize: 18),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    targets.add(
+      TargetFocus(
+        identify: "Voucher",
+        keyTarget: _voucherKey,
+        contents: [
+          TargetContent(
+            align: ContentAlign.custom,
+            customPosition: CustomTargetContentPosition(
+              top: 80, // 距离屏幕顶部 80 px
+            ),
+            child: const Text("创建优惠券以吸引用户\nCreate promotional vouchers here",
+              style: TextStyle(color: Colors.lightBlue, fontSize: 18),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    targets.add(
+      TargetFocus(
+        identify: "ViewOrder",
+        keyTarget: _viewOrderKey,
+        contents: [
+          TargetContent(
+            align: ContentAlign.custom,
+            customPosition: CustomTargetContentPosition(
+              top: 80, // 距离屏幕顶部 80 px
+            ),
+            child: const Text("查看用户下单记录\nView all received orders here",
+              style: TextStyle(color: Colors.lightBlue, fontSize: 18),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    targets.add(
+      TargetFocus(
+        identify: "Product",
+        keyTarget: _productKey,
+        contents: [
+          TargetContent(
+            align: ContentAlign.custom,
+            customPosition: CustomTargetContentPosition(
+              top: 80, // 距离屏幕顶部 80 px
+            ),
+            child: const Text("上传你的产品\nManage your product listings here",
+              style: TextStyle(color: Colors.lightBlue, fontSize: 18),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   void _loadVendorBalance() async {
     final prefs = await SharedPreferences.getInstance();
@@ -157,20 +353,16 @@ class _VendorMainPageState extends State<VendorMainPage> {
                         ],
                       ),
                       GestureDetector(
+                        key: _profileKey,
                         onTap: () async {
                           await Navigator.push(
                             context,
                             MaterialPageRoute(builder: (_) => const VendorProfilePage()),
                           );
-
-                          // 🔁 页面返回后刷新头像
                           if (!mounted) return;
-
                           setState(() {
-                            _profileImageUrl = null; // 触发 UI 更新，清空旧头像（可选）
+                            _profileImageUrl = null;
                           });
-
-                          // 重新异步加载头像
                           _loadVendorProfileImage();
                         },
                         child: ClipOval(
@@ -181,14 +373,6 @@ class _VendorMainPageState extends State<VendorMainPage> {
                             width: screenWidth * 0.25,
                             height: screenWidth * 0.25,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Image.asset(
-                                'assets/image/Profile_icon.png',
-                                width: screenWidth * 0.25,
-                                height: screenWidth * 0.25,
-                                fit: BoxFit.cover,
-                              );
-                            },
                           )
                               : Image.asset(
                             'assets/image/Profile_icon.png',
@@ -198,6 +382,7 @@ class _VendorMainPageState extends State<VendorMainPage> {
                           ),
                         ),
                       ),
+
                     ],
                   ),
                   SizedBox(height: screenHeight * 0.03),
@@ -216,6 +401,7 @@ class _VendorMainPageState extends State<VendorMainPage> {
                           ),
                           elevation: 2,
                         ),
+                        key: _topUpKey,
                         onPressed: () {
                           Navigator.push(
                             context,
@@ -232,6 +418,7 @@ class _VendorMainPageState extends State<VendorMainPage> {
                         ),
                       ),
                       TextButton(
+                        key: _historyKey,
                         onPressed: () {
                           Navigator.push(
                             context,
@@ -265,16 +452,16 @@ class _VendorMainPageState extends State<VendorMainPage> {
                       children: [
                         _buildMenuButton('QR code', 'assets/image/QR_icon.png', () {
                           Navigator.push(context, MaterialPageRoute(builder: (_) => VendorQRPage()));
-                        }, screenWidth),
+                        }, screenWidth, key: _qrKey),
                         _buildMenuButton('Create Voucher', 'assets/image/Voucher_icon.png', () {
                           Navigator.push(context, MaterialPageRoute(builder: (_) => VendorVoucherPage()));
-                        }, screenWidth),
+                        }, screenWidth, key: _voucherKey),
                         _buildMenuButton('View Order', 'assets/image/Order_icon.png', () {
                           Navigator.push(context, MaterialPageRoute(builder: (_) => VendorViewOrderPage()));
-                        }, screenWidth),
+                        }, screenWidth, key: _viewOrderKey),
                         _buildMenuButton('Product', 'assets/image/Product_icon.png', () {
                           Navigator.push(context, MaterialPageRoute(builder: (_) => VendorProductPage()));
-                        }, screenWidth),
+                        }, screenWidth, key: _productKey),
                       ],
                     ),
                   ),
@@ -287,8 +474,9 @@ class _VendorMainPageState extends State<VendorMainPage> {
     );
   }
 
-  Widget _buildMenuButton(String title, String imagePath, VoidCallback onTap, double screenWidth) {
+  Widget _buildMenuButton(String title, String imagePath, VoidCallback onTap, double screenWidth, {Key? key}) {
     return InkWell(
+      key: key,
       onTap: onTap,
       borderRadius: BorderRadius.circular(15),
       child: Card(
@@ -318,4 +506,5 @@ class _VendorMainPageState extends State<VendorMainPage> {
       ),
     );
   }
+
 }

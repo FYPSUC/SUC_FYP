@@ -5,6 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:suc_fyp/login_system/api_service.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CloudinaryService {
   static const cloudName = 'dj5err3f6';
@@ -39,14 +41,103 @@ class VendorSetShopPage extends StatefulWidget {
 class _VendorSetShopPageState extends State<VendorSetShopPage> {
   final TextEditingController _shopNameController = TextEditingController();
   final TextEditingController _pickUpAddressController = TextEditingController();
+  final GlobalKey _adImageKey = GlobalKey();
+  final GlobalKey _shopNameKey = GlobalKey();
+  final GlobalKey _addressKey = GlobalKey();
+  final GlobalKey _submitKey = GlobalKey();
+  TutorialCoachMark? tutorialCoachMark;
+
   String? _uid;
   String? _adImageUrl;
+
+  void _checkAndShowGuide() async {
+    final prefs = await SharedPreferences.getInstance();
+    final step = prefs.getInt('vendor_guide_step') ?? 0;
+
+    if (step == 2) {
+      tutorialCoachMark = TutorialCoachMark(
+        targets: _createTargets(),
+        colorShadow: Colors.grey.withOpacity(0.8),
+        textSkip: "SKIP",
+        paddingFocus: 10,
+        opacityShadow: 0.8,
+        onFinish: () async {
+          await prefs.setInt('vendor_guide_step', 99); // 完成教学
+          Navigator.pop(context); // 回 VendorProfile 或 Main
+        },
+        onClickTarget: (target) => true,
+        onSkip: () => true,
+      );
+
+      tutorialCoachMark!.show(context: context);
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _loadVendorData();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkAndShowGuide());
   }
+
+
+  List<TargetFocus> _createTargets() {
+    return [
+      TargetFocus(
+        keyTarget: _adImageKey,
+        identify: "AdImage",
+        contents: [
+          TargetContent(
+            align: ContentAlign.custom,
+            customPosition: CustomTargetContentPosition(
+              top: 80, // 距离屏幕顶部 80 px
+            ),
+            child: const Text("上传商店的广告图片 Upload your shop's advertisement image"),
+          ),
+        ],
+      ),
+      TargetFocus(
+        keyTarget: _shopNameKey,
+        identify: "ShopName",
+        contents: [
+          TargetContent(
+            align: ContentAlign.custom,
+            customPosition: CustomTargetContentPosition(
+              top: 400, // 距离屏幕顶部 80 px
+            ),
+            child: const Text("点击这里输入你的店面信息 Enter your shop information here"),
+          ),
+        ],
+      ),
+      TargetFocus(
+        keyTarget: _addressKey,
+        identify: "Address",
+        contents: [
+          TargetContent(
+            align: ContentAlign.custom,
+            customPosition: CustomTargetContentPosition(
+              top: 200, // 距离屏幕顶部 80 px
+            ),
+            child: const Text("输入你的店的地址 Provide your pickup address"),
+          ),
+        ],
+      ),
+      TargetFocus(
+        keyTarget: _submitKey,
+        identify: "Submit",
+        contents: [
+          TargetContent(
+            align: ContentAlign.custom,
+            customPosition: CustomTargetContentPosition(
+              top: 200, // 距离屏幕顶部 80 px
+            ),
+            child: const Text("点击这里储存你更改的信息 Click to save your shop info"),
+          ),
+        ],
+      ),
+    ];
+  }
+
 
   Future<void> _loadVendorData() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -90,6 +181,7 @@ class _VendorSetShopPageState extends State<VendorSetShopPage> {
     final result = await ApiService.updateVendorProfile(
       uid: _uid!,
       image_url: '', // 不更新头像
+      Name: '',
       ShopName: _shopNameController.text,
       PickupAddress: _pickUpAddressController.text,
       SixDigitPassword: '', // 不更新密码
@@ -162,6 +254,7 @@ class _VendorSetShopPageState extends State<VendorSetShopPage> {
                             const Text('Advertise Pictures', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                             const SizedBox(height: 15),
                             GestureDetector(
+                              key: _adImageKey,
                               onTap: _uploadAdImage,
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(25),
@@ -183,6 +276,7 @@ class _VendorSetShopPageState extends State<VendorSetShopPage> {
                             const SizedBox(height: 40),
                             Center(
                               child: ElevatedButton(
+                                key: _submitKey,
                                 onPressed: _submit,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blue,
@@ -237,6 +331,7 @@ class _VendorSetShopPageState extends State<VendorSetShopPage> {
         const Text('Pick Up Address', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         const SizedBox(height: 15),
         TextField(
+          key: _shopNameKey,
           controller: _pickUpAddressController,
           maxLines: 4,
           decoration: InputDecoration(

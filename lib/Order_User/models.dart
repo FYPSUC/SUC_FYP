@@ -1,24 +1,36 @@
 // models.dart
+// NOTE: Using fetchStoreWithProduct (not getVendorProducts)
 class MenuItem {
   final int id;
   final String name;
   final double price;
   final String image;
+  final int isSoldOut;
 
   MenuItem({
     required this.id,
     required this.name,
     required this.price,
     required this.image,
+    required this.isSoldOut,
   });
 
   factory MenuItem.fromJson(Map<String, dynamic> json) {
+    print("Raw isSoldOut from json: ${json['isSoldOut']}");
+    print("Full JSON item: $json");
+
     return MenuItem(
+
       id: int.tryParse(json['id']?.toString() ?? '0') ?? 0,
       name: json['name'],
       price: double.parse(json['price'].toString()),
       image: json['image'],
+      isSoldOut: int.tryParse(json['isSoldOut'].toString()) ?? 0,
+
+
     );
+
+
   }
 
 
@@ -31,6 +43,7 @@ class MenuItem {
               name == other.name &&
               price == other.price &&
               image == other.image;
+
 
   @override
   int get hashCode => name.hashCode ^ price.hashCode ^ image.hashCode;
@@ -52,14 +65,17 @@ class Store {
   });
 
   factory Store.fromJson(Map<String, dynamic> json) {
+
     return Store(
       vendorUID: json['FirebaseUID']?.toString() ?? '',
       name: json['store_name'],
       location: json['location'],
       image: json['ad_image'],
-      menu: (json['menu'] as List)
+      menu: ((json['menu'] ?? json['products']) as List)
           .map((item) => MenuItem.fromJson(item))
           .toList(),
+
+
     );
   }
 }

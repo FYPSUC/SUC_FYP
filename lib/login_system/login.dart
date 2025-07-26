@@ -79,7 +79,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -89,12 +89,17 @@ class _LoginPageState extends State<LoginPage> {
             fit: BoxFit.cover,
           ),
         ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
                   const SizedBox(height: 20),
                   Padding(
                     padding: const EdgeInsets.only(left: 19),
@@ -240,7 +245,7 @@ class _LoginPageState extends State<LoginPage> {
 
                   // Login button
                   SizedBox(
-                    width: 330,
+                    width: 220,
                     height: 80,
                     child: ElevatedButton(
                       onPressed: () {
@@ -307,19 +312,16 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ],
                   ),
-                  // Text(
-                  //   'Base URL: ${ApiService.baseUrl}',
-                  //   style: TextStyle(fontSize: 12, color: Colors.grey),
-                  // ),
-
                   const SizedBox(height: 30),
-                ],
+                      ],
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
-
   }
 }

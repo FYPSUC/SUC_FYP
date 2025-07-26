@@ -347,6 +347,7 @@ class ApiService {
   static Future<Map<String, dynamic>> updateVendorProfile({
     required String uid,
     required String image_url,
+    required String Name,
     required String ShopName,
     required String PickupAddress,
     required String SixDigitPassword,
@@ -360,6 +361,7 @@ class ApiService {
           'uid': uid,
           'role': 'Vendor',
           'image_url': image_url,
+          'Name':Name,
           'ShopName': ShopName,
           'PickupAddress': PickupAddress,
           'SixDigitPassword': SixDigitPassword,
@@ -443,19 +445,40 @@ class ApiService {
   }
 
   static Future<List<Map<String, dynamic>>> getVendorProducts(String uid) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/get_vendor_products.php'),
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: {'uid': uid},
-    );
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/get_vendor_products.php'),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {'uid': uid},
+      );
+      print("helloworld");
+      print("Raw response body: ${response.body}");
 
-    final data = jsonDecode(response.body);
-    if (data['success']) {
-      return List<Map<String, dynamic>>.from(data['products']);
-    } else {
+      final data = jsonDecode(response.body);
+      if (data['success']) {
+        return List<Map<String, dynamic>>.from(data['menu']);// 或 'products' 看你PHP输出
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print("Error in getVendorProducts: $e");
       return [];
     }
   }
+
+
+  static Future<bool> toggleProductSoldOut(String productID, bool isSoldOut) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/toggle_soldout.php'),
+      body: {
+        'ProductID': productID,
+        'isSoldOut': isSoldOut ? '1' : '0',
+      },
+    );
+
+    return response.statusCode == 200;
+  }
+
 
   static Future<bool> deleteProduct(String productID) async {
     final response = await http.post(
@@ -467,21 +490,31 @@ class ApiService {
     final data = jsonDecode(response.body);
     return data['success'] == true;
   }
+
   static Future<bool> updateProduct({
     required String productID,
     required String name,
     required double price,
+    String? imageUrl, // ✅ 用 imageUrl 代替 File
   }) async {
     final url = Uri.parse('$baseUrl/update_product.php');
-    final response = await http.post(url, body: {
+
+    final body = {
       'ProductID': productID,
       'ProductName': name,
       'ProductPrice': price.toString(),
-    });
+    };
+
+    if (imageUrl != null) {
+      body['image_url'] = imageUrl;
+    }
+
+    final response = await http.post(url, body: body);
 
     final data = jsonDecode(response.body);
     return data['success'] == true;
   }
+
 
   static Future<List<Store>> fetchStoresWithProducts() async {
     final response = await http.get(Uri.parse('$baseUrl/get_all_stores_with_products.php'));
@@ -760,6 +793,46 @@ class ApiService {
       return [];
     }
   }
+
+  static Future<bool> markVoucherAsUsed({
+    required int voucherID,
+    required String firebaseUID,
+    String? transactionID,
+  }) async {
+    final url = Uri.parse('$baseUrl/mark_voucher_used.php');
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'voucherID': voucherID,
+        'firebaseUID': firebaseUID,
+        'transactionID': transactionID,
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+    return data['success'] == true;
+  }
+
+  static Future<List<Map<String, dynamic>>> getUserNotifications(String uid) async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/get_notifications.php?uid=$uid'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] && data['notifications'] is List) {
+          return List<Map<String, dynamic>>.from(
+            data['notifications'].map((n) => Map<String, dynamic>.from(n)),
+          );
+        }
+      }
+    } catch (e) {
+      print('⚠️ Error fetching notifications: $e');
+    }
+    return [];
+  }
+
+
 
 
 

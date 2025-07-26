@@ -64,7 +64,11 @@ class UserOrderPage extends StatelessWidget {
                             SizedBox(
                               height: screenHeight * 0.2,
                               child: PageView(
-                                children: stores.take(2).map((store) {
+                                children: stores
+                                    .where((store) => store.image.isNotEmpty && Uri.tryParse(store.image)?.hasAbsolutePath == true)
+                                    .take(2)
+                                    .map((store) {
+
                                   return GestureDetector(
                                     onTap: () => Navigator.push(
                                       context,
@@ -113,9 +117,20 @@ class UserOrderPage extends StatelessWidget {
                                 title: menuItem.name,
                                 price: 'RM ${menuItem.price.toStringAsFixed(2)}',
                                 onTap: () {
+                                  if (menuItem.isSoldOut != 0) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('This item is sold out')),
+                                    );
+                                    return;
+                                  }
+
                                   final store = stores.firstWhere((s) => s.menu.contains(menuItem));
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => StoreMenuPage(store: store)));
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => StoreMenuPage(store: store)),
+                                  );
                                 },
+
                                 screenWidth: screenWidth,
                               );
                             }).toList(),

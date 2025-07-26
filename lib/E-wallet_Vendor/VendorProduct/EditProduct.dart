@@ -1,8 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
-import 'package:suc_fyp/login_system/api_service.dart';// ✅ 确保你导入了 ApiService.dart
+import 'package:image_picker/image_picker.dart';
+import 'package:suc_fyp/login_system/api_service.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
+class CloudinaryService {
+  static const cloudName = 'dj5err3f6';
+  static const uploadPreset = 'flutter_upload';
+
+  static Future<String?> uploadImage(File imageFile) async {
+    final uri = Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/image/upload');
+    final request = http.MultipartRequest('POST', uri)
+      ..fields['upload_preset'] = uploadPreset
+      ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
+
+    final response = await request.send();
+    final res = await http.Response.fromStream(response);
+
+    if (res.statusCode == 200) {
+      final responseData = jsonDecode(res.body);
+      return responseData['secure_url'];
+    } else {
+      print('Cloudinary upload failed: ${res.body}');
+      return null;
+    }
+  }
+}
 class VendorEditProductPage extends StatefulWidget {
   final String productID;
   final String currentName;
@@ -42,6 +67,67 @@ class _EditProductPageState extends State<VendorEditProductPage> {
     _nameController.dispose();
     _priceController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    }
+  }
+
+  void _submitProductUpdate() async {
+    final name = _nameController.text.trim();
+    final price = double.tryParse(_enteredAmount) ?? 0.0;
+
+    if (name.isEmpty || price <= 0.0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter valid name and price')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    String? uploadedImageUrl;
+
+    // ✅ 如果用户选择了新图片，就上传它
+    if (_selectedImage != null) {
+      uploadedImageUrl = await CloudinaryService.uploadImage(_selectedImage!);
+      if (uploadedImageUrl == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to upload image')),
+        );
+        setState(() => _isLoading = false);
+        return;
+      }
+    }
+
+    // ✅ 调用 updateProduct()，传入 imageUrl（可为空）
+    final success = await ApiService.updateProduct(
+      productID: widget.productID,
+      name: name,
+      price: price,
+      imageUrl: uploadedImageUrl, // 👈 新 URL（或 null，保留原图）
+    );
+
+    setState(() => _isLoading = false);
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Product updated')),
+      );
+      Navigator.pop(context, {
+        'name': name,
+        'price': _enteredAmount,
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to update product')),
+      );
+    }
   }
 
   @override
@@ -105,7 +191,7 @@ class _EditProductPageState extends State<VendorEditProductPage> {
                   SizedBox(height: screenHeight * 0.03),
                   Center(
                     child: GestureDetector(
-                      onTap: () {},
+                      onTap: _pickImage, // ✅ 支持点击上传
                       child: Container(
                         width: screenWidth * 0.3,
                         height: screenWidth * 0.3,
@@ -154,42 +240,6 @@ class _EditProductPageState extends State<VendorEditProductPage> {
         ],
       ),
     );
-  }
-
-  void _submitProductUpdate() async {
-    final name = _nameController.text.trim();
-    final price = double.tryParse(_enteredAmount) ?? 0.0;
-
-    if (name.isEmpty || price <= 0.0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter valid name and price')),
-      );
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    final success = await ApiService.updateProduct(
-      productID: widget.productID,
-      name: name,
-      price: price,
-    );
-
-    setState(() => _isLoading = false);
-
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Product updated')),
-      );
-      Navigator.pop(context, {
-        'name': name,
-        'price': _enteredAmount,
-      });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to update product')),
-      );
-    }
   }
 
   Widget _buildImagePreview() {

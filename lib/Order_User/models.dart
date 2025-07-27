@@ -1,5 +1,5 @@
 // models.dart
-// NOTE: Using fetchStoreWithProduct (not getVendorProducts)
+// NOTE: Using fetchStoreWithProduct (not getVendorProducts).
 class MenuItem {
   final int id;
   final String name;

@@ -2,10 +2,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:suc_fyp/Order_User/models.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:suc_fyp/prediction_data.dart';
 
 class ApiService {
-  //static String baseUrl = 'https://default.ngrok-free.app/flutter_api/';
-  //static const String baseUrl = 'https://567e42c94263.ngrok-free.app/flutter_api/';
   static late String baseUrl;
 
   static Future<void> init() async {
@@ -832,7 +831,42 @@ class ApiService {
     return [];
   }
 
+  static Future<Map<String, dynamic>> predictTransaction(Map<String, dynamic> inputData) async {
+    final url = Uri.parse('$baseUrl/predict.php');
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(inputData),
+    );
 
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      return {"success": false, "message": "服务器错误"};
+    }
+  }
+
+  static Future<List<PredictionData>> fetchPredictions(String uid) async {
+
+    final url = Uri.parse('$baseUrl/predict.php');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'FirebaseUID': uid}),
+
+    );
+
+    final jsonData = json.decode(response.body);
+    print("📊 Prediction raw data: $jsonData");
+
+    if (jsonData['success'] == true) {
+      List<dynamic> predictions = jsonData['hourly_predictions'];
+      return predictions.map((item) => PredictionData.fromJson(item)).toList();
+    } else {
+      throw Exception('Failed to load prediction');
+    }
+
+  }
 
 
 

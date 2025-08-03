@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:suc_fyp/login_system/api_service.dart';
@@ -15,6 +16,8 @@ class _UserTransactionHistoryPageState extends State<UserTransactionHistoryPage>
   List<UserTransaction> transactions = [];
   double totalIncome = 0;
   double totalExpense = 0;
+  double topupAmount = 0;
+  double orderAmount = 0;
 
   @override
   void initState() {
@@ -31,24 +34,66 @@ class _UserTransactionHistoryPageState extends State<UserTransactionHistoryPage>
             .map((tx) => UserTransaction.fromJson(tx))
             .toList();
 
-        // 计算总收入与支出
         double income = 0;
         double expense = 0;
+        double topup = 0;
+        double order = 0;
+
         for (var tx in loadedTx) {
           if (tx.amount > 0) {
             income += tx.amount;
+            if (tx.type == 'topup') topup += tx.amount;
           } else {
             expense += tx.amount;
+            if (tx.type == 'order') order += -tx.amount;
           }
         }
 
         setState(() {
           transactions = loadedTx;
           totalIncome = income;
-          totalExpense = -expense; // 支出是负数，需要转正
+          totalExpense = -expense;
+          topupAmount = topup;
+          orderAmount = order;
         });
       }
     }
+  }
+
+  Widget _buildPieChart(double width) {
+    final total = topupAmount + orderAmount;
+    if (total == 0) {
+      return const Text("No transaction data to display.");
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: SizedBox(
+        height: width * 0.6,
+        child: PieChart(
+          PieChartData(
+            sections: [
+              PieChartSectionData(
+                value: topupAmount,
+                title: 'Top-up\n${(topupAmount / total * 100).toStringAsFixed(1)}%',
+                color: Colors.blue,
+                radius: 65,
+                titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+              PieChartSectionData(
+                value: orderAmount,
+                title: 'Orders\n${(orderAmount / total * 100).toStringAsFixed(1)}%',
+                color: Colors.red,
+                radius: 65,
+                titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+            ],
+            sectionsSpace: 4,
+            centerSpaceRadius: 30,
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -75,7 +120,6 @@ class _UserTransactionHistoryPageState extends State<UserTransactionHistoryPage>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Back button
                 Padding(
                   padding: EdgeInsets.only(top: screenHeight * 0.01),
                   child: GestureDetector(
@@ -101,8 +145,6 @@ class _UserTransactionHistoryPageState extends State<UserTransactionHistoryPage>
                   ),
                 ),
                 SizedBox(height: screenHeight * 0.015),
-
-                // Amount & Expense Summary
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -111,16 +153,8 @@ class _UserTransactionHistoryPageState extends State<UserTransactionHistoryPage>
                   ],
                 ),
                 SizedBox(height: screenHeight * 0.02),
-
-                // Chart (占位图)
-                Center(
-                  child: Image.asset(
-                    'assets/image/Transaction_Graph.png',
-                    width: screenWidth * 0.9,
-                  ),
-                ),
+                Center(child: _buildPieChart(screenWidth * 0.9)),
                 SizedBox(height: screenHeight * 0.02),
-
                 Text(
                   'Transaction history',
                   style: TextStyle(
@@ -129,8 +163,6 @@ class _UserTransactionHistoryPageState extends State<UserTransactionHistoryPage>
                   ),
                 ),
                 SizedBox(height: screenHeight * 0.02),
-
-                // Scrollable list
                 Expanded(
                   child: transactions.isEmpty
                       ? const Center(child: CircularProgressIndicator())
@@ -205,7 +237,6 @@ class _UserTransactionHistoryPageState extends State<UserTransactionHistoryPage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title and Amount
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -245,4 +276,3 @@ class _UserTransactionHistoryPageState extends State<UserTransactionHistoryPage>
     );
   }
 }
-

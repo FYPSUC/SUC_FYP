@@ -87,12 +87,29 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
 
     final result = await ApiService.sendResetOtp(email, newPassword);
     if (result['success']) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Check your Gmail to complete reset.')),
-      );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
+      if (!mounted) return; // 避免异步期间 context 被 dispose
+
+      showDialog(
+        context: context,
+        barrierDismissible: false, // 不允许点击外面关闭
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Email Sent"),
+            content: const Text("Please check your Gmail to reset your password."),
+            actions: [
+              TextButton(
+                child: const Text("OK"),
+                onPressed: () {
+                  Navigator.pop(context); // 关闭弹窗
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const HomePage()),
+                  );
+                },
+              ),
+            ],
+          );
+        },
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

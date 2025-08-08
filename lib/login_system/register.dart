@@ -160,7 +160,7 @@
       child: Column(
       children: [
                       const SizedBox(height: 15),
-                      Image.asset('assets/image/sucE-wallet_icon.png', width: 300, height: 300, fit: BoxFit.contain),
+                      Image.asset('assets/image/SUCE-wallet_icon.png', width: 300, height: 300, fit: BoxFit.contain),
                       Text(
                         '$selectedRole Register',
                         style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87),

@@ -245,7 +245,7 @@ class _VendorTopUpPageState extends State<VendorTopUpPage> {
                       barrierDismissible: false,
                       builder: (context) {
                         return AlertDialog(
-                          title: const Text("请输入6位交易密码"),
+                          title: const Text("please enter your 6 digit pin"),
                           content: TextField(
                             controller: passwordController,
                             obscureText: true,
@@ -259,11 +259,11 @@ class _VendorTopUpPageState extends State<VendorTopUpPage> {
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(false),
-                              child: const Text("取消"),
+                              child: const Text("cancel"),
                             ),
                             ElevatedButton(
                               onPressed: () => Navigator.of(context).pop(true),
-                              child: const Text("确认"),
+                              child: const Text("confirm"),
                             ),
                           ],
                         );
@@ -278,7 +278,7 @@ class _VendorTopUpPageState extends State<VendorTopUpPage> {
 
                     if (uid == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("❌ Vendor 未登录")),
+                        const SnackBar(content: Text("❌ Vendor has not login")),
                       );
                       return;
                     }
@@ -288,7 +288,7 @@ class _VendorTopUpPageState extends State<VendorTopUpPage> {
 
                     if (!response['success']) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("❌ 获取 Vendor 信息失败")),
+                        const SnackBar(content: Text("❌ failed to get vendor info")),
                       );
                       return;
                     }
@@ -297,7 +297,7 @@ class _VendorTopUpPageState extends State<VendorTopUpPage> {
 
                     if (passwordController.text != correctPassword) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("❌ 交易密码错误")),
+                        const SnackBar(content: Text("❌ wrong 6 digit pin")),
                       );
                       return;
                     }
@@ -306,7 +306,7 @@ class _VendorTopUpPageState extends State<VendorTopUpPage> {
                     double amount = double.tryParse(_enteredAmount) ?? 0.0;
                     if (amount <= 0) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("❌ 金额无效")),
+                        const SnackBar(content: Text("❌ insufficient balance")),
                       );
                       return;
                     }
@@ -322,7 +322,7 @@ class _VendorTopUpPageState extends State<VendorTopUpPage> {
 
                     if (success) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("✅ Vendor Top Up 成功")),
+                        const SnackBar(content: Text("✅ Vendor Top Up successful")),
                       );
                       Navigator.pushReplacement(
                         context,
@@ -330,7 +330,7 @@ class _VendorTopUpPageState extends State<VendorTopUpPage> {
                       );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("❌ Top up 失败")),
+                        const SnackBar(content: Text("❌ Top up failed")),
                       );
                     }
                   },

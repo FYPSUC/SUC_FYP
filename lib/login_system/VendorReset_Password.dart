@@ -208,7 +208,7 @@ class _VendorResetPasswordPageState extends State<VendorResetPasswordPage> {
                 ),
                 const SizedBox(height: 20),
                 Image.asset(
-                  'assets/image/sucE-wallet_icon.png',
+                  'assets/image/SUCE-wallet_icon.png',
                   width: 300,
                   height: 300,
                   fit: BoxFit.contain,

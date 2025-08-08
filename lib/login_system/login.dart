@@ -121,7 +121,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   Center(
                     child: Image.asset(
-                      'assets/image/sucE-wallet_icon.png',
+                      'assets/image/SUCE-wallet_icon.png',
                       width: 300,
                       height: 300,
                       fit: BoxFit.contain,

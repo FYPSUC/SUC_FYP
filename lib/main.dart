@@ -107,7 +107,7 @@ class HomePage extends StatelessWidget {
               children: [
                 SizedBox(height: size.height * 0.08),
                 Image.asset(
-                  'assets/image/sucE-wallet_icon.png',
+                  'assets/image/SUCE-wallet_icon.png',
                   width: size.width * 0.8,
                   height: size.height * 0.35,
                   fit: BoxFit.contain,

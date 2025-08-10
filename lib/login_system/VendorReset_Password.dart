@@ -236,7 +236,7 @@ class _VendorResetPasswordPageState extends State<VendorResetPasswordPage> {
                       ),
                     ),
                     child: const Text(
-                      'Vendor Reset Password',
+                      'Reset',
                       style: TextStyle(
                         fontSize: 25,
                         color: Colors.black,

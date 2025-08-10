@@ -101,113 +101,117 @@ class HomePage extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: size.width * 0.08),
-            child: Column(
-              children: [
-                SizedBox(height: size.height * 0.08),
-                Image.asset(
-                  'assets/image/SUCE-wallet_icon.png',
-                  width: size.width * 0.8,
-                  height: size.height * 0.35,
-                  fit: BoxFit.contain,
-                ),
-                SizedBox(height: size.height * 0.03),
-                Text(
-                  'Welcome to',
-                  style: GoogleFonts.roboto(
-                    fontSize: size.width * 0.08,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
+          child: SingleChildScrollView( // ✅ 让内容可滚动，防止溢出
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: size.width * 0.08),
+              child: Column(
+                children: [
+                  SizedBox(height: size.height * 0.08),
+                  Image.asset(
+                    'assets/image/SUCE-wallet_icon.png',
+                    width: size.width * 0.8,
+                    height: size.height * 0.35,
+                    fit: BoxFit.contain,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                Text(
-                  'SUC',
-                  style: GoogleFonts.roboto(
-                    fontSize: size.width * 0.08,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
+                  SizedBox(height: size.height * 0.03),
+                  Text(
+                    'Welcome to',
+                    style: GoogleFonts.roboto(
+                      fontSize: size.width * 0.08,
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                Text(
-                  'E-wallet!',
-                  style: GoogleFonts.roboto(
-                    fontSize: size.width * 0.08,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
+                  Text(
+                    'SUC',
+                    style: GoogleFonts.roboto(
+                      fontSize: size.width * 0.08,
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: size.height * 0.08),
-                Column(
-                  children: [
-                    SizedBox(
-                      width: size.width * 0.5,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const LoginPage()),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          elevation: 0,
-                          side: const BorderSide(color: Colors.black, width: 2),
-                          padding: EdgeInsets.symmetric(
-                            vertical: size.height * 0.02,
+                  Text(
+                    'E-wallet!',
+                    style: GoogleFonts.roboto(
+                      fontSize: size.width * 0.08,
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: size.height * 0.08),
+                  Column(
+                    children: [
+                      SizedBox(
+                        width: size.width * 0.5,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const LoginPage()),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            elevation: 0,
+                            side: const BorderSide(color: Colors.black, width: 2),
+                            padding: EdgeInsets.symmetric(
+                              vertical: size.height * 0.02,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                        ),
-                        child: Text(
-                          'Login',
-                          style: TextStyle(
-                            fontSize: size.width * 0.05,
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
+                          child: Text(
+                            'Login',
+                            style: TextStyle(
+                              fontSize: size.width * 0.05,
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    SizedBox(height: size.height * 0.02),
-                    SizedBox(
-                      width: size.width * 0.5,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const RegisterPage()),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          elevation: 0,
-                          side: const BorderSide(color: Colors.black, width: 2),
-                          padding: EdgeInsets.symmetric(
-                            vertical: size.height * 0.02,
+                      SizedBox(height: size.height * 0.02),
+                      SizedBox(
+                        width: size.width * 0.5,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const RegisterPage()),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            elevation: 0,
+                            side: const BorderSide(color: Colors.black, width: 2),
+                            padding: EdgeInsets.symmetric(
+                              vertical: size.height * 0.02,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                        ),
-                        child: Text(
-                          'Register',
-                          style: TextStyle(
-                            fontSize: size.width * 0.05,
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
+                          child: Text(
+                            'Register',
+                            style: TextStyle(
+                              fontSize: size.width * 0.05,
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const Spacer(),
-              ],
+                    ],
+                  ),
+                  SizedBox(height: size.height * 0.05), // ✅ 给底部留一点安全距离
+                ],
+              ),
             ),
           ),
         ),

@@ -297,13 +297,13 @@
                               ),
                               child: Text(
                                 'User',
-                                style: TextStyle(fontSize: 25, color: Colors.white.withOpacity(selectedRole == 'User' ? 1.0 : 0.6)),
+                                style: TextStyle(fontSize: 20, color: Colors.white.withOpacity(selectedRole == 'User' ? 1.0 : 0.6)),
                               ),
                             ),
                           ),
                           const SizedBox(width: 2),
                           SizedBox(
-                            width: 150,
+                            width: 130,
                             height: 70,
                             child: ElevatedButton(
                               onPressed: () => setState(() => selectedRole = 'Vendor'),
@@ -315,7 +315,7 @@
                               ),
                               child: Text(
                                 'Vendor',
-                                style: TextStyle(fontSize: 25, color: Colors.white.withOpacity(selectedRole == 'Vendor' ? 1.0 : 0.6)),
+                                style: TextStyle(fontSize: 20, color: Colors.white.withOpacity(selectedRole == 'Vendor' ? 1.0 : 0.6)),
                               ),
                             ),
                           ),

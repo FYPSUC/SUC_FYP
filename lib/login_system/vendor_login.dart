@@ -278,48 +278,52 @@ class _VendorLoginPageState extends State<VendorLoginPage> {
     ),
     const SizedBox(height: 20),
 
-    // Register / Forgot
-    Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-    GestureDetector(
-    onTap: () {
-    Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => const RegisterPage()),
-    );
-    },
-    child: const Text(
-    'Create an account',
-    style: TextStyle(
-    fontSize: 18,
-    color: Colors.black,
-    fontWeight: FontWeight.bold,
-    ),
-    ),
-    ),
-    const SizedBox(width: 10),
-    const Text("|", style: TextStyle(fontSize: 18)),
-    const SizedBox(width: 10),
-    GestureDetector(
-    onTap: () {
-    Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => const VendorResetPasswordPage()),
-    );
-    },
-    child: const Text(
-    'Forget Password?',
-    style: TextStyle(
-    fontSize: 18,
-    color: Colors.black,
-    fontWeight: FontWeight.bold,
-    ),
-    ),
-    ),
-    ],
-    ),
-    const SizedBox(height: 30),
+      // Register / Forgot
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 10, // 水平方向间距
+          runSpacing: 8, // 换行后行间距
+          children: [
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const RegisterPage()),
+                );
+              },
+              child: const Text(
+                'Create an account',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const Text("|", style: TextStyle(fontSize: 18)),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const VendorResetPasswordPage()),
+                );
+              },
+              child: const Text(
+                'Forget Password?',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+
+      const SizedBox(height: 30),
     ],
     ),
     ),

@@ -55,6 +55,7 @@ class _UserMainPageState extends State<UserMainPage> with WidgetsBindingObserver
     }
   }
 
+
   Future<void> checkAndShowGuide() async {
     final prefs = await SharedPreferences.getInstance();
     final shown = prefs.getBool('user_guide_shown') ?? false;
@@ -195,7 +196,7 @@ class _UserMainPageState extends State<UserMainPage> with WidgetsBindingObserver
               ),
             ),
           ),
-          // ✅ 通知浮窗放到 SafeArea 外部、Stack 中
+
           if (_showNotificationPopup && _notifications.isNotEmpty)
             Positioned(
               top: 20,
@@ -286,6 +287,8 @@ class _UserMainPageState extends State<UserMainPage> with WidgetsBindingObserver
                           ),
                         ],
                       ),
+
+
                       ElevatedButton(
                         key: _profileKey,
                         style: ElevatedButton.styleFrom(

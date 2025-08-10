@@ -261,7 +261,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                       ),
                     ),
                     child: const Text(
-                      'User Reset Password',
+                      'Reset',
                       style: TextStyle(
                         fontSize: 25,
                         color: Colors.black,

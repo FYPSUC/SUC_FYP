@@ -846,27 +846,31 @@ class ApiService {
     }
   }
 
-  static Future<List<PredictionData>> fetchPredictions(String uid) async {
-
+  // 返回 { "total": double, "date": String }
+  static Future<Map<String, dynamic>> fetchPredictions(String uid) async {
     final url = Uri.parse('$baseUrl/predict.php');
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
       body: json.encode({'FirebaseUID': uid}),
-
     );
+
+    if (response.statusCode != 200) {
+      throw Exception('服务器错误: ${response.statusCode}');
+    }
 
     final jsonData = json.decode(response.body);
     print("📊 Prediction raw data: $jsonData");
 
     if (jsonData['success'] == true) {
-      List<dynamic> predictions = jsonData['hourly_predictions'];
-      return predictions.map((item) => PredictionData.fromJson(item)).toList();
+      final total = (jsonData['predicted_total_income'] as num).toDouble();
+      final date = jsonData['predicted_date'] as String?;
+      return {'total': total, 'date': date};
     } else {
-      throw Exception('Failed to load prediction');
+      throw Exception(jsonData['message'] ?? 'Failed to load prediction');
     }
-
   }
+
 
 
 

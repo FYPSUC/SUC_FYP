@@ -56,6 +56,7 @@ class _UserMainPageState extends State<UserMainPage> with WidgetsBindingObserver
   }
 
 
+
   Future<void> checkAndShowGuide() async {
     final prefs = await SharedPreferences.getInstance();
     final shown = prefs.getBool('user_guide_shown') ?? false;
@@ -398,6 +399,7 @@ class _UserMainPageState extends State<UserMainPage> with WidgetsBindingObserver
                                             price: 6.0,
                                             image: 'assets/image/example.png',
                                             isSoldOut: 0,
+                                            totalSold:0,
                                           ): 1
                                         },
                                         vendorUID: 'EXAMPLE_VENDOR_UID',

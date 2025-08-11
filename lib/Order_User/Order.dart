@@ -55,6 +55,11 @@ class UserOrderPage extends StatelessWidget {
                       }
 
                       final stores = snapshot.data!;
+                      // 先收集所有菜单项，按销量降序排序
+                      final topMenuItems = stores.expand((store) => store.menu).toList()
+                        ..sort((a, b) => b.totalSold.compareTo(a.totalSold));
+                      final top3 = topMenuItems.take(3).toList();
+
 
                       return SingleChildScrollView(
                         child: Column(
@@ -109,29 +114,29 @@ class UserOrderPage extends StatelessWidget {
                             ),
                             const Divider(color: Colors.black, thickness: 1),
 
-                            // ✅ 展示前3个食物作为排行榜
-                            ...stores.expand((store) => store.menu).take(3).map((menuItem) {
+                            // 展示销量前 3 的商品
+                            ...top3.map((menuItem) {
                               return RankingItem(
-                                rank: 'Top', // 你也可以加入 index + 1
+                                rank: 'Top ${top3.indexOf(menuItem) + 1}',
                                 imagePath: menuItem.image,
                                 title: menuItem.name,
                                 price: 'RM ${menuItem.price.toStringAsFixed(2)}',
                                 onTap: () {
                                   if (menuItem.isSoldOut != 0) {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('This item is sold out')),
+                                      const SnackBar(content: Text('This item is sold out')),
                                     );
                                     return;
                                   }
-
-                                  final store = stores.firstWhere((s) => s.menu.contains(menuItem));
+                                  final store =
+                                  stores.firstWhere((s) => s.menu.contains(menuItem));
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (context) => StoreMenuPage(store: store)),
+                                    MaterialPageRoute(
+                                        builder: (context) => StoreMenuPage(store: store)),
                                   );
                                 },
-
-                                screenWidth: screenWidth,
+                                screenWidth: MediaQuery.of(context).size.width,
                               );
                             }).toList(),
                           ],

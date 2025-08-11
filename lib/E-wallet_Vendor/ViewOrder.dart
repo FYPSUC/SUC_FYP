@@ -125,8 +125,9 @@ class _VendorViewOrderPageState extends State<VendorViewOrderPage> {
     final items = List<Map<String, dynamic>>.from(order['items']);
     double subtotal = items.fold(
         0, (sum, item) => sum + item['Quantity'] * item['UnitPrice']);
-    double voucherDiscount = 5.0; // TODO: 可改为从后端动态获取
+    double voucherDiscount = (order['voucherDiscount'] ?? 0).toDouble();
     double total = subtotal - voucherDiscount;
+
 
     String currentStatus = order['status'] ?? 'pending';
     bool isPending = currentStatus == 'pending';

@@ -20,27 +20,37 @@ class _VendorTransactionHistoryPageState extends State<VendorTransactionHistoryP
   double orderIncome = 0;
   bool showPredictionDetail = false;
 
+  // 新增：预测数据
+  double? predictedTotalIncome;
+  String? predictedDate;
+
   @override
   void initState() {
     super.initState();
     _loadTransactions();
+    _loadPrediction(); // 加载下一天总收入预测
   }
 
-  Future<List<PredictionData>> _fetchPredictionData() async {
+  // new: 从后端获取 total prediction
+  Future<void> _loadPrediction() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid != null) {
-      try {
-        final result = await ApiService.fetchPredictions(uid);
-        print("📊 Prediction fetched: $result");
-        return result;
-      } catch (e) {
-        print("❌ Error fetching prediction: $e");
-        return [];
-      }
-    }
-    return [];
-  }
+    if (uid == null) return;
 
+    try {
+      final data = await ApiService.fetchPredictions(uid); // 返回 { total, date }
+      setState(() {
+        predictedTotalIncome = data['total'] as double;
+        predictedDate = data['date'] as String?;
+      });
+      print("📅 Predicted total for $predictedDate: $predictedTotalIncome");
+    } catch (e) {
+      print("❌ Error fetching prediction: $e");
+      setState(() {
+        predictedTotalIncome = null;
+        predictedDate = null;
+      });
+    }
+  }
   Future<void> _loadTransactions() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -195,7 +205,10 @@ class _VendorTransactionHistoryPageState extends State<VendorTransactionHistoryP
                               ),
                               if (showPredictionDetail)
                                 Container(
-                                  margin: EdgeInsets.only(top: screenHeight * 0.01),
+                                  constraints: BoxConstraints(
+                                    minHeight: screenHeight * 0.45, // 白框整体更高
+                                  ),
+                                  margin: EdgeInsets.only(top: screenHeight * 0.005),
                                   padding: EdgeInsets.all(20),
                                   width: screenWidth * 0.95,
                                   decoration: BoxDecoration(
@@ -206,14 +219,14 @@ class _VendorTransactionHistoryPageState extends State<VendorTransactionHistoryP
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Hourly Predicted Income',
+                                        'Next day predicted total income',
                                         style: TextStyle(
                                           fontSize: screenWidth * 0.055,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                      SizedBox(height: screenHeight * 0.02),
-                                      _buildPredictionChart(screenWidth*0.25, screenHeight * 0.45),
+                                      SizedBox(height: screenHeight * 0.03),
+                                      _buildPredictionLineChart(screenWidth * 0.9, screenHeight * 0.35),
                                     ],
                                   ),
                                 ),
@@ -249,68 +262,123 @@ class _VendorTransactionHistoryPageState extends State<VendorTransactionHistoryP
     );
   }
 
-  Widget _buildPredictionChart(double screenWidth, double screenHeight) {
-    return FutureBuilder<List<PredictionData>>(
-      future: _fetchPredictionData(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
-        } else if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Text("No prediction data available");
-        }
+  Widget _buildPredictionLineChart(double width, double height) {
+    if (predictedTotalIncome == null || transactions.isEmpty) {
+      return const Text("No prediction data available");
+    }
 
-        final data = snapshot.data!;
-        final spots = data.map((d) => FlSpot(d.hour.toDouble(), d.amount)).toList();
+    // 1. 构造历史数据（按日期排序）
+    final historyData = transactions
+        .map((t) => MapEntry(t.date, t.amount))
+        .toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
 
-        return SizedBox(
-          height: screenHeight,
-          child: LineChart(
-            LineChartData(
-              minY: 0,
-              maxY: 140,
-              titlesData: FlTitlesData(
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    interval: 3,
-                    getTitlesWidget: (value, meta) {
-                      final hour = value.toInt();
-                      return Text('$hour:00', style: const TextStyle(fontSize: 10));
-                    },
-                  ),
-                ),
-                leftTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    interval: 20,
-                    getTitlesWidget: (value, meta) {
-                      return Text('RM${value.toStringAsFixed(0)}', style: const TextStyle(fontSize: 10));
-                    },
-                  ),
-                ),
-                topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+    // 2. X 轴标签（过去日期 + 预测日期）
+    final allDates = [
+      ...historyData.map((e) => e.key),
+      DateTime.parse(predictedDate!)
+    ];
+
+    // 3. LineChartSpots for history
+    final historySpots = historyData.asMap().entries.map((entry) {
+      final index = entry.key;
+      final amount = entry.value.value;
+      return FlSpot(index.toDouble(), amount);
+    }).toList();
+
+    // 4. LineChartSpots for prediction
+    final predIndex = allDates.length - 1;
+    final predictionSpots = [
+      FlSpot((predIndex - 1).toDouble(), historyData.last.value), // 上一天
+      FlSpot(predIndex.toDouble(), predictedTotalIncome!)         // 预测
+    ];
+
+    // 5. 最大值（给 Y 轴留空间）
+    final maxY = [
+      ...historyData.map((e) => e.value),
+      predictedTotalIncome!
+    ].reduce((a, b) => a > b ? a : b) * 1.3;
+
+    return SizedBox(
+      width: width,
+      height: height,
+      child: LineChart(
+        LineChartData(
+          minY: 0,
+          maxY: maxY,
+          titlesData: FlTitlesData(
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 30, // 给底部刻度预留空间
+                getTitlesWidget: (value, meta) {
+                  final index = value.toInt();
+                  if (index >= 0 && index < allDates.length) {
+                    final date = allDates[index];
+                    final isPred = index == predIndex;
+                    return Text(
+                      isPred
+                          ? '${date.month}/${date.day}\n(Pred)'
+                          : '${date.month}/${date.day}',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: isPred ? FontWeight.bold : FontWeight.normal,
+                        color: isPred ? Colors.green : Colors.black,
+                      ),
+                      textAlign: TextAlign.center,
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
               ),
-              gridData: FlGridData(show: true),
-              borderData: FlBorderData(show: true),
-              minX: 0,
-              maxX: 23,
-              lineBarsData: [
-                LineChartBarData(
-                  isCurved: true,
-                  spots: spots,
-                  barWidth: 3,
-                  color: Colors.green,
-                  belowBarData: BarAreaData(show: false),
-                  dotData: FlDotData(show: true),
-                ),
-              ],
             ),
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                interval: maxY / 4,
+                getTitlesWidget: (v, meta) =>
+                    Text('RM${v.toInt()}', style: const TextStyle(fontSize: 10)),
+              ),
+            ),
+            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
           ),
-        );
-      },
+          gridData: FlGridData(show: true),
+          borderData: FlBorderData(show: false),
+          lineBarsData: [
+            // 历史数据（实线）
+            LineChartBarData(
+              spots: historySpots,
+              isCurved: true,
+              barWidth: 3,
+              color: Colors.blue,
+              dotData: FlDotData(show: true),
+            ),
+            // 预测数据（虚线）
+            LineChartBarData(
+              spots: predictionSpots,
+              isCurved: false,
+              barWidth: 2,
+              color: Colors.green,
+              dashArray: [5, 5], // 虚线
+              dotData: FlDotData(
+                show: true,
+                getDotPainter: (spot, percent, barData, index) {
+                  return FlDotCirclePainter(
+                    radius: 4,
+                    color: Colors.green,
+                    strokeWidth: 2,
+                    strokeColor: Colors.white,
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
+
 
   Widget _buildAmountBox(String label, String value, double screenWidth) {
     return Column(

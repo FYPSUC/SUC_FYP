@@ -6,6 +6,7 @@ class MenuItem {
   final double price;
   final String image;
   final int isSoldOut;
+  final int totalSold;
 
   MenuItem({
     required this.id,
@@ -13,6 +14,7 @@ class MenuItem {
     required this.price,
     required this.image,
     required this.isSoldOut,
+    required this.totalSold,
   });
 
   factory MenuItem.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class MenuItem {
       price: double.parse(json['price'].toString()),
       image: json['image'],
       isSoldOut: int.tryParse(json['isSoldOut'].toString()) ?? 0,
+      totalSold: json['total_sold'] ?? 0, // ✅ 接收后端返回的销量
 
 
     );

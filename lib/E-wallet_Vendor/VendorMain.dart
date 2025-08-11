@@ -46,15 +46,6 @@ class _VendorMainPageState extends State<VendorMainPage> {
     });
   }
 
-  // ✅ 新增：重置导航引导记录
-  Future<void> resetGuidePreference() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('user_guide_shown'); // 删除记录
-    print("✅ 已重置导航引导记录");
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("导航引导记录已重置")),
-    );
-  }
 
   Future<void> _checkAndShowGuide() async {
     final prefs = await SharedPreferences.getInstance();
@@ -361,13 +352,7 @@ class _VendorMainPageState extends State<VendorMainPage> {
                           ),
                         ],
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.refresh, color: Colors.blue),
-                        tooltip: "重置导航引导",
-                        onPressed: () {
-                          resetGuidePreference();
-                        },
-                      ),
+
                       GestureDetector(
                         key: _profileKey,
                         onTap: () async {
